@@ -22,8 +22,11 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import headerMenue from "./header_menue";
 
+import Hooks from "./hooks";
+import makeDraggable from "./drag";
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 
 // Show progress bar on live navigation and form submits
 headerMenue.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
@@ -33,6 +36,10 @@ _info => console.log("start loading") //headerMenue.show(300)
 window.addEventListener("phx:page-loading-stop", 
 _info => console.log("stop loading") //headerMenue.hide()
 )
+
+window.addEventListener("phx:save-debug",
+    e => localStorage.setItem("debug", e.detail.debug) //console.log(e.detail.debug)
+  )
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
