@@ -429,10 +429,10 @@ defmodule LightwarriorWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+        <h1 class="text-lg font-semibold leading-8 text-zinc-800 dark:text-zinc-100">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
@@ -543,6 +543,34 @@ defmodule LightwarriorWeb.CoreComponents do
         </div>
       </dl>
     </div>
+    """
+  end
+
+
+  @doc """
+  Renders a bouttons for LED Instances.
+
+  ## Examples
+
+      <.instances>
+        <:item title="Title"><%= @post.title %></:item>
+        <:item title="Views"><%= @post.views %></:item>
+      </.instances>
+  """
+
+  attr :title, :string, required: false
+  attr :status, :boolean, required: false
+
+  def led_instance(assigns) do
+    ~H"""
+      <button  class={
+            "m-1 p-2 rounded-full text-xs font-semibold text-white shadow-sm " <>
+            if @status,
+            do: "bg-green-600",
+            else: "bg-red-600"
+          }
+      ><%= @title %>
+      </button>
     """
   end
 

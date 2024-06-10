@@ -3,13 +3,15 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
 
   alias Lightwarrior.Hyperion
   alias Lightwarrior.Hyperion.HyperionLEDMapping
+  #alias Phoenix.LiveView.AsyncResult
 
   @impl true
   def mount(_params, _session, socket) do
 
     {:ok,
-      stream(socket, :hyperionledmappings, Hyperion.list_hyperionledmappings())
+      stream(socket, :stripes, [])
       |> assign(:debug, false)
+
     }
   end
 
@@ -23,8 +25,16 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
     {:noreply, socket
       |> assign(:debug, debug)
       |> assign(:path, path)
+      |> assign_async(:serverinfo, fn -> {:ok, serverinfo } = Hyperion.get_serverinfo(); {:ok, %{serverinfo: serverinfo}} end)
+      |> assign_async(:current_config, fn -> {:ok, current_config } = Hyperion.get_current_config(); {:ok, %{current_config: current_config}}  end)
     }
+  end
 
+  defp apply_action(socket, :select, %{"id" => id}) do
+    dbg("select instance")
+    socket
+    #|> assign(:page_title, "Edit Mapping")
+    #|> assign(:mapping, Hyperion.get_mapping!(id))
   end
 
   def handle_event("phx:debug", %{"debug" => debug, "value" => _value}, socket) do
