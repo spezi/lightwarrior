@@ -21,10 +21,10 @@ defmodule LightwarriorWeb.Router do
 
     live "/hyperion/ledmappings", HyperionLEDMappingLive.Index, :index
     live "/hyperion/ledmappings/new", HyperionLEDMappingLive.Index, :new
-    live "/hyperion/ledmappings/:id/edit", HyperionLEDMappingLive.Index, :edit
+    live "/hyperion/ledmappings/:instance/edit", HyperionLEDMappingLive.Index, :edit
 
-    live "/hyperion/ledmappings/:id", HyperionLEDMappingLive.Show, :show
-    live "/hyperion/ledmappings/:id/show/edit", HyperionLEDMappingLive.Show, :edit
+    #live "/hyperion/ledmappings/:id", HyperionLEDMappingLive.Show, :show
+    #live "/hyperion/ledmappings/:id/show/edit", HyperionLEDMappingLive.Show, :edit
 
   end
 

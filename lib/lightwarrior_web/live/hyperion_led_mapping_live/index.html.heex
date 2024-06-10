@@ -1,9 +1,108 @@
-<.header>
+<.header class="mb-5 border-b border-gray-200 dark:border-gray-800">
   Hyperion Led Mappings
 </.header>
 
+<div class="flex flex-row ">
+  <div class="basis-1/4 shadow-xl ">
+    <.header class="rounded-tr-xl  bg-white antialiased dark:bg-zinc-900 w-2/5 pl-4">
+      <h2>Instances</h2>
+    </.header>
+    <div class="flex flex-wrap rounded-tr-xl rounded-br-xl rounded-bl-xl  shadow-xl ring-1 bg-white antialiased dark:bg-zinc-900 ring-gray-800/5 p-5">
+    <.async_result :let={serverinfo} assign={@serverinfo}>
+      <:loading>connecting Hyperion ...</:loading>
+      <:failed :let={_failure}>there was an error to connect Hyperion ...</:failed>
+      <div :for={instance <- serverinfo["info"]["instance"]} class="">
+        <.led_instance title={instance["friendly_name"]} status={instance["running"]} />
+      </div>
+    </.async_result>
+    </div>
 
+    <.header class="rounded-tr-xl mt-3 bg-white antialiased dark:bg-zinc-900 w-2/5 pl-4">
+      <h2>Selected</h2>
+    </.header>
+    <div class="flex flex-wrap rounded-tr-xl rounded-br-xl rounded-bl-xl  shadow-xl ring-1 bg-white antialiased dark:bg-zinc-900 ring-gray-800/5 p-5">
+    
+    </div>
+  </div>
+
+  <div class="basis-3/4 ml-3 shadow-xl">
+    <.header class="rounded-tr-xl bg-white antialiased dark:bg-zinc-900 w-1/5 pl-4">
+      <h2>Mapping</h2>
+    </.header>
+    <div class="p-3 bg-white antialiased dark:bg-zinc-900">
+      <div id="mapping" class="bg-[url('/images/stanzraum.png')] bg-opacity-25 bg-cover w-full aspect-[16/9] bg-slate-100 relative" >
+      
+      </div>
+    </div>
+  </div>
+
+</div>
 
 <.modal :if={@live_action in [:new, :edit]} id="hyperion_led_mapping-modal" show on_cancel={JS.patch(~p"/hyperionledmappings")}>
 
 </.modal>
+
+
+<div :if={@debug} id="debug">
+  <hr class="mt-10">
+  <h1>debug</h1>
+  
+  <div class="flex">
+    <div class="basis-1/4">
+        <h2>Hyperion Serverinfo</h2>
+        <pre>
+          <.async_result :let={serverinfo} assign={@serverinfo}>
+            <:loading>Loading Hyperion serverinfo ...</:loading>
+            <:failed :let={_failure}>there was an error loading Hyperion serverinfo</:failed>
+            <%=
+              if serverinfo do
+                pretty_json = Jason.encode!(serverinfo, pretty: true)
+                raw(pretty_json) 
+              end
+            %>
+          </.async_result>
+        </pre>
+    </div>
+    <div class="basis-1/4">
+        <h2>Hyperion Current Config</h2>
+        <pre>
+          <.async_result :let={current_config} assign={@current_config}>
+            <:loading>Loading Hyperion current_config ...</:loading>
+            <:failed :let={_failure}>there was an error loading Hyperion current_config</:failed>
+            <%=
+              if current_config do
+                pretty_json = Jason.encode!(current_config, pretty: true)
+                raw(pretty_json) 
+              end
+            %>
+          </.async_result>
+        </pre>
+
+    </div>
+    <div class="basis-2/4">
+      <h2>Hyperion all stripes</h2>
+      
+    </div>
+    
+  </div>
+  <!--< Kernel.inspect(dbg(@serverinfo["instance"])) %>-->
+  <!--< length(@serverinfo["leds"]) %>-->
+  <!--< Kernel.inspect(dbg(@serverinfo)) %>-->
+</div>
+
+<div class="basis-1/4 hidden">
+      <h2>Hyperion current led config led`s</h2>
+        <pre>
+          <.async_result :let={current_config} assign={@current_config}>
+            <:loading>Loading Hyperion current_config leds ...</:loading>
+            <:failed :let={_failure}>there was an error fetching Hyperion current_config leds</:failed>
+            <%=
+              if current_config do
+                info = Map.get(current_config, "info")
+                pretty_json = Jason.encode!(Map.get(info, "leds"), pretty: true)
+                raw(pretty_json) 
+              end
+            %>
+          </.async_result>
+        </pre>
+    </div>

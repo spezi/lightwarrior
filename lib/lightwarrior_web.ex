@@ -86,6 +86,8 @@ defmodule LightwarriorWeb do
       # Core UI components and translation
       import LightwarriorWeb.CoreComponents
       import LightwarriorWeb.Gettext
+      # Tailwind UI ported Components
+      import LightwarriorWeb.TailwindUiComponents
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
