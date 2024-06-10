@@ -53,7 +53,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
                 </svg>
               </div>
-              <a href={"ledmappings#{if @debug, do: "?debug"}"} class="mt-6 block font-semibold text-gray-900 dark:text-gray-200">
+              <a href={~p"/hyperion/ledmappings"} class="mt-6 block font-semibold text-gray-900 dark:text-gray-200">
                 LED Mapping
                 <span class="absolute inset-0"></span>
               </a>
@@ -96,10 +96,16 @@
             <input id="search" name="search" class="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Search" type="search">
           </div>
         </div>
-        <div class="ml-5">
+        <div id="debug-toogle" class="ml-5" phx-hook="StoreDebug">
           <!-- Enabled: "bg-indigo-600", Not Enabled: "bg-gray-200" -->
           
-          <.simple_toggle title={"Debug"} switch={@debug} action={JS.push("phx:debug", value: %{"debug": !@debug})}>
+          <.simple_toggle 
+            title={"Debug"} 
+            switch={@debug} 
+            action={
+              JS.push("phx:debug", value: %{"debug": !@debug})
+            }
+          >
               <span class="ml-3">Debug</span>  
           </.simple_toggle>
            

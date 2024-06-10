@@ -7,6 +7,7 @@ defmodule Lightwarrior.Hyperion do
   #alias Lightwarrior.Repo
 
   alias Lightwarrior.Hyperion.HyperionLEDMapping
+  alias Lightwarrior.Helper
   require Logger
 
   @doc """
@@ -39,7 +40,21 @@ defmodule Lightwarrior.Hyperion do
   end
 
   @doc """
-  Get initial Hyperion Server Info
+  Get config of any stripe
+  """
+  def switch_instance(stripe) do
+
+    payload = %{
+      "command" => "instance",
+      "subcommand" => "switchTo",
+      "instance" => stripe.instance
+    }
+    post_json(payload)
+
+  end
+
+  @doc """
+  Get config of current active stripe
   """
   def get_current_config do
 
@@ -54,6 +69,29 @@ defmodule Lightwarrior.Hyperion do
   end
 
   @doc """
+  Get config of any stripe
+  """
+  def get_all_stripes_config(stripes) do
+
+    stripes = Enum.map_every(stripes, 1, fn stripe ->
+      config = case switch_instance(stripe) do
+        {:ok, switch} -> get_current_config()
+        {:error, error} -> error
+      end
+
+      config = case config do
+        {:ok, config} -> config
+        {:error, error} -> error
+      end
+
+      Map.put(stripe, :config, config)
+    end)
+
+    #dbg(stripes)
+    {:ok, stripes}
+  end
+
+  @doc """
   Returns the list of hyperionledmappings.
 
   ## Examples
@@ -63,9 +101,12 @@ defmodule Lightwarrior.Hyperion do
 
   """
   def collect_stripes(serverinfo) do
-
+    Logger.info("collect stripes")
+    %{"info" => info} = serverinfo
+    %{"instance" => stripes } = info
+    stripes = Enum.map_every(stripes, 1, fn stripe -> Helper.string_keys_to_atom_keys(stripe) end)
     #raise "TODO"
-    %{}
+    {:ok, stripes}
   end
 
   def get_instance_leds(current_config) do
