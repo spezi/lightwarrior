@@ -48,7 +48,9 @@ defmodule Lightwarrior.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      {:fabric, github: "fabricjs/fabric.js", app: false, compile: false},
+      {:pixijs, github: "pixijs/pixijs", app: false, compile: false}
     ]
   end
 

@@ -1,55 +1,47 @@
-<.header class="mb-5 border-b border-gray-200 dark:border-gray-800">
-  Hyperion Led Mappings
-</.header>
-
-<div class="flex flex-row ">
-  <div class="basis-1/4 shadow-xl ">
-    <.header class="rounded-tr-xl  bg-white antialiased dark:bg-zinc-900 w-2/5 pl-4">
-      <h2>Instances</h2>
-    </.header>
-    <div class="flex flex-wrap rounded-tr-xl rounded-br-xl rounded-bl-xl  shadow-xl ring-1 bg-white antialiased dark:bg-zinc-900 ring-gray-800/5 p-5">
-      <.async_result :let={serverinfo} assign={@serverinfo}>
-        <:loading>
-          <div class="flex flex-wrap justify-center">
-            <div class="w-8 h-8"><.spinner /></div> 
-            <div class="w-full mt-8"><p>connecting Hyperion ...</p></div>
-          </div>
-        </:loading>
-        <:failed :let={_failure}>there was an error to connect Hyperion ...</:failed>
-        <div :for={instance <- serverinfo["info"]["instance"]} class="">
-          <.led_instance title={instance["friendly_name"]} status={instance["running"]} instance={instance}/>
-        </div>
-      </.async_result>
-    </div>
-  <p><%= @selected %></p>
-   <div id="stripes" phx-update="stream">  
+<div class="flex flex-row">
+  <div class="basis-1/4 space-y-4 grow-0">
+    <.live_component
+      module={Lightwarrior.Hyperion.LedInstanceMenue} 
+      id="led-instance-menue"
+      selected={@selected} 
+      serverinfo={@serverinfo}
+      class="grow-0"
+    />
+   <!--<div id="stripes" phx-update="stream">  
     <.live_component
       :for={{dom_id, stripe} <- @streams.stripes}
       module={Lightwarrior.Hyperion.LedInstanceDetails} 
       id={dom_id} 
       selected={@selected} 
       stripe_data={stripe}
-      class={
-        if @selected do
-          dbg(@selected)
-          if String.to_integer(stripe.instance) == String.to_integer(@selected), do: "", else: "penis"
-        else
-          "hidden"
-        end
-      } 
+      class=""
     />
-    </div>
+    </div>-->
+    <.live_component
+      :if={@selected}
+      module={Lightwarrior.Hyperion.LedInstanceDetails} 
+      id="selected-led-instance"
+      selected={@selected} 
+      stripe_data={@selected_stripe_data}
+      class="grow-0"
+    />
 
   </div>
 
-  <div class="basis-3/4 ml-3 shadow-xl">
-    <.header class="rounded-tr-xl bg-white antialiased dark:bg-zinc-900 w-1/5 pl-4">
+  <div class="basis-3/4 ml-3">
+    <.header class="rounded-tr-xl rounded-tl-xl antialiased bg-zinc-50 dark:bg-zinc-900 w-1/5 pl-4 ring-1 ring-gray-800/5">
       <h2>Mapping</h2>
     </.header>
-    <div class="p-3 bg-white antialiased dark:bg-zinc-900">
-      <div id="mapping" class="bg-[url('/images/stanzraum.png')] bg-opacity-25 bg-cover w-full aspect-[16/9] bg-slate-100 relative" >
-      
+    <div class="shadow-xl p-3 antialiased bg-zinc-50 dark:bg-zinc-900 rounded-tr-xl rounded-br-xl rounded-bl-xl ring-1 ring-gray-800/5">
+      <!--
+      <div id="mapping" class="bg-[url('/images/stanzraum.png')] bg-opacity-25 bg-cover w-full aspect-[16/9] bg-slate-100 relative" phx-hook="MeasureDiv" >
+        <canvas id="mapping_canvas" phx-hook="Fabric" class="w-full aspect-[16/9]" ></canvas>
       </div>
+      -->
+      <div id="mapping_wrapper" class="w-full aspect-[16/9] bg-slate-100 relative" phx-hook="Stage" >
+        <canvas id="mapping" class="max-w-full w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0"></canvas>
+      </div>
+      
     </div>
   </div>
 
@@ -61,7 +53,9 @@
 </.modal>
 -->
 
+
 <div :if={@debug} id="debug" phx-change={JS.dispatch("save:debug", to: "window")}>
+
   <hr class="mt-10">
   <h1>debug</h1>
   
@@ -99,7 +93,7 @@
     </div>
     <div class="basis-2/4">
       <h2>Selected Stripe Data:</h2>
-      <div>@selected_stripe_data
+      <div>
           <div>
             <%= Kernel.inspect(@selected_stripe_data) %>
           </div>

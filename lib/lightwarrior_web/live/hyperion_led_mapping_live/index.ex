@@ -4,7 +4,7 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
   alias Lightwarrior.Hyperion
   #alias Lightwarrior.Hyperion.HyperionLEDMapping
   alias Phoenix.LiveView.AsyncResult
-  alias Lightwarrior.Helper
+  #alias Lightwarrior.Helper
 
   @impl true
   def mount(_params, _session, socket) do
@@ -12,8 +12,8 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
     stripes = []
 
     {:ok, socket
-      |> stream_configure(:stripes, dom_id: &("stripe-#{&1.instance}"))
-      |> stream(:stripes, stripes)
+      #|> stream_configure(:stripes, dom_id: &("stripe-#{&1.instance}"))
+      #|> stream(:stripes, stripes)
       |> assign(:debug, false)
       |> assign(:selected, nil)
       |> assign(:selected_stripe_data, nil)
@@ -35,7 +35,7 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
   #end
 
   @impl true
-  def handle_params(params, url, socket) do
+  def handle_params(params, _url, socket) do
     #{:noreply, apply_action(socket, socket.assigns.live_action, params)}
     dbg(params)
 
@@ -43,16 +43,19 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
     debug = if Map.has_key?(params, "debug"), do: true, else: socket.assigns.debug
     selected = if Map.has_key?(params, "selected"), do: Map.get(params, "selected")
 
+    socket = assign(socket, :page_title, page_title(socket.assigns.live_action))
+
     case socket.assigns.all_stripes_config.result do
       nil -> if selected, do: {:noreply, push_patch(socket, to: "/hyperion/ledmappings")}, else: {:noreply, socket}
         _ ->
         case selected do
           nil -> {:noreply, socket}
             _ -> selected_stripe_data = Enum.fetch!(socket.assigns.all_stripes_config.result, String.to_integer(selected));
-                 "penis"
                  #Enum.fetch!(socket.assigns.all_stripes_config.result, String.to_integer(selected))
+                 dbg(selected_stripe_data)
                  {:noreply, socket
                     |> assign(:selected, selected)
+                    #|> assign(:selected_stripe_data, Helper.string_keys_to_atom_keys(selected_stripe_data))
                     |> assign(:selected_stripe_data, selected_stripe_data)
                   }
         end
@@ -72,7 +75,7 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
           {:ok, stripes} = Hyperion.collect_stripes(fetched_serverinfo)
           #dbg(stripes)
           {:noreply, socket
-            |> stream(:stripes, Enum.reverse(stripes), at: 0)
+            #|> stream(:stripes, Enum.reverse(stripes), at: 0)
             |> assign(:serverinfo, AsyncResult.ok(serverinfo, fetched_serverinfo))
             |> start_async(:get_all_stripes_config, fn -> Hyperion.get_all_stripes_config(stripes) end)
           }
@@ -98,18 +101,41 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
   @impl true
   def handle_async(:get_all_stripes_config, data, socket) do
     %{all_stripes_config: all_stripes_config} = socket.assigns
-    dbg("all stripe config ready")
+    #dbg("all stripe config ready")
     #dbg(data)
     case data do
       {:ok, fetched_all_stripes_config } ->
           {:ok, fetched_all_stripes_config } = fetched_all_stripes_config
           {:noreply, socket
             |> assign(:all_stripes_config, AsyncResult.ok(all_stripes_config, fetched_all_stripes_config))
-            |> stream(:stripes, fetched_all_stripes_config, reset: true)
+            |> push_event("data-ready", %{})
+            #|> stream(:stripes, fetched_all_stripes_config, reset: true)
           }
       {:exit, reason} ->
           {:noreply, assign(socket, :all_stripes_config, AsyncResult.failed(all_stripes_config, {:exit, reason}))}
     end
+  end
+
+  def handle_event("mapping_div_size", %{"width" => width, "height" => height}, socket) do
+    # Handle the size information as needed
+    #IO.puts("Div width: #{width}, height: #{height}")
+    size = %{
+      width: width,
+      height: height
+    }
+    IO.puts("size: #{inspect(size)}")
+    {:noreply, assign(socket, size: size)}
+  end
+
+  def handle_event("mapping_div_position", %{"top" => top, "left" => left}, socket) do
+    # Handle the size information as needed
+    #IO.puts("Div width: #{width}, height: #{height}")
+    position = %{
+      top: top,
+      left: left
+    }
+    IO.puts("position: #{inspect(position)}")
+    {:noreply, assign(socket, position: position)}
   end
 
   @impl true
@@ -130,5 +156,8 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
     end
 
   end
+
+  defp page_title(:index), do: "Hyperion Led Mappings"
+  defp page_title(:edit), do: "Hyperion Led Mappings Edit"
 
 end
