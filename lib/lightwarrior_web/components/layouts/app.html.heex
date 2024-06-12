@@ -5,6 +5,9 @@
         <span class="sr-only">Lightwarrior</span>
         <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="">
       </a>
+      <div class="prose">
+      <h3 class="ml-5"><%= assigns[:page_title] %></h3>
+      </div>
     </div>
     <div class="flex lg:hidden">
       <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700">
@@ -21,7 +24,7 @@
               JS.toggle(
                 to: "#header_flyout", 
                 in: {"transition ease-out duration-300", "opacity-0 -translate-y-1", "opacity-100 translate-y-0"},
-                out: {"transition ease-in duration-200", "opacity-100 translate-y-0", "opacity-0 -translate-y-1"}, 
+                out: {"transition ease-in duration-200", "opacity-100 translate-y-0", "opacity-0 -translate-y-1"} 
               )
             }
             class="flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 dark:text-white" 
@@ -46,7 +49,7 @@
         -->
         <div id="header_flyout" class="hidden absolute inset-x-0 top-0 -z-10 bg-white pt-14 shadow-xl ring-1 ring-gray-900/5 dark:bg-gray-900 dark:text-white">
           <div class="mx-auto grid max-w-7xl grid-cols-4 gap-x-4 px-6 py-10 lg:px-8 xl:gap-x-8">
-            <div class="group relative rounded-lg p-6 text-sm leading-6 dark:bg-gray-800 dark:hover:bg-gray-700">
+            <div class="group relative rounded-lg p-6 text-sm leading-6 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700">
               <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-300 group-hover:bg-gray-200">
                 <svg class="h-6 w-6 text-gray-600 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
@@ -103,7 +106,7 @@
             title={"Debug"} 
             switch={@debug} 
             action={
-              JS.push("phx:debug", value: %{"debug": !@debug})
+              JS.push("phx:debug", value: %{debug: !@debug})
             }
           >
               <span class="ml-3">Debug</span>  

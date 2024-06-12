@@ -30,6 +30,7 @@ let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_t
 
 // Show progress bar on live navigation and form submits
 headerMenue.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+var canvas = document.getElementById('c');
 window.addEventListener("phx:page-loading-start", 
 _info => console.log("start loading") //headerMenue.show(300)
 )
@@ -49,3 +50,5 @@ liveSocket.connect()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
+
+
