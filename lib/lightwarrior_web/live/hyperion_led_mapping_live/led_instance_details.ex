@@ -14,10 +14,12 @@ defmodule Lightwarrior.Hyperion.LedInstanceDetails do
             </h3>
             <div>
               <pre>
+                <!--
                 <%=
                   pretty_json = Jason.encode!(@stripe_data.config, pretty: true)
                   raw(pretty_json)
                 %>
+                -->
               </pre>
             </div>
         </div>

@@ -1,4 +1,3 @@
-import { fabric } from "fabric"
 import * as PIXI from 'pixi.js'
 import { Layout } from "@pixi/layout";
 
@@ -66,64 +65,112 @@ Hooks.StoreDebug = {
   },
 }
 
-Hooks.Fabric = {
-  mounted() {
-    this.handleEvent("data-ready", data => this.init_canvas(data))
-  },
-  init_canvas() {
-    console.log("canvas")
-    
-    // create a wrapper around native canvas element (with id="c")
-    var canvas = new fabric.Canvas('mapping_canvas');
-    
-    //canvas.setDimensions()
-
-    // create a rectangle object
-    var rect = new fabric.Rect({
-    left: 100,
-    top: 100,
-    fill: 'red',
-    width: 20,
-    height: 20
-    });
-
-    // "add" rectangle onto canvas
-    canvas.add(rect);
-  }
-}
-
 // Create a PixiJS application.
-const app = new PIXI.Application();
+var app = null
 const mapping_container = document.getElementById('mapping');
+const mapping_container_wrapper = document.getElementById('mapping_wrapper');
+var dragTarget = null;
+
+const stripe = new PIXI.Container();
+stripe.label = 'stripe';
+
+const stripe_start = new PIXI.Graphics();
+const stripe_end = new PIXI.Graphics();
+const line = new PIXI.Graphics();
+path = [
+  0, 
+  0, 
+  0, 
+  0
+];
 
 Hooks.Stage = {
   mounted() {
     this.handleEvent("data-ready", data => this.init_stage(data))
+    console.log(app)
+    if(app) {
+      app.destroy();
+    }
+    app = new PIXI.Application();
   },
+  // because liveview destroys elements  
   async reconnected(sprite, texture) {
     console.log("reconnected stage")
     console.log(app)
     console.log(sprite)
-    //app.stage.removeChildren();
-    app.queueResize = true
+    console.log(this)
 
-    app.canvas.width = 1920
-    app.canvas.height = 1080
-    //sprite.width = 640
-    //sprite.height = 360
-    //app.stage.addChild(sprite);
-    //app.stage.children[0].width = app.screen.width
-    //app.stage.children[0].height = app.screen.height
+    
+
+    app.canvas.width = mapping_container_wrapper.offsetWidth
+    app.canvas.height = mapping_container_wrapper.offsetHeight
+    
+    stripe_start.label = 'stripe_start';
+    stripe_start.position.set(0, 0)
+    stripe_start.circle(0, 0, 6);
+    stripe_start.fill({color:'blue', alpha:1});
+    stripe_start.zIndex = 2;
+    stripe_start.cursor = 'pointer';
+    stripe_start.eventMode = 'static';
+    stripe_start.on('pointerdown', onDragStart, stripe_start);
+
+    stripe_end.label = 'stripe_end';
+    stripe_end.position.set(400,0)
+    stripe_end.circle(0, 0, 6);
+    stripe_end.fill({color:'red', alpha:1});
+    stripe_end.zIndex = 2;
+    stripe_end.cursor = 'pointer';
+    stripe_end.eventMode = 'static';
+    stripe_end.on('pointerdown', onDragStart, stripe_end);
+
+    //app.stage.addChild(stripe_start);
+    //app.stage.addChild(stripe_end);
+    stripe.addChild(stripe_start);
+    stripe.addChild(stripe_end);
+
+    stripe.position.set(100,100)
+
+    console.log(app.stage)
+
+    path = [
+      stripe_start.x, 
+      stripe_start.y, 
+      stripe_end.x, 
+      stripe_end.y
+    ];
+
+    console.log(path)
+
+    line.label = 'line';
+    line.poly(path);
+    line.stroke({ width: 4, color: 0xffd900 });
+    line.zIndex = 1;
+    line.cursor = 'pointer';
+    line.eventMode = 'static';
+    line.on('pointerdown', onDragStart, line);
+    
+    //app.stage.addChild(line); 
+    stripe.addChild(line);
+
+    app.stage.addChild(stripe);
+
+    app.stage.eventMode = 'static';
+    app.stage.hitArea = app.screen;
+    app.stage.on('pointerup', onDragEnd);
+    app.stage.on('pointerupoutside', onDragEnd);
+
   },
   async init_stage() {
     console.log("init stage")
     console.log(this)
+    console.log(mapping_container)
+   
 
     const texture = await PIXI.Assets.load('/images/stanzraum.png');
 
     await app.init({ 
-      width: 1920, 
-      height: 1080, 
+      width: mapping_container_wrapper.offsetWidth, 
+      height: mapping_container_wrapper.offsetHeight, 
     
       canvas: mapping_container
     });
@@ -131,9 +178,9 @@ Hooks.Stage = {
     var sprite = PIXI.Sprite.from(texture);
     sprite.width = app.screen.width
     sprite.height = app.screen.height
+    
     app.stage.addChild(sprite);
     
-
     window.addEventListener("phx:page-loading-stop", 
     _info => this.reconnected(sprite, texture)//headerMenue.hide()
     )
@@ -147,6 +194,78 @@ Hooks.Stage = {
     console.log("resize")
     
   }
+}
+
+function onDragStart(event)
+{
+    // Store a reference to the data
+    // * The reason for this is because of multitouch *
+    // * We want to track the movement of this particular touch *
+    this.alpha = 0.5;
+    dragTarget = this;
+    
+
+    console.log(event.global);
+    console.log(dragTarget.parent.pivot);
+
+    if(dragTarget.label == 'line')
+    { 
+      dragTarget.parent.toLocal(event.global, null, dragTarget.parent.pivot);
+      dragTarget.parent.position = event.global;
+    }
+
+    app.stage.on('pointermove', onDragMove);
+
+}
+
+function onDragMove(event)
+{
+  if (dragTarget)
+    console.log(dragTarget.label)
+    { 
+      if(dragTarget.label == 'stripe_start')
+        {
+          path = [
+            dragTarget.position.x, 
+            dragTarget.position.y, 
+            stripe_end.x, 
+            stripe_end.y
+          ];
+          line.clear()
+          line.poly(path);
+          line.stroke({ width: 4, color: 0xffd900 });
+        }
+      if(dragTarget.label == 'stripe_end')
+        {
+          path = [
+            stripe_start.x, 
+            stripe_start.y,
+            dragTarget.position.x, 
+            dragTarget.position.y,
+          ];
+          line.clear()
+          line.poly(path);
+          line.stroke({ width: 4, color: 0xffd900 });
+        }
+      if(dragTarget.label == 'line')
+        {
+          console.log(event.global)
+          //dragTarget.parent.toLocal(event.global, null, dragTarget.parent.position);
+          dragTarget.parent.position = event.global;
+        } else {
+          dragTarget.parent.toLocal(event.global, null, dragTarget.position);
+        } 
+    }
+}
+
+function onDragEnd()
+{
+    if (dragTarget)
+    {
+        app.stage.off('pointermove', onDragMove);
+        dragTarget.alpha = 1;
+        dragTarget = null;
+    }
 }
 
 
