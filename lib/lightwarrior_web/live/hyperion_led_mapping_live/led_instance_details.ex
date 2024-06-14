@@ -61,7 +61,7 @@ defmodule Lightwarrior.Hyperion.LedInstanceDetails do
 
             </tbody>
           </table>
-              <button phx-disable-with="Saving..." class="px-4 py-2 font-semibold text-sm bg-cyan-500 text-white rounded-full shadow-sm" phx-click="save" phx-value-instance={@selected} >
+              <button phx-disable-with="Saving..." class="px-4 py-2 font-semibold text-sm bg-cyan-500 text-white rounded-full shadow-sm" phx-click="save" >
                 Save
               </button>
         </.form>

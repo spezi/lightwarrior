@@ -34,19 +34,25 @@ var liveview = null
 //var selected_stripe_data_pixel = null
 
 Hooks.Stage = {
-  mounted() {
+  async mounted() {
     
     liveview = this
-    this.handleEvent("data-ready", data => this.init_stage(data))
-    this.handleEvent("stripe-select", selected_stripe_data_pixel => this.select_stripe(selected_stripe_data_pixel))
+    //this.handleEvent("data-ready", data => this.init_stage(data))
+    this.handleEvent("stripe-select", _info => this.select_stripe()),
+    this.handleEvent("stripe-ready", data => this.stripe_ready(data))
+    window.addEventListener("phx:page-loading-stop", 
+    _info => this.reconnected()//headerMenue.hide()
+    )
    
-    if(app) {
-      app.destroy();
-    }
+    //if(app) {
+    //  app.destroy();
+    //}
     app = new PIXI.Application();
 
     this.get_mapping_container_size();
     window.addEventListener("resize", _info => this.get_mapping_container_size());
+
+    //await this.init_stage();
 
   },
   // because liveview destroys elements  
@@ -56,21 +62,14 @@ Hooks.Stage = {
     //console.log(app)
     //console.log(sprite)
     //console.log(this)
-
-    app.canvas.width = mapping_container_wrapper.offsetWidth
-    app.canvas.height = mapping_container_wrapper.offsetHeight
     
-    app.stage.eventMode = 'static';
-    app.stage.hitArea = app.screen;
-    app.stage.on('pointerup', onDragEnd);
-    app.stage.on('pointerupoutside', onDragEnd);
-
+    
+    console.log(app)
   },
-  async init_stage(data) {
+  async init_stage() {
     console.log("init stage")
     //console.log(this)
     //console.log(mapping_container)
-    console.log(data)
     
     //const texture = await PIXI.Assets.load('/images/stanzraum.png');
 
@@ -88,9 +87,7 @@ Hooks.Stage = {
     
     //app.stage.addChild(sprite);
     
-    window.addEventListener("phx:page-loading-stop", 
-    _info => this.reconnected()//headerMenue.hide()
-    )
+    
 
     //window.addEventListener("resize", () => this.resize_stage());
     
@@ -108,17 +105,40 @@ Hooks.Stage = {
     //console.log(line.getBounds())
     liveview.pushEvent("phx:stripe_change", line.getBounds()); 
   },
-  async select_stripe(selected_stripe_data_pixel) {
-    console.log(selected_stripe_data_pixel);
+  async select_stripe() {
+    console.log();
     //console.log(app.stage);
-  
+    const container = document.getElementById('mapping');
+    const { width, height } = container.getBoundingClientRect();
+
+    this.pushEvent("phx:get_selected_leds_pixel", { width, height });
+    //line.clear();
+    //this.stripe_to_stage(selected_stripe_data_pixel);
+  },
+  async stripe_ready(data) {
+
+    await app.init({
+      backgroundAlpha: 0, 
+      width: mapping_container_wrapper.offsetWidth, 
+      height: mapping_container_wrapper.offsetHeight, 
+    
+      canvas: mapping_container
+    });
+    
+    app.canvas.width = mapping_container_wrapper.offsetWidth
+    app.canvas.height = mapping_container_wrapper.offsetHeight
+    
+    app.stage.eventMode = 'static';
+    app.stage.hitArea = app.screen;
+    app.stage.on('pointerup', onDragEnd);
+    app.stage.on('pointerupoutside', onDragEnd);
+
+    console.log(data)
     line.clear();
-    this.stripe_to_stage(selected_stripe_data_pixel);
+    this.stripe_to_stage(data.leds_pixel);
   },
   stripe_to_stage(selected_stripe_data_pixel) {
     console.log("stripe to stage")
-
-    let data = selected_stripe_data_pixel.selected_stripe_data_pixel 
     
     stripe.label = selected_stripe_data_pixel.friendly_name;
 
@@ -255,9 +275,9 @@ function onDragEnd()
         dragTarget.parent.alpha = 1;
         dragTarget = null;
         Hooks.Stage.stripe_change();
-        console.log(this)
-        console.log(dragTarget)
-        console.log(app.stage)
+        //console.log(this)
+        //console.log(dragTarget)
+        //console.log(app.stage)
     }
 }
 

@@ -64,6 +64,23 @@ defmodule Lightwarrior.Helper do
     result
   end
 
+  def leds_to_coordinates!(leds_pixel, mapping_container_size) do
+    dbg(mapping_container_size)
+
+    #leds = Map.get(config, "leds")
+    #dbg(leds)
+    result = Enum.map_every(leds_pixel.leds, 1, fn led->
+              %{
+                "hmax" => pixel_to_coordinate(led["hmax"], mapping_container_size.width),
+                "hmin" => pixel_to_coordinate(led["hmin"], mapping_container_size.width),
+                "vmax" => pixel_to_coordinate(led["vmax"], mapping_container_size.height),
+                "vmin" => pixel_to_coordinate(led["vmin"], mapping_container_size.height),
+              }
+    end)
+
+    result
+  end
+
   defp get_stripe_start_pixipoint!(leds_pixel) do
     led = Enum.fetch!(leds_pixel, 0)
     [led["hmin"], led["vmin"]]
@@ -72,10 +89,6 @@ defmodule Lightwarrior.Helper do
   defp get_stripe_end_pixipoint!(leds_pixel) do
     led = Enum.fetch!(leds_pixel, -1)
     [led["hmin"], led["vmin"]]
-  end
-
-  defp coordinate_to_pixel(point, max_pixel) do
-    point * max_pixel
   end
 
   defp coordinate_to_pixel(point, max_pixel) do

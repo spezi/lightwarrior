@@ -9,9 +9,18 @@ defmodule Lightwarrior.Hyperion.LedInstanceMenue do
           <h2>Instances</h2>
         </.header>
         <div class="flex flex-wrap antialiased rounded-tr-xl rounded-br-xl rounded-bl-xl bg-zinc-50 dark:bg-zinc-900 p-5 ring-1 ring-gray-800/5 shadow-xl">
-            <div :for={instance <- @serverinfo["info"]["instance"]} class="">
+          <.async_result :let={serverinfo} assign={@serverinfo}>
+            <:loading>
+              <div class="flex flex-wrap justify-center">
+                <div class="w-8 h-8"><.spinner /></div>
+                <div class="w-full mt-8"><p>connecting Hyperion ...</p></div>
+              </div>
+            </:loading>
+            <:failed :let={_failure}>there was an error to connect Hyperion ...</:failed>
+            <div :for={instance <- serverinfo["info"]["instance"]} class="">
               <.led_instance title={instance["friendly_name"]} status={instance["running"]} instance={instance}/>
             </div>
+          </.async_result>
         </div>
       </div>
     """
