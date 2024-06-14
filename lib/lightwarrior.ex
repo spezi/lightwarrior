@@ -7,17 +7,21 @@ defmodule Lightwarrior do
   if it comes from the database, an external API or others.
   """
 
-  import Math
+  require Math
 
-  def update_selected_stripe_data_pixel(selected_stripe_data_pixel, bounds) do
-    #dbg(selected_stripe_data_pixel)
+  def update_selected_stripe_data_pixel(leds_pixel, selected, bounds) do
+    #dbg(selected)
     #dbg(bounds)
+    selected_stripe_data_pixel = Enum.fetch!(leds_pixel, selected)
 
+    List.replace_at(leds_pixel,
+      selected,
+      selected_stripe_data_pixel
+      |> Map.replace(:leds, interpolate_coords(bounds, length(selected_stripe_data_pixel.leds)))
+      |> Map.replace(:start, [bounds["minX"], bounds["minY"]])
+      |> Map.replace(:end, [bounds["maxX"], bounds["maxY"]])
+    )
 
-
-    Map.replace(selected_stripe_data_pixel, :start, [bounds["minX"], bounds["minY"]])
-    |> Map.replace(:end, [bounds["maxX"], bounds["maxY"]])
-    |> Map.replace(:leds, interpolate_coords(bounds, length(selected_stripe_data_pixel.leds)))
   end
 
   defp get_distance(bounds) do

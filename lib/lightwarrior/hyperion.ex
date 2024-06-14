@@ -44,6 +44,7 @@ defmodule Lightwarrior.Hyperion do
   """
   def switch_instance(stripe) do
 
+    #dbg("switch instance #{stripe.instance}" )
     payload = %{
       "command" => "instance",
       "subcommand" => "switchTo",

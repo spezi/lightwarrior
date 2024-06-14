@@ -9,117 +9,40 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
   @impl true
   def mount(_params, _session, socket) do
 
-    stripes = []
+    #dbg(fetched_all_stripes_config)
+
+    {:ok, serverinfo} = Hyperion.get_serverinfo()
+    {:ok, stripes} = Hyperion.collect_stripes(serverinfo)
+    {:ok, stripes_with_config } = Hyperion.get_all_stripes_config(stripes)
 
     {:ok, socket
-      #|> stream_configure(:stripes, dom_id: &("stripe-#{&1.instance}"))
-      #|> stream(:stripes, stripes)
       |> assign(:debug, false)
       |> assign(:selected, nil)
-      |> assign(:selected_stripe_data, nil)
-      |> assign(:selected_stripe_data_pixel, nil)
-      |> assign(:leds_pixel, nil)
       |> assign(:mapping_container_size, nil)
-      |> assign(:serverinfo, AsyncResult.loading())
-      |> assign(:current_config, AsyncResult.loading())
-      |> assign(:all_stripes_config, AsyncResult.loading())
-      |> start_async(:get_serverinfo, fn -> Hyperion.get_serverinfo() end)
-      |> start_async(:get_current_config, fn -> Hyperion.get_current_config() end)
+      |> assign(:leds_pixel, nil)
+      |> assign(:serverinfo, serverinfo)
+      |> assign(:stripes, stripes_with_config)
     }
   end
 
-  #@impl true
-  #def handle_params(%{"instance" => instance}, _, socket) do
-  #  dbg(instance)
-  #  {:noreply,
-  #   socket
-  #   |> assign(:selected, "9")
-  #  }
-  #end
-
   @impl true
   def handle_params(params, _url, socket) do
-    #{:noreply, apply_action(socket, socket.assigns.live_action, params)}
-    dbg(params)
 
-    #%{path: path} = URI.parse(url)
-    debug = if Map.has_key?(params, "debug"), do: true, else: socket.assigns.debug
-    selected = if Map.has_key?(params, "selected"), do: Map.get(params, "selected")
-
-    socket = assign(socket, :page_title, page_title(socket.assigns.live_action))
-
-    case socket.assigns.all_stripes_config.result do
-      nil -> if selected, do: {:noreply, push_patch(socket, to: "/hyperion/ledmappings")}, else: {:noreply, socket}
-        _ ->
-        case selected do
-          nil -> {:noreply, socket}
-            _ -> selected_stripe_data = Enum.fetch!(socket.assigns.all_stripes_config.result, String.to_integer(selected));
-                 selected_stripe_data_pixel = Enum.fetch!(socket.assigns.leds_pixel, String.to_integer(selected));
-                 {:noreply, socket
-                    |> assign(:selected, selected)
-                    #|> assign(:selected_stripe_data, Helper.string_keys_to_atom_keys(selected_stripe_data))
-                    |> assign(:selected_stripe_data, selected_stripe_data)
-                    |> assign(:selected_stripe_data_pixel, selected_stripe_data_pixel)
-                    |> push_event("stripe-select", selected_stripe_data_pixel)
-                  }
-        end
+    socket = case Map.has_key?(params, "selected") do
+      true ->
+        assign(socket, :selected, Map.get(params, "selected"))
+        |> push_event("stripe-select", %{select: Map.get(params, "selected")})
+        _ -> socket
     end
 
+    {:noreply, socket
+      |> assign(:page_title, page_title(socket.assigns.live_action))
+      #|> assign(:leds_pixel, Helper.leds_to_pixel!(fetched_all_stripes_config, socket.assigns.mapping_container_size))
+    }
   end
 
-  @impl true
-  def handle_async(:get_serverinfo, data, socket) do
-    %{serverinfo: serverinfo} = socket.assigns
-    #dbg(serverinfo)
-    case data do
-      {:ok, fetched_serverinfo } ->
-          #dbg(fetched_serverinfo)
-          {:ok, fetched_serverinfo } = fetched_serverinfo
-          #dbg(fetched_serverinfo)
-          {:ok, stripes} = Hyperion.collect_stripes(fetched_serverinfo)
-          #dbg(stripes)
-          {:noreply, socket
-            #|> stream(:stripes, Enum.reverse(stripes), at: 0)
-            |> assign(:serverinfo, AsyncResult.ok(serverinfo, fetched_serverinfo))
-            |> start_async(:get_all_stripes_config, fn -> Hyperion.get_all_stripes_config(stripes) end)
-          }
-      {:exit, reason} ->
-          {:noreply, assign(socket, :serverinfo, AsyncResult.failed(serverinfo, {:exit, reason}))}
-    end
-  end
 
-  @impl true
-  def handle_async(:get_current_config, data, socket) do
-    %{current_config: current_config} = socket.assigns
-    #dbg(serverinfo)
-    case data do
-      {:ok, fetched_current_config } ->
-          #dbg(fetched_serverinfo)
-          {:ok, fetched_current_config } = fetched_current_config
-          {:noreply, assign(socket, :current_config, AsyncResult.ok(current_config, fetched_current_config))}
-      {:exit, reason} ->
-          {:noreply, assign(socket, :current_config, AsyncResult.failed(current_config, {:exit, reason}))}
-    end
-  end
-
-  @impl true
-  def handle_async(:get_all_stripes_config, data, socket) do
-    %{all_stripes_config: all_stripes_config} = socket.assigns
-    #dbg("all stripe config ready")
-    #dbg(data)
-    case data do
-      {:ok, fetched_all_stripes_config } ->
-          {:ok, fetched_all_stripes_config } = fetched_all_stripes_config
-          {:noreply, socket
-            |> assign(:all_stripes_config, AsyncResult.ok(all_stripes_config, fetched_all_stripes_config))
-            |> assign(:leds_pixel, Helper.leds_to_pixel!(fetched_all_stripes_config, socket.assigns.mapping_container_size))
-            |> push_event("data-ready", %{fetched_all_stripes_config: fetched_all_stripes_config})
-            #|> stream(:stripes, fetched_all_stripes_config, reset: true)
-          }
-      {:exit, reason} ->
-          {:noreply, assign(socket, :all_stripes_config, AsyncResult.failed(all_stripes_config, {:exit, reason}))}
-    end
-  end
+###########################################################################################################
 
   def handle_event("phx:mapping-size", %{"width" => width, "height" => height}, socket) do
     mapping_container_size = %{
@@ -127,27 +50,63 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       height: height
     }
     IO.puts("size: #{inspect(mapping_container_size)}")
+    {:noreply, socket
+      |> assign(:mapping_container_size, mapping_container_size)
+      |> assign(:leds_pixel, Helper.leds_to_pixel!(socket.assigns.stripes, mapping_container_size))
+    }
+  end
+
+  def handle_event("phx:get_selected_leds_pixel", %{"width" => width, "height" => height}, socket) do
+    mapping_container_size = %{
+      width: width,
+      height: height
+    }
+
+    dbg(socket.assigns.selected)
+    IO.puts("size_for_select: #{inspect(mapping_container_size)} #{socket.assigns.selected}")
+    leds_pixel = Helper.leds_to_pixel!(socket.assigns.stripes, mapping_container_size)
+
+    #dbg(Enum.fetch!(leds_pixel, String.to_integer(socket.assigns.selected)))
 
     {:noreply, socket
       |> assign(:mapping_container_size, mapping_container_size)
-      |> assign(:leds_pixel, Helper.leds_to_pixel!(socket.assigns.all_stripes_config, mapping_container_size))
+      |> assign(:leds_pixel, leds_pixel)
+      |> push_event("stripe-ready", %{select: socket.assigns.selected, leds_pixel: Enum.fetch!(leds_pixel, String.to_integer(socket.assigns.selected))})
     }
   end
 
   def handle_event("phx:stripe_change", bounds, socket) do
     # Handle the size information as needed
     #IO.puts("Div width: #{width}, height: #{height}")
-    #dbg(bounds)
+    dbg(bounds)
+    #lightwarrior.ex ;)
     #lightwarrior.ex ;)
     updated = Lightwarrior.update_selected_stripe_data_pixel(
-      socket.assigns.selected_stripe_data_pixel, bounds
+      socket.assigns.leds_pixel,
+      String.to_integer(socket.assigns.selected),
+      bounds
     )
+    {:noreply, socket
+      |> assign(:leds_pixel, updated)
+      #|> push_event("stripe-select", updated)
+    }
+  end
 
+  def handle_event("save", %{ "value" => value },  socket) do
+    # Handle the size information as needed
+    #IO.puts("Div width: #{width}, height: #{height}")
+    dbg("save")
 
+    dbg(Helper.leds_to_coordinates!(
+      Enum.fetch!(socket.assigns.leds_pixel, String.to_integer(socket.assigns.selected)),
+      socket.assigns.mapping_container_size
+    ))
+
+    dbg(socket.assigns.selected)
 
     {:noreply, socket
-      |> assign(:selected_stripe_data_pixel, updated)
-      |> push_event("stripe-select", updated)
+      #|> assign(:leds_pixel, updated)
+      #|> push_event("stripe-select", updated)
     }
   end
 
