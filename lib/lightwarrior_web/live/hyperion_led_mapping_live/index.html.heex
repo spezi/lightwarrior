@@ -32,15 +32,16 @@
     <.header class="rounded-tr-xl rounded-tl-xl antialiased bg-zinc-50 dark:bg-zinc-900 w-1/5 pl-4 ring-1 ring-gray-800/5">
       <h2>Mapping</h2>
     </.header>
-    <div class="shadow-xl p-3 antialiased bg-zinc-50 dark:bg-zinc-900 rounded-tr-xl rounded-br-xl rounded-bl-xl ring-1 ring-gray-800/5">
+    <div class="shadow-xl p-3 antialiased bg-zinc-50 dark:bg-zinc-900 rounded-tr-xl rounded-br-xl rounded-bl-xl ring-1 ring-gray-800/5" >
       <!--
       <div id="mapping" class="bg-[url('/images/stanzraum.png')] bg-opacity-25 bg-cover w-full aspect-[16/9] bg-slate-100 relative" phx-hook="MeasureDiv" >
         <canvas id="mapping_canvas" phx-hook="Fabric" class="w-full aspect-[16/9]" ></canvas>
       </div>
       -->
-      <div id="mapping_wrapper" class="w-full aspect-[16/9] bg-slate-100 relative" phx-hook="Stage" >
-        <canvas id="mapping" class="max-w-full w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0"></canvas>
+      <div id="mapping_wrapper" class="bg-[url('/images/stanzraum.png')] bg-opacity-25 bg-cover w-full aspect-[16/9] bg-slate-100 relative" phx-hook="Stage">
+        <canvas id="mapping" class="max-w-full w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0" ></canvas>
       </div>
+    
       
     </div>
   </div>
@@ -95,6 +96,14 @@
       <h2>Selected Stripe Data:</h2>
       <div>
           <div>
+          <pre>
+            <%=
+              if @selected_stripe_data_pixel do 
+                pretty_json = Jason.encode!(@selected_stripe_data_pixel, pretty: true) 
+                raw(pretty_json)
+              end
+            %>
+          </pre>
             <%= Kernel.inspect(@selected_stripe_data) %>
           </div>
         </div>

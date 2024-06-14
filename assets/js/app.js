@@ -23,7 +23,6 @@ import {LiveSocket} from "phoenix_live_view"
 import headerMenue from "./header_menue";
 
 import Hooks from "./hooks";
-import makeDraggable from "./drag";
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
@@ -34,10 +33,11 @@ var canvas = document.getElementById('c');
 window.addEventListener("phx:page-loading-start", 
 _info => console.log("start loading") //headerMenue.show(300)
 )
+
 window.addEventListener("phx:page-loading-stop", 
 _info => console.log("stop loading") //headerMenue.hide()
 )
-
+ 
 window.addEventListener("phx:save-debug",
     e => localStorage.setItem("debug", e.detail.debug) //console.log(e.detail.debug)
   )
@@ -50,5 +50,4 @@ liveSocket.connect()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
-
 

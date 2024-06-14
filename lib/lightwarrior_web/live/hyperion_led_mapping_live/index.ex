@@ -4,7 +4,7 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
   alias Lightwarrior.Hyperion
   #alias Lightwarrior.Hyperion.HyperionLEDMapping
   alias Phoenix.LiveView.AsyncResult
-  #alias Lightwarrior.Helper
+  alias Lightwarrior.Helper
 
   @impl true
   def mount(_params, _session, socket) do
@@ -17,6 +17,9 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       |> assign(:debug, false)
       |> assign(:selected, nil)
       |> assign(:selected_stripe_data, nil)
+      |> assign(:selected_stripe_data_pixel, nil)
+      |> assign(:leds_pixel, nil)
+      |> assign(:mapping_container_size, nil)
       |> assign(:serverinfo, AsyncResult.loading())
       |> assign(:current_config, AsyncResult.loading())
       |> assign(:all_stripes_config, AsyncResult.loading())
@@ -51,12 +54,13 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
         case selected do
           nil -> {:noreply, socket}
             _ -> selected_stripe_data = Enum.fetch!(socket.assigns.all_stripes_config.result, String.to_integer(selected));
-                 #Enum.fetch!(socket.assigns.all_stripes_config.result, String.to_integer(selected))
-                 dbg(selected_stripe_data)
+                 selected_stripe_data_pixel = Enum.fetch!(socket.assigns.leds_pixel, String.to_integer(selected));
                  {:noreply, socket
                     |> assign(:selected, selected)
                     #|> assign(:selected_stripe_data, Helper.string_keys_to_atom_keys(selected_stripe_data))
                     |> assign(:selected_stripe_data, selected_stripe_data)
+                    |> assign(:selected_stripe_data_pixel, selected_stripe_data_pixel)
+                    |> push_event("stripe-select", selected_stripe_data_pixel)
                   }
         end
     end
@@ -108,7 +112,8 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
           {:ok, fetched_all_stripes_config } = fetched_all_stripes_config
           {:noreply, socket
             |> assign(:all_stripes_config, AsyncResult.ok(all_stripes_config, fetched_all_stripes_config))
-            |> push_event("data-ready", %{})
+            |> assign(:leds_pixel, Helper.leds_to_pixel!(fetched_all_stripes_config, socket.assigns.mapping_container_size))
+            |> push_event("data-ready", %{fetched_all_stripes_config: fetched_all_stripes_config})
             #|> stream(:stripes, fetched_all_stripes_config, reset: true)
           }
       {:exit, reason} ->
@@ -116,26 +121,34 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
     end
   end
 
-  def handle_event("mapping_div_size", %{"width" => width, "height" => height}, socket) do
-    # Handle the size information as needed
-    #IO.puts("Div width: #{width}, height: #{height}")
-    size = %{
+  def handle_event("phx:mapping-size", %{"width" => width, "height" => height}, socket) do
+    mapping_container_size = %{
       width: width,
       height: height
     }
-    IO.puts("size: #{inspect(size)}")
-    {:noreply, assign(socket, size: size)}
+    IO.puts("size: #{inspect(mapping_container_size)}")
+
+    {:noreply, socket
+      |> assign(:mapping_container_size, mapping_container_size)
+      |> assign(:leds_pixel, Helper.leds_to_pixel!(socket.assigns.all_stripes_config, mapping_container_size))
+    }
   end
 
-  def handle_event("mapping_div_position", %{"top" => top, "left" => left}, socket) do
+  def handle_event("phx:stripe_change", bounds, socket) do
     # Handle the size information as needed
     #IO.puts("Div width: #{width}, height: #{height}")
-    position = %{
-      top: top,
-      left: left
+    #dbg(bounds)
+    #lightwarrior.ex ;)
+    updated = Lightwarrior.update_selected_stripe_data_pixel(
+      socket.assigns.selected_stripe_data_pixel, bounds
+    )
+
+
+
+    {:noreply, socket
+      |> assign(:selected_stripe_data_pixel, updated)
+      |> push_event("stripe-select", updated)
     }
-    IO.puts("position: #{inspect(position)}")
-    {:noreply, assign(socket, position: position)}
   end
 
   @impl true
