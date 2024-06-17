@@ -9,7 +9,7 @@ defmodule Lightwarrior do
 
   require Math
 
-  def update_selected_stripe_data_pixel(leds_pixel, selected, bounds) do
+  def update_selected_stripe_data_pixel(leds_pixel, selected, points) do
     #dbg(selected)
     #dbg(bounds)
     selected_stripe_data_pixel = Enum.fetch!(leds_pixel, selected)
@@ -17,35 +17,35 @@ defmodule Lightwarrior do
     List.replace_at(leds_pixel,
       selected,
       selected_stripe_data_pixel
-      |> Map.replace(:leds, interpolate_coords(bounds, length(selected_stripe_data_pixel.leds)))
-      |> Map.replace(:start, [bounds["minX"], bounds["minY"]])
-      |> Map.replace(:end, [bounds["maxX"], bounds["maxY"]])
+      |> Map.replace(:leds, interpolate_coords(points, length(selected_stripe_data_pixel.leds)))
+      |> Map.replace(:start, [points.start.x, points.start.y])
+      |> Map.replace(:end, [points.end.x, points.end.y])
     )
 
   end
 
-  defp get_distance(bounds) do
-    Math.sqrt(Math.pow((bounds["maxX"] - bounds["minX"]), 2) + Math.pow((bounds["maxY"] - bounds["minY"]), 2));
+  defp get_distance(points) do
+    Math.sqrt(Math.pow((points.end.x - points.start.x), 2) + Math.pow((points.end.y - points.start.y), 2));
   end
 
-  defp interpolate_coords(bounds, num_leds) do
+  defp interpolate_coords(points, num_leds) do
     #bounds.minX
     #bounds.maxX
     #bounds.minY
     #bounds.maxY
 
-    max_size = get_distance(bounds)/num_leds
+    max_size = get_distance(points)/num_leds
 
 
-    step_x = (bounds["maxX"] - bounds["minX"]) / (num_leds - 1)
-    step_y = (bounds["maxY"] - bounds["minY"]) / (num_leds - 1)
+    step_x = (points.end.x - points.start.x) / (num_leds - 1)
+    step_y = (points.end.y - points.start.y) / (num_leds - 1)
 
     #for i <- 0..(num_leds - 1) do
     #  %{:vmin => y1 + i * step_y, :hmin => x1 + i * step_x, :vmax => y1 + i * step_y + max_size, :hmax => x1 + i * step_x + max_size }
     #end
 
     for i <- 0..(num_leds - 1) do
-      %{"vmin" => bounds["minY"] + i * step_y, "hmin" => bounds["minX"] + i * step_x, "vmax" => bounds["minY"] + i * step_y + max_size, "hmax" => bounds["minX"] + i * step_x + max_size }
+      %{"vmin" => points.start.y + i * step_y, "hmin" => points.start.x + i * step_x, "vmax" => points.start.y + i * step_y + max_size, "hmax" => points.start.x + i * step_x + max_size }
     end
 
   end

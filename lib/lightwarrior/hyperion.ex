@@ -70,6 +70,28 @@ defmodule Lightwarrior.Hyperion do
   end
 
   @doc """
+  Save config of current active stripe
+  """
+  def save_current_config(config) do
+
+    payload = %{
+      "command" => "config",
+      "subcommand" => "setconfig",
+      "config" => config,
+      "tan" => 1
+    }
+
+    case post_json(payload) do
+      {:ok, response} ->
+        response
+      {:error, reason} ->
+        IO.inspect(reason, label: "Error")
+        {:error, reason}
+    end
+
+  end
+
+  @doc """
   Get config of any stripe
   """
   def get_all_stripes_config(stripes) do
@@ -123,7 +145,7 @@ defmodule Lightwarrior.Hyperion do
     url = "http://127.0.0.1:8090/json-rpc"
     headers = [
       {"Content-Type", "application/json"},
-      {"Authorization", "token 58208a8f-eaaa-4fac-b644-f164fc46ff21"}
+      {"Authorization", "token d894c547-5ca8-449d-8c27-a646102cdeec"}
     ]
     body = Jason.encode!(payload)
     #dbg(headers)

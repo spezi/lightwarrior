@@ -19,7 +19,7 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       |> assign(:debug, false)
       |> assign(:selected, nil)
       |> assign(:mapping_container_size, nil)
-      |> assign(:leds_pixel, nil)
+      |> assign(:leds_pixel, [])
       |> assign(:serverinfo, serverinfo)
       |> assign(:stripes, stripes_with_config)
     }
@@ -30,14 +30,16 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
 
     socket = case Map.has_key?(params, "selected") do
       true ->
-        assign(socket, :selected, Map.get(params, "selected"))
+        selected = String.to_integer(Map.get(params, "selected"))
+        stripe = Enum.fetch!(socket.assigns.stripes, selected)
+        Hyperion.switch_instance(stripe)
+        assign(socket, :selected, selected)
         |> push_event("stripe-select", %{select: Map.get(params, "selected")})
         _ -> socket
     end
 
     {:noreply, socket
       |> assign(:page_title, page_title(socket.assigns.live_action))
-      #|> assign(:leds_pixel, Helper.leds_to_pixel!(fetched_all_stripes_config, socket.assigns.mapping_container_size))
     }
   end
 
@@ -50,9 +52,46 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       height: height
     }
     IO.puts("size: #{inspect(mapping_container_size)}")
+    IO.puts("stripes: #{inspect(length(socket.assigns.stripes))}")
+
+    # true if stripes false if not
+    check_stripes = case length(socket.assigns.stripes) > 0 do
+      true -> true
+      false -> false
+    end
+
+    # return map with success true without error or error with error
+    check_error = case check_stripes do
+      true ->
+        first_stripe_in_response = Enum.fetch!(socket.assigns.stripes, 0)
+        success = Map.get(first_stripe_in_response.config, "success")
+        case success do
+          true -> %{success: true, error: nil}
+          false -> %{success: false, error: Map.get(first_stripe_in_response.config, "error")}
+        end
+      false -> false
+    end
+
+    # put flash on error to show error to user
+    socket = case check_error.success do
+      true -> socket
+      false ->
+        put_flash(
+          socket,
+          :error,
+          "Failed to get Stripe Config. Hyperion Error:" <> check_error.error
+        )
+    end
+
+    # convert leds to pixel if no errors
+    leds_pixel = case check_error.success do
+      true -> Helper.leds_to_pixel!(socket.assigns.stripes, mapping_container_size)
+      false -> socket.assigns.leds_pixel
+    end
+
     {:noreply, socket
       |> assign(:mapping_container_size, mapping_container_size)
-      |> assign(:leds_pixel, Helper.leds_to_pixel!(socket.assigns.stripes, mapping_container_size))
+      |> assign(:leds_pixel, leds_pixel)
     }
   end
 
@@ -62,30 +101,42 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       height: height
     }
 
-    dbg(socket.assigns.selected)
+    #dbg(socket.assigns.selected)
     IO.puts("size_for_select: #{inspect(mapping_container_size)} #{socket.assigns.selected}")
-    leds_pixel = Helper.leds_to_pixel!(socket.assigns.stripes, mapping_container_size)
 
-    #dbg(Enum.fetch!(leds_pixel, String.to_integer(socket.assigns.selected)))
+    #dbg(Map.get(Enum.fetch!(socket.assigns.stripes, 0), :config))
+    dbg(mapping_container_size)
+
+
+    #dbg(Enum.fetch!(leds_pixel, socket.assigns.selected))
+
+    socket = case length(socket.assigns.leds_pixel) > 0 do
+      true -> socket
+      |> push_event("stripe-ready", %{select: socket.assigns.selected, leds_pixel: Enum.fetch!(socket.assigns.leds_pixel, socket.assigns.selected)})
+      false -> socket
+    end
 
     {:noreply, socket
       |> assign(:mapping_container_size, mapping_container_size)
-      |> assign(:leds_pixel, leds_pixel)
-      |> push_event("stripe-ready", %{select: socket.assigns.selected, leds_pixel: Enum.fetch!(leds_pixel, String.to_integer(socket.assigns.selected))})
+      #|> assign(:leds_pixel, leds_pixel)
     }
   end
 
-  def handle_event("phx:stripe_change", bounds, socket) do
+  def handle_event("phx:stripe_change", points, socket) do
     # Handle the size information as needed
     #IO.puts("Div width: #{width}, height: #{height}")
-    dbg(bounds)
-    #lightwarrior.ex ;)
+
+    points = Helper.string_keys_to_atom_keys(points)
+    dbg(points)
+
     #lightwarrior.ex ;)
     updated = Lightwarrior.update_selected_stripe_data_pixel(
       socket.assigns.leds_pixel,
-      String.to_integer(socket.assigns.selected),
-      bounds
+      socket.assigns.selected,
+      points
     )
+    dbg(updated)
+
     {:noreply, socket
       |> assign(:leds_pixel, updated)
       #|> push_event("stripe-select", updated)
@@ -97,12 +148,25 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
     #IO.puts("Div width: #{width}, height: #{height}")
     dbg("save")
 
-    dbg(Helper.leds_to_coordinates!(
-      Enum.fetch!(socket.assigns.leds_pixel, String.to_integer(socket.assigns.selected)),
+    leds = Helper.leds_to_coordinates!(
+      Enum.fetch!(socket.assigns.leds_pixel, socket.assigns.selected),
       socket.assigns.mapping_container_size
-    ))
+    )
 
-    dbg(socket.assigns.selected)
+    #dbg(Enum.fetch!(socket.assigns.stripes, socket.assigns.selected))
+    stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
+    stripe_config = Map.get(Map.get(stripe, :config), "info")
+    #dbg(stripe_config)
+    stripe_config_updated = Map.replace(stripe_config, "leds", leds)
+
+    #dbg(stripe_config_updated)
+    #save = %{"success"  => true}
+    save = Hyperion.save_current_config(stripe_config_updated)
+    dbg(save)
+    socket = case save do
+      %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
+      %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
+    end
 
     {:noreply, socket
       #|> assign(:leds_pixel, updated)

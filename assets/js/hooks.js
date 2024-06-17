@@ -30,6 +30,8 @@ path = [
 
 var liveview = null
 
+var dragPosition = new PIXI.Point(0,0)
+
 //var fetched_all_stripes_config = null
 //var selected_stripe_data_pixel = null
 
@@ -59,7 +61,7 @@ Hooks.Stage = {
   async reconnected() {
     console.log("reconnected stage")
     //console.log(window.liveSocket)
-    //console.log(app)
+    console.log(app)
     //console.log(sprite)
     //console.log(this)
     
@@ -103,10 +105,23 @@ Hooks.Stage = {
   },
   stripe_change() {
     //console.log(line.getBounds())
-    liveview.pushEvent("phx:stripe_change", line.getBounds()); 
+    //liveview.pushEvent("phx:stripe_change", line.getBounds());
+    
+    let points = {
+      start: {
+        x: stripe_start.position.x,
+        y: stripe_start.position.y
+      },
+      end: {
+        x: stripe_end.position.x,
+        y: stripe_end.position.y
+      },
+    };
+    console.log(points) 
+    liveview.pushEvent("phx:stripe_change", points); 
   },
   async select_stripe() {
-    console.log();
+    console.log("select stripe");
     //console.log(app.stage);
     const container = document.getElementById('mapping');
     const { width, height } = container.getBoundingClientRect();
@@ -150,7 +165,7 @@ Hooks.Stage = {
     stripe_start.circle(0, 0, 6);
     stripe_start.fill({color:'blue', alpha:1});
     stripe_start.zIndex = 2;
-    stripe_start.cursor = 'pointer';
+    stripe_start.cursor = 'grab';
     stripe_start.eventMode = 'static';
     stripe_start.on('pointerdown', onDragStart, stripe_start);
 
@@ -162,7 +177,7 @@ Hooks.Stage = {
     stripe_end.circle(0, 0, 6);
     stripe_end.fill({color:'red', alpha:1});
     stripe_end.zIndex = 2;
-    stripe_end.cursor = 'pointer';
+    stripe_end.cursor = 'grab';
     stripe_end.eventMode = 'static';
     stripe_end.on('pointerdown', onDragStart, stripe_end);
 
@@ -188,7 +203,7 @@ Hooks.Stage = {
     line.poly(path);
     line.stroke({ width: 4, color: 0xffd900 });
     line.zIndex = 1;
-    line.cursor = 'pointer';
+    line.cursor = 'grab';
     line.eventMode = 'static';
     line.on('pointerdown', onDragStart, line);
     
@@ -218,6 +233,10 @@ function onDragStart(event)
       this.parent.alpha = 0.5;
       dragTarget.parent.toLocal(event.global, null, dragTarget.parent.pivot);
       dragTarget.parent.position = event.global;
+
+      //console.log(dragPosition)
+      dragPosition.set(event.global.x, event.global.y)
+
     } else {
       this.alpha = 0.5;
     }
@@ -259,7 +278,9 @@ function onDragMove(event)
         {
           //console.log(event.global)
           //dragTarget.parent.toLocal(event.global, null, dragTarget.parent.position);
-          dragTarget.parent.position = event.global;
+    
+          dragTarget.parent.position.set(event.global.x, event.global.y);
+
         } else {
           dragTarget.parent.toLocal(event.global, null, dragTarget.position);
         } 
@@ -270,6 +291,22 @@ function onDragEnd()
 {
     if (dragTarget)
     {
+        if(dragTarget.label == 'line') {
+          //console.log(stripe_start.position)
+          //console.log(dragTarget.parent.groupTransform.tx)
+          //console.log(dragTarget.parent.groupTransform.ty)
+          //console.log(dragTarget.parent.children)
+          //console.log(dragTarget.parent.localTransform)
+          dragTarget.parent.children.forEach((child) => {
+            child.position.set(
+              child.position.x + dragTarget.parent.worldTransform.tx, 
+              child.position.y + dragTarget.parent.worldTransform.ty)
+          });
+          dragTarget.parent.position.set(dragPosition.x, dragPosition.y);
+          //console.log(dragTarget.parent.position)
+          //console.log(stripe_start.position)
+        }
+
         app.stage.off('pointermove', onDragMove);
         dragTarget.alpha = 1;
         dragTarget.parent.alpha = 1;

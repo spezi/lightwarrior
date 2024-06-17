@@ -13,7 +13,7 @@
       module={Lightwarrior.Hyperion.LedInstanceDetails} 
       id="selected-led-instance"
       selected={@selected} 
-      stripe_data={Enum.fetch!(@stripes, String.to_integer(@selected))}
+      stripe_data={Enum.fetch!(@stripes, @selected)}
       class="grow-0"
     />
 
@@ -82,8 +82,9 @@
       <div>
           <div>
           <pre>
-            <%= if @leds_pixel != nil and @selected != nil do
-                  pretty_json = Jason.encode!(Enum.fetch!(@leds_pixel, String.to_integer(@selected)), pretty: true)
+            <%=
+                if length(@leds_pixel) > 0 and @selected != nil do
+                  pretty_json = Jason.encode!(Enum.fetch!(@leds_pixel, @selected), pretty: true)
                   raw(pretty_json)
                 end  
             %>
