@@ -91,7 +91,7 @@ defmodule Lightwarrior.Helper do
     [led["hmin"], led["vmin"]]
   end
 
-  defp coordinate_to_pixel(point, max_pixel) do
+  def coordinate_to_pixel(point, max_pixel) do
     point * max_pixel
   end
 

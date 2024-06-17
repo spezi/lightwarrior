@@ -17,11 +17,11 @@ const mapping_container = document.getElementById('mapping');
 const mapping_container_wrapper = document.getElementById('mapping_wrapper');
 var dragTarget = null;
 
-const stripe = new PIXI.Container();
-const stripe_start = new PIXI.Graphics();
-const stripe_end = new PIXI.Graphics();
-const line = new PIXI.Graphics();
-path = [
+var stripe = new PIXI.Container();
+var stripe_start = new PIXI.Graphics();
+var stripe_end = new PIXI.Graphics();
+var line = new PIXI.Graphics();
+var path = [
   0, 
   0, 
   0, 
@@ -56,6 +56,25 @@ Hooks.Stage = {
 
     //await this.init_stage();
 
+    await app.init({
+      backgroundAlpha: 0, 
+      width: mapping_container_wrapper.offsetWidth, 
+      height: mapping_container_wrapper.offsetHeight, 
+    
+      canvas: mapping_container
+    });
+  
+    
+    app.canvas.width = mapping_container_wrapper.offsetWidth
+    app.canvas.height = mapping_container_wrapper.offsetHeight
+    
+    app.stage.eventMode = 'static';
+    app.stage.hitArea = app.screen;
+    app.stage.on('pointerup', onDragEnd);
+    app.stage.on('pointerupoutside', onDragEnd);
+    
+    console.log(app)
+
   },
   // because liveview destroys elements  
   async reconnected() {
@@ -65,36 +84,6 @@ Hooks.Stage = {
     //console.log(sprite)
     //console.log(this)
     
-    
-    console.log(app)
-  },
-  async init_stage() {
-    console.log("init stage")
-    //console.log(this)
-    //console.log(mapping_container)
-    
-    //const texture = await PIXI.Assets.load('/images/stanzraum.png');
-
-    await app.init({
-      backgroundAlpha: 0, 
-      width: mapping_container_wrapper.offsetWidth, 
-      height: mapping_container_wrapper.offsetHeight, 
-    
-      canvas: mapping_container
-    });
-
-    //var sprite = PIXI.Sprite.from(texture);
-    //sprite.width = app.screen.width
-    //sprite.height = app.screen.height
-    
-    //app.stage.addChild(sprite);
-    
-    
-
-    //window.addEventListener("resize", () => this.resize_stage());
-    
-    mapping_container.addEventListener("resize", () => this.resize_stage());
-
   },
   get_mapping_container_size() {
     console.log("get mapping size")
@@ -132,21 +121,36 @@ Hooks.Stage = {
   },
   async stripe_ready(data) {
 
-    await app.init({
-      backgroundAlpha: 0, 
-      width: mapping_container_wrapper.offsetWidth, 
-      height: mapping_container_wrapper.offsetHeight, 
+    console.log(app)
+
+    stripe.destroy({children:true})
+
+    //if (app == null) {
+      /*
+      await app.init({
+        backgroundAlpha: 0, 
+        width: mapping_container_wrapper.offsetWidth, 
+        height: mapping_container_wrapper.offsetHeight, 
+      
+        canvas: mapping_container
+      });
     
-      canvas: mapping_container
-    });
-    
-    app.canvas.width = mapping_container_wrapper.offsetWidth
-    app.canvas.height = mapping_container_wrapper.offsetHeight
-    
-    app.stage.eventMode = 'static';
-    app.stage.hitArea = app.screen;
-    app.stage.on('pointerup', onDragEnd);
-    app.stage.on('pointerupoutside', onDragEnd);
+      
+      app.canvas.width = mapping_container_wrapper.offsetWidth
+      app.canvas.height = mapping_container_wrapper.offsetHeight
+      
+      app.stage.eventMode = 'static';
+      app.stage.hitArea = app.screen;
+      app.stage.on('pointerup', onDragEnd);
+      app.stage.on('pointerupoutside', onDragEnd);
+      */
+    //}
+
+    stripe.destroy(true)
+    stripe = new PIXI.Container();
+    stripe_start = new PIXI.Graphics();
+    stripe_end = new PIXI.Graphics();
+    line = new PIXI.Graphics();
 
     console.log(data)
     line.clear();
@@ -302,7 +306,9 @@ function onDragEnd()
               child.position.x + dragTarget.parent.worldTransform.tx, 
               child.position.y + dragTarget.parent.worldTransform.ty)
           });
+          // revert position of container because children are moved
           dragTarget.parent.position.set(dragPosition.x, dragPosition.y);
+          
           //console.log(dragTarget.parent.position)
           //console.log(stripe_start.position)
         }
