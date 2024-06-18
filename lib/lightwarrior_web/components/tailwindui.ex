@@ -34,7 +34,7 @@ defmodule LightwarriorWeb.TailwindUiComponents do
         aria-checked={@switch}
         phx-click={@action}
       >
-        <span class="sr-only">Toogle Debug</span>
+        <span class="sr-only"><%= @title %></span>
         <!-- Enabled: "translate-x-5", Not Enabled: "translate-x-0" -->
         <span aria-hidden="true" class={"#{if @switch, do: 'translate-x-5', else: 'translate-x-0' } pointer-events-none inline-block h-5 w-5 translate-x-0 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"}></span>
       </button>
@@ -42,4 +42,18 @@ defmodule LightwarriorWeb.TailwindUiComponents do
       </div>
     """
   end
+
+  def set_global(assigns) do
+    ~H"""
+      <button
+        title={@title}
+        phx-click={@action}
+        type="button"
+        class="rounded bg-indigo-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
+        <%= render_slot(@inner_block) %>
+      </button>
+    """
+  end
+
 end

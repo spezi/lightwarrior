@@ -46,6 +46,51 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
 
 ###########################################################################################################
 
+def handle_event("phx:stripe_change", params, socket) do
+  # Handle the size information as needed
+  #IO.puts("Div width: #{width}, height: #{height}")
+
+  dbg(params)
+
+  stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
+
+  stripe = case params do
+    %{"smoothing" => smoothing, "value" => ""} -> put_in(stripe, [:config, "info", "smoothing", "enable"], smoothing)
+    _ -> stripe
+  end
+
+  stripes = List.replace_at(socket.assigns.stripes, socket.assigns.selected, stripe)
+
+
+  {:noreply, socket
+    |> assign(:stripes, stripes)
+    #|> push_event("stripe-select", updated)
+  }
+end
+
+def handle_event("phx:global_change", params, socket) do
+  # Handle the size information as needed
+  #IO.puts("Div width: #{width}, height: #{height}")
+
+  dbg(params)
+
+  stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
+
+  stripes = Enum.map_every(socket.assigns.stripes, 1, fn stripe ->
+    #dbg(stripe)
+    case params do
+      %{"smoothing" => smoothing, "value" => ""} -> put_in(stripe, [:config, "info", "smoothing", "enable"], smoothing)
+      _ -> stripe
+    end
+  end)
+
+
+  {:noreply, socket
+    |> assign(:stripes, stripes)
+    #|> put_flash(:info, "Values Global updated")
+  }
+end
+
   def handle_event("phx:mapping-size", %{"width" => width, "height" => height}, socket) do
     mapping_container_size = %{
       width: width,
@@ -122,12 +167,13 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
     }
   end
 
-  def handle_event("phx:stripe_change", points, socket) do
+  def handle_event("phx:stripe_change_mapping", points, socket) do
     # Handle the size information as needed
     #IO.puts("Div width: #{width}, height: #{height}")
 
-    points = Helper.string_keys_to_atom_keys(points)
     dbg(points)
+    points = Helper.string_keys_to_atom_keys(points)
+
 
     #lightwarrior.ex ;)
     updated = Lightwarrior.update_selected_stripe_data_pixel(
@@ -135,7 +181,7 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       socket.assigns.selected,
       points
     )
-    dbg(updated)
+    #dbg(updated)
 
     {:noreply, socket
       |> assign(:leds_pixel, updated)
@@ -167,6 +213,17 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
       %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
     end
+
+    {:noreply, socket
+      #|> assign(:leds_pixel, updated)
+      #|> push_event("stripe-select", updated)
+    }
+  end
+
+  def handle_event("save-global", %{ "value" => value },  socket) do
+    # Handle the size information as needed
+    #IO.puts("Div width: #{width}, height: #{height}")
+    dbg("save global")
 
     {:noreply, socket
       #|> assign(:leds_pixel, updated)

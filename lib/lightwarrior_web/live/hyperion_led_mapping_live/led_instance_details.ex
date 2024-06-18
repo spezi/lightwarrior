@@ -24,15 +24,26 @@ defmodule Lightwarrior.Hyperion.LedInstanceDetails do
               </tr>
               <tr>
                 <td>Smoothing</td>
-                <td><%= @stripe_data["smoothing"]["enable"] %>
-                <.simple_toggle
-                  title={"Smoothing"}
-                  switch={@stripe_data["smoothing"]["enable"]}
-                  action={
-
-                  }
-                >
-                </.simple_toggle>
+                <td>
+                <!-- tailwind ui components -->
+                  <div class="flex flex-row gap-3">
+                    <.simple_toggle
+                      title={"Smoothing"}
+                      switch={@stripe_data["smoothing"]["enable"]}
+                      action={
+                        JS.push("phx:stripe_change", value: %{smoothing: !@stripe_data["smoothing"]["enable"]})
+                      }
+                    >
+                    </.simple_toggle>
+                    <.set_global
+                      title="set global smooting"
+                      action={
+                        JS.push("phx:global_change", value: %{smoothing: @stripe_data["smoothing"]["enable"]})
+                      }
+                    >
+                      <.icon name="hero-globe-alt" class="h-3 w-3" />
+                    </.set_global>
+                  </div>
                 </td>
               </tr>
               <tr>
@@ -66,9 +77,12 @@ defmodule Lightwarrior.Hyperion.LedInstanceDetails do
 
             </tbody>
           </table>
-              <div class="p-5">
+              <div class="p-5 gap-3 flex flew-row">
               <button phx-disable-with="Saving..." class="px-4 py-2 font-semibold text-sm bg-cyan-500 text-white rounded-full shadow-sm" phx-click="save" >
                 Save
+              </button>
+              <button phx-disable-with="Saving Global ..." class="px-4 py-2 font-semibold text-sm bg-cyan-500 text-white rounded-full shadow-sm" phx-click="save-global" >
+                Save Global
               </button>
               </div>
         </.form>

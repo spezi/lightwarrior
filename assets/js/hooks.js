@@ -92,9 +92,9 @@ Hooks.Stage = {
     //console.log({width, height})
     this.pushEvent("phx:mapping-size", { width, height });
   },
-  stripe_change() {
+  stripe_change_mapping() {
     //console.log(line.getBounds())
-    //liveview.pushEvent("phx:stripe_change", line.getBounds());
+    //liveview.pushEvent("phx:stripe_change_mapping", line.getBounds());
     
     let points = {
       start: {
@@ -107,7 +107,7 @@ Hooks.Stage = {
       },
     };
     console.log(points) 
-    liveview.pushEvent("phx:stripe_change", points); 
+    liveview.pushEvent("phx:stripe_change_mapping", points); 
   },
   async select_stripe() {
     console.log("select stripe");
@@ -317,7 +317,7 @@ function onDragEnd()
         dragTarget.alpha = 1;
         dragTarget.parent.alpha = 1;
         dragTarget = null;
-        Hooks.Stage.stripe_change();
+        Hooks.Stage.stripe_change_mapping();
         //console.log(this)
         //console.log(dragTarget)
         //console.log(app.stage)

@@ -12,9 +12,9 @@ defmodule Lightwarrior do
   require Math
 
   def get_led_size(stripe_data, mapping_container_size) do
-    dbg(stripe_data)
+    #dbg(stripe_data)
     firstLed = Enum.fetch!(Map.get(stripe_data, "leds"), 0)
-    dbg(firstLed)
+    #dbg(firstLed)
     point = {
       (firstLed["hmax"] - firstLed["hmin"]),
       (firstLed["vmax"] - firstLed["vmin"])
