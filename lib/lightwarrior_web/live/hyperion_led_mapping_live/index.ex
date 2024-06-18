@@ -79,7 +79,8 @@ def handle_event("phx:global_change", params, socket) do
   stripes = Enum.map_every(socket.assigns.stripes, 1, fn stripe ->
     #dbg(stripe)
     case params do
-      %{"smoothing" => smoothing, "value" => ""} -> put_in(stripe, [:config, "info", "smoothing", "enable"], smoothing)
+      %{"smoothing" => smoothing, "value" => ""} ->
+          dbg(put_in(stripe, [:config, "info", "smoothing", "enable"], smoothing))
       _ -> stripe
     end
   end)
@@ -224,6 +225,20 @@ end
     # Handle the size information as needed
     #IO.puts("Div width: #{width}, height: #{height}")
     dbg("save global")
+
+    stripes = Enum.map_every(socket.assigns.stripes, 1, fn stripe ->
+      #dbg(stripe)
+      dbg(Hyperion.switch_instance(stripe))
+      save = Hyperion.save_current_config(Map.get(Map.get(stripe, :config), "info"))
+      dbg(save)
+      socket = case save do
+        %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
+        %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
+      end
+
+    end)
+
+
 
     {:noreply, socket
       #|> assign(:leds_pixel, updated)

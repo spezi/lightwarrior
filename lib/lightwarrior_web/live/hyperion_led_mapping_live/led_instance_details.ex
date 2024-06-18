@@ -23,6 +23,10 @@ defmodule Lightwarrior.Hyperion.LedInstanceDetails do
                 <td><%= @stripe_data["device"]["hardwareLedCount"] %></td>
               </tr>
               <tr>
+                <td>Copy Mapping</td>
+                <td></td>
+              </tr>
+              <tr>
                 <td>Smoothing</td>
                 <td>
                 <!-- tailwind ui components -->
