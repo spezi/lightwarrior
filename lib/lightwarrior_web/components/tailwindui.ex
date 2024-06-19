@@ -56,4 +56,43 @@ defmodule LightwarriorWeb.TailwindUiComponents do
     """
   end
 
+  def mapping_menue(assigns) do
+    ~H"""
+
+      <button
+        title="{@title}"
+        type="button"
+        class="rounded bg-zinc-300 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
+        <svg class="h-6 w-6 text-zinc-500"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <rect x="5" y="11" width="14" height="10" rx="2" />  <circle cx="12" cy="16" r="1" />  <path d="M8 11v-4a4 4 0 0 1 8 0v4" /></svg>
+      </button>
+      <button
+        title="{@title}"
+        type="button"
+        class="rounded bg-zinc-300 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
+        <svg class="h-6 w-6 text-zinc-500"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <rect x="5" y="11" width="14" height="10" rx="2" />  <circle cx="12" cy="16" r="1" />  <path d="M8 11v-5a4 4 0 0 1 8 0" /></svg>
+      </button>
+
+      <button
+        title="{@title}"
+        type="button"
+        class="rounded bg-zinc-300 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
+        <svg class="h-6 w-6 text-zinc-500"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="4" y1="12" x2="9" y2="12" />  <line x1="15" y1="12" x2="20" y2="12" />  <rect x="9" y="6" width="6" height="12" rx="2" /></svg>
+      </button>
+
+      <button
+        title="{@title}"
+        type="button"
+        class="rounded bg-zinc-300 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
+        <svg class="h-6 w-6 text-zinc-500"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="12" y1="4" x2="12" y2="9" />  <line x1="12" y1="15" x2="12" y2="20" />  <rect x="6" y="9" width="12" height="6" rx="2" /></svg>
+      </button>
+
+
+
+    """
+  end
+
 end
