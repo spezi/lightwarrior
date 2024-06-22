@@ -52,6 +52,7 @@ defmodule Lightwarrior.MixProject do
       {:pixijs, github: "pixijs/pixijs", app: false, compile: false},
       {:math, "~> 0.6.0"},
       {:ecto_sql, "~> 3.0"},
+      {:phoenix_ecto, "~> 4.0"}
     ]
   end
 
