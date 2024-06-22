@@ -1,6 +1,7 @@
 defmodule Lightwarrior.Hyperion.StripeFormComponent do
   use LightwarriorWeb, :live_component
 
+  alias Lightwarrior.Hyperion
   alias Lightwarrior.Hyperion.Device
   alias Lightwarrior.Hyperion.Stripe
   alias Lightwarrior.Helper
@@ -39,7 +40,7 @@ defmodule Lightwarrior.Hyperion.StripeFormComponent do
             </.inputs_for>
 
         <:actions>
-          <.button phx-disable-with="Saving...">Save Test</.button>
+          <.button phx-disable-with="Saving...">Save Stripe</.button>
         </:actions>
       </.simple_form>
       </div>
@@ -49,6 +50,7 @@ defmodule Lightwarrior.Hyperion.StripeFormComponent do
 
   @impl true
   def update(%{stripe_data: stripe_data} = assigns, socket) do
+    # load initial form with current values
     {:ok,
      socket
      |> assign(assigns)
@@ -105,9 +107,20 @@ defmodule Lightwarrior.Hyperion.StripeFormComponent do
 
   defp save_stripe(socket, :edit, test_params) do
     dbg("save stripe")
+    #dbg(socket.assigns.form.params)
+    changed_stripe_data = put_in(socket.assigns.stripe_data, socket.assigns.form.params["_target"], get_in(socket.assigns.form.params, socket.assigns.form.params["_target"]))
+    dbg(changed_stripe_data["device"])
+
+    save = Hyperion.save_current_config(changed_stripe_data)
+    dbg(save)
+    socket = case save do
+      %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
+      %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
+    end
+
     {:noreply,
       socket
-      |> put_flash(:info, "Stripe update successfully")
+      #|> put_flash(:info, "Stripe update successfully")
       #|> push_patch(to: socket.assigns.patch)
     }
   end
