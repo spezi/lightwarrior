@@ -1,4 +1,4 @@
-defmodule Lightwarrior.Hyperion.LedInstanceMenue do
+defmodule Lightwarrior.Hyperion.LedMappingMenue do
   use LightwarriorWeb, :live_component
 
   @impl true
