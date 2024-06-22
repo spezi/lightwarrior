@@ -34,8 +34,8 @@ defmodule Lightwarrior.Hyperion.StripeFormComponent do
 
 
             <.inputs_for :let={device} field={@form[:device]} as={:device} >
-              <.input field={device["host"]} label="Host:" type="text" />
-              <.input field={device["port"]} label="Port:" type="text" />
+              <.input field={device[:host]} label="Host:" type="text" />
+              <.input field={device[:port]} label="Port:" type="text" />
             </.inputs_for>
 
         <:actions>
@@ -58,45 +58,39 @@ defmodule Lightwarrior.Hyperion.StripeFormComponent do
 
   @impl true
   def handle_event("validate", params, socket) do
-    #dbg(params)
-    #dbg(socket.assigns.stripe_data["device"])
 
-    #dbg(Device.changeset(socket.assigns.stripe_data["device"], params))
-
+    # load current device
     { max_packet, device } = socket.assigns.stripe_data["device"]
                              |> Map.pop("max-packet")
     device = device
             |> Map.put_new("max_packet", max_packet)
-            #|> Helper.string_keys_to_atom_keys()
 
-    #struct = struct |> Map.put_new("max_packet", max_packet)
-    #struct = struct(Device, Helper.string_keys_to_atom_keys(socket.assigns.stripe_data["device"]))
-    #|> Stripe.changeset(params[:device])
-    #|> Map.put(:action, :update)
-    #dbg(socket.assigns.stripe_data["device"])
-    #dbg(device)
-    dbg(params)
+    # prepare for update changes
+    device_with_change = Map.merge(device, params["device"], fn _k, v1, v2 ->
+      v2
+    end)
 
-    params_load = params
+    # update original params with new params
+    params_load = %{
+      "_target" => params["_target"],
+      "device" => device_with_change
+    }
 
+    #dbg(params_load)
 
+    # init struct for updating
     struct = struct(Stripe, socket.assigns.stripe_data)
 
-    Map.replace(struct, :device, device)
-    #dbg(struct)
-
+    #build changeset with updates params
     changeset =
       struct
       |> Stripe.changeset(params_load)
       |> Map.put(:action, :validate)
 
-    #changeset = Map.replace(changeset.changes.device, :action, :update)
-
-
     dbg(changeset)
 
     {:noreply, socket
-      #|> assign_form(changeset)
+      |> assign_form(changeset)
     }
   end
 
