@@ -11,9 +11,22 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
 
     #dbg(fetched_all_stripes_config)
 
-    {:ok, serverinfo} = Hyperion.get_serverinfo()
-    {:ok, stripes} = Hyperion.collect_stripes(serverinfo)
-    {:ok, stripes_with_config } = Hyperion.get_all_stripes_config(stripes)
+    { serverinfo, stripes_with_config } = case Hyperion.get_serverinfo() do
+      {:ok, serverinfo} ->
+
+        {:ok, stripes} = Hyperion.collect_stripes(serverinfo)
+        {:ok, stripes_with_config } = Hyperion.get_all_stripes_config(stripes)
+        {serverinfo, stripes_with_config}
+
+      {:error, :econnrefused} ->
+        {nil, []}
+    end
+
+    socket = case serverinfo do
+      nil -> socket |> put_flash(:error, "connection to hyperion failed")
+        _ -> socket
+    end
+
 
     {:ok, socket
       |> assign(:debug, false)
@@ -100,7 +113,7 @@ end
     IO.puts("size: #{inspect(mapping_container_size)}")
     IO.puts("stripes: #{inspect(length(socket.assigns.stripes))}")
 
-    # true if stripes false if not
+    # check if there be stripes
     check_stripes = case length(socket.assigns.stripes) > 0 do
       true -> true
       false -> false
@@ -115,18 +128,24 @@ end
           true -> %{success: true, error: nil}
           false -> %{success: false, error: Map.get(first_stripe_in_response.config, "error")}
         end
-      false -> false
+      false ->
+
+        %{success: false, error: Map.get(socket.assigns.flash, "error")}
     end
 
     # put flash on error to show error to user
-    socket = case check_error.success do
-      true -> socket
-      false ->
-        put_flash(
-          socket,
-          :error,
-          "Failed to get Stripe Config. Hyperion Error:" <> check_error.error
-        )
+    socket = case check_error do
+      %{success: true, error: nil} -> socket
+      %{success: false, error: error} ->
+        # do not overflash existing flashes ;)
+        case socket.assigns.flash do
+          %{} -> put_flash(
+                    socket,
+                    :error,
+                    "Failed to get Stripe Config. Hyperion Error:" <> error
+                  )
+          _ -> socket
+        end
     end
 
     # convert leds to pixel if no errors
@@ -175,9 +194,13 @@ end
     dbg(points)
     points = Helper.string_keys_to_atom_keys(points)
 
+    #dbg(Enum.fetch!(socket.assigns.stripes, socket.assigns.selected))
+    stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
+    num_leds = stripe.config["info"]["device"]["hardwareLedCount"]
 
     #lightwarrior.ex ;)
     updated = Lightwarrior.update_selected_stripe_data_pixel(
+      num_leds,
       socket.assigns.leds_pixel,
       socket.assigns.selected,
       points

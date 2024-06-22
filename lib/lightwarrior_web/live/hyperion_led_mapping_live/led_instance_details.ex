@@ -5,10 +5,19 @@ defmodule Lightwarrior.Hyperion.LedInstanceDetails do
   def render(assigns) do
     ~H"""
       <div id={@id} class={@class}>
-        <.header class="w-fit antialiased rounded-tl-xl rounded-tr-xl bg-zinc-50 dark:bg-zinc-900 pr-4 pl-4 ring-1 ring-gray-800/5">
-          <h2>Selected: <%= @name %> </h2>
-        </.header>
-        <div class="flex flex-wrap antialiased rounded-tr-xl rounded-br-xl rounded-bl-xl bg-zinc-50 dark:bg-zinc-900 p-5 ring-1 ring-gray-800/5 shadow-xl">
+        <div class="flex flex-row gap-3 w-fit antialiased rounded-tl-xl rounded-tr-xl bg-zinc-50 dark:bg-zinc-900 pr-4 pl-4 ring-1 ring-gray-800/5">
+        <h2>Selected: <%= @name %> </h2>
+          <button phx-click={
+              JS.toggle_class("rotate-180", to: "##{@id} .chevron", time: 300)
+              |> JS.toggle_class("scale-y-0", to: "##{@id} .content", time: 300)
+              |> JS.toggle_class("h-0", to: "##{@id} .content", time: 300)
+            }
+            class="cursor-pointer"
+          >
+            <.icon name="hero-chevron-down" class="chevron h-3 w-3 transition-all duration-300" />
+          </button>
+        </div>
+        <div class="content flex flex-wrap antialiased rounded-tr-xl rounded-br-xl rounded-bl-xl bg-zinc-50 dark:bg-zinc-900 p-5 ring-1 ring-gray-800/5 shadow-xl">
         <.form phx-change="size_change">
           <table class="w-full table-fixed text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <tbody>
@@ -91,6 +100,8 @@ defmodule Lightwarrior.Hyperion.LedInstanceDetails do
               </div>
         </.form>
 
+
+
           <div>
               <pre class="hidden">
                 <%=
@@ -106,6 +117,19 @@ defmodule Lightwarrior.Hyperion.LedInstanceDetails do
 
       </div>
     """
+  end
+
+  @impl true
+  #def update(%{test: test} = assigns, socket) do
+  def update(assigns, socket) do
+    dbg(assigns)
+    #changeset = Play.change_test(test)
+
+    {:ok,
+     socket
+     #|> assign(assigns)
+     #|> assign_form(changeset)
+    }
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})

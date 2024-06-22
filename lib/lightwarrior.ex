@@ -32,7 +32,7 @@ defmodule Lightwarrior do
     }
   end
 
-  def update_selected_stripe_data_pixel(leds_pixel, selected, points) do
+  def update_selected_stripe_data_pixel(num_leds, leds_pixel, selected, points) do
     #dbg(selected)
     #dbg(bounds)
     selected_stripe_data_pixel = Enum.fetch!(leds_pixel, selected)
@@ -40,7 +40,7 @@ defmodule Lightwarrior do
     List.replace_at(leds_pixel,
       selected,
       selected_stripe_data_pixel
-      |> Map.replace(:leds, interpolate_coords(points, length(selected_stripe_data_pixel.leds)))
+      |> Map.replace(:leds, interpolate_coords(points, num_leds))
       |> Map.replace(:start, [points.start.x, points.start.y])
       |> Map.replace(:end, [points.end.x, points.end.y])
     )
@@ -52,6 +52,7 @@ defmodule Lightwarrior do
   end
 
   defp interpolate_coords(points, num_leds) do
+    dbg(num_leds)
     #bounds.minX
     #bounds.maxX
     #bounds.minY

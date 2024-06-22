@@ -1,6 +1,7 @@
 <div class="flex flex-row">
   <div class="basis-1/4 space-y-4 grow-0">
     <.live_component
+      :if={@serverinfo}
       module={Lightwarrior.Hyperion.LedInstanceMenue} 
       id="led-instance-menue"
       selected={@selected} 
@@ -8,11 +9,12 @@
       class="grow-0"
     />
 
+    <!--
     <%= if @mapping_container_size do %>
       <.live_component
         :if={@selected}
         module={Lightwarrior.Hyperion.LedInstanceDetails} 
-        id="selected-led-instance"
+        id="stripe_config_old"
         selected={@selected}
         name={Map.get(Enum.fetch!(@stripes, @selected), :friendly_name )} 
         stripe_data={Map.get(Map.get(Enum.fetch!(@stripes, @selected), :config), "info")}
@@ -22,7 +24,22 @@
         }
         class="grow-0"
       />
-    <%= end %>
+      <%= end %>-->
+      
+      <%= if @mapping_container_size do %>
+        <.live_component
+          :if={@selected}
+          module={Lightwarrior.Hyperion.StripeFormComponent} 
+          id="stripe_config"
+          title={@page_title}
+          action={@live_action}
+          name={Map.get(Enum.fetch!(@stripes, @selected), :friendly_name )}
+          stripe_data={Map.get(Map.get(Enum.fetch!(@stripes, @selected), :config), "info")}
+          class="grow-0"
+        />
+      <%= end %>
+
+  
 
   </div>
 

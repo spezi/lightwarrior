@@ -50,7 +50,8 @@ defmodule Lightwarrior.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:plug_cowboy, "~> 2.5"},
       {:pixijs, github: "pixijs/pixijs", app: false, compile: false},
-      {:math, "~> 0.6.0"}
+      {:math, "~> 0.6.0"},
+      {:ecto_sql, "~> 3.0"},
     ]
   end
 
