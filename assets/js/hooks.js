@@ -20,6 +20,9 @@ var dragTarget = null;
 var stripe = new PIXI.Container();
 var stripe_start = new PIXI.Graphics();
 var stripe_end = new PIXI.Graphics();
+var stripes = null
+//var lines = new PIXI.Graphics();
+var lines_wrapper = new PIXI.Container();
 var line = new PIXI.Graphics();
 var path = [
   0, 
@@ -40,8 +43,10 @@ Hooks.Stage = {
     
     liveview = this
     //this.handleEvent("data-ready", data => this.init_stage(data))
-    this.handleEvent("stripe-select", _info => this.select_stripe()),
+    this.handleEvent("stripe-select", _info => this.select_stripe())
     this.handleEvent("stripe-ready", data => this.stripe_ready(data))
+    this.handleEvent("stripes-ready", data => this.stripes_ready(data))
+    
     window.addEventListener("phx:page-loading-stop", 
     _info => this.reconnected()//headerMenue.hide()
     )
@@ -168,7 +173,7 @@ Hooks.Stage = {
       )
     stripe_start.circle(0, 0, 6);
     stripe_start.fill({color:'blue', alpha:1});
-    stripe_start.zIndex = 2;
+    stripe_start.zIndex = 3;
     stripe_start.cursor = 'grab';
     stripe_start.eventMode = 'static';
     stripe_start.on('pointerdown', onDragStart, stripe_start);
@@ -180,7 +185,7 @@ Hooks.Stage = {
       )
     stripe_end.circle(0, 0, 6);
     stripe_end.fill({color:'red', alpha:1});
-    stripe_end.zIndex = 2;
+    stripe_end.zIndex = 3;
     stripe_end.cursor = 'grab';
     stripe_end.eventMode = 'static';
     stripe_end.on('pointerdown', onDragStart, stripe_end);
@@ -206,18 +211,102 @@ Hooks.Stage = {
     line.label = 'line';
     line.poly(path);
     line.stroke({ width: 4, color: 0xffd900 });
-    line.zIndex = 1;
+    line.zIndex = 2;
     line.cursor = 'grab';
     line.eventMode = 'static';
     line.on('pointerdown', onDragStart, line);
     
-    console.log(line)
+    //console.log(line)
 
     //app.stage.addChild(line); 
     stripe.addChild(line);
 
     app.stage.addChild(stripe);
+  },
+  async stripes_ready(data) {
+
+    //console.log(data)
+    /*
+    stripes.destroy({children:true})
+    stripes.destroy(true)
+    stripes = new PIXI.Container();
+    stripes.label = "stripes"
+    */
+    //stripes_stripe_start = new PIXI.Point();
+    //stripes_stripe_end = new PIXI.Point();
+    //lines = new PIXI.Graphics();
+    //lines.clear();
+    app.stage.children.forEach(child => { 
+      //stage.removeChild(c)
+      console.log("penis")
+    });
+
+    this.stripes_to_stage(data);
+  },
+  stripes_to_stage(data) {
+    console.log(data)
+    console.log("stripes to stage")
+
+    //console.log(mapping_container.offsetWidth)
+    //console.log(mapping_container.offsetHeight)
+    stripes = data.stripes
+
+    data.stripes.forEach(stripe => {
+      //console.log(stripe.config.info.leds);
+      let leds = stripe.config.info.leds;
+
+      let lines = new PIXI.Graphics();
+      lines.label = stripe.friendly_name;
+      lines.zIndex = 0;
+
+      //console.log(from)
+      //console.log(to)
+      //console.log(leds[(leds.length - 1)])
+      lines.moveTo((leds[0].hmin * mapping_container.offsetWidth), (leds[0].vmin * mapping_container.offsetHeight))
+      lines.lineTo((leds[(leds.length - 1)].hmin * mapping_container.offsetWidth), (leds[(leds.length - 1)].vmin * mapping_container.offsetHeight))
+      lines.stroke({ width: 4, color: 0xf3ccff });
+      lines.cursor = 'pointer';
+      lines.eventMode = 'static';
+      lines.on('pointerdown', onSelectStripe, lines); 
+      app.stage.addChild(lines);     
+    });
+
+    //lines.moveTo(100, 100)
+    //lines.lineTo(200, 200)
+    
+
+    //stripes.addChild(lines)
+
+    //console.log(stripes)
+
+    console.log(app.stage)
+
   }
+}
+
+function onSelectStripe(event)
+{
+    // Store a reference to the data
+    // * The reason for this is because of multitouch *
+    // * We want to track the movement of this particular touch *
+    //console.log(liveview.liveSocket)
+    //console.log(event)
+    console.log(liveview)
+    console.log(stripes)
+    console.log(this.label)
+    stripes.forEach(stripe => { 
+      //stage.removeChild(c)
+      if(stripe.friendly_name == this.label) {
+        console.log(stripe.instance)
+        //liveview.pushEvent("stripe-select", {
+        //  select: stripe.instance
+        //})
+        //liveview.liveSocket.execJS("patch", `/hyperion/ledmappings/${stripe.instance}/edit`)
+        liveview.liveSocket.redirect(`/hyperion/ledmappings/${stripe.instance}/edit`)
+      }
+    });
+
+
 }
 
 function onDragStart(event)

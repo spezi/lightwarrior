@@ -51,8 +51,12 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
         _ -> socket
     end
 
+    socket = socket
+      |> push_event("stripes-ready", %{ stripes: socket.assigns.stripes})
+
     {:noreply, socket
       |> assign(:page_title, page_title(socket.assigns.live_action))
+      #|> push_event("stripes-ready", socket.assigns.stripes)
     }
   end
 
@@ -77,6 +81,7 @@ def handle_event("phx:stripe_change", params, socket) do
 
   {:noreply, socket
     |> assign(:stripes, stripes)
+    |> push_event("stripes-ready", stripes)
     #|> push_event("stripe-select", updated)
   }
 end
@@ -101,6 +106,7 @@ def handle_event("phx:global_change", params, socket) do
 
   {:noreply, socket
     |> assign(:stripes, stripes)
+    |> push_event("stripes-ready", stripes)
     #|> put_flash(:info, "Values Global updated")
   }
 end
@@ -322,8 +328,20 @@ end
       %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
     end
 
+
+
+    {:ok, stripes} = Hyperion.collect_stripes(socket.assigns.serverinfo)
+    {:ok, stripes_with_config } = Hyperion.get_all_stripes_config(stripes)
+
     {:noreply, socket
       #|> stream_insert(:tests, test)
+      #|> push_patch(to: socket.request_path)
+      #|> push_redirect(socket, to: Routes.live_path(socket, __MODULE__, 17))
+      #|> push_redirect(socket, to: Routes.live_path(socket, "/hyperion/ledmappings/:selected/edit", 1))
+      |> assign(:stripes, stripes_with_config)
+      |> push_patch(to: ~p"/hyperion/ledmappings/#{socket.assigns.selected}/edit", replace: true)
+      |> push_event("stripes-ready", %{ stripes: stripes_with_config})
+
     }
   end
 
