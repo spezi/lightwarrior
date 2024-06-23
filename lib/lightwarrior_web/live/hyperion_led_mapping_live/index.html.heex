@@ -92,11 +92,21 @@
   
   <div class="flex">
     <div class="basis-1/4">
+      <!--
         <h2>Hyperion Serverinfo</h2>
         <pre>
             <%=
             
                 pretty_json = Jason.encode!(@serverinfo, pretty: true)
+                raw(pretty_json) 
+           
+            %>
+        </pre>
+        -->
+        <pre :if={@selected} >
+            <%=
+            
+                pretty_json = Jason.encode!(Enum.fetch!(@stripes, @selected), pretty: true)
                 raw(pretty_json) 
            
             %>
@@ -117,7 +127,7 @@
 
     </div>
     <div class="basis-1/4">
-      <h2>Selected Stripe Data:</h2>
+      <h2>Selected Stripe LED Pixel:</h2>
       <div>
           <div>
           <pre>
