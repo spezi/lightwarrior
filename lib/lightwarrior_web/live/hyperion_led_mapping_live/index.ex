@@ -213,6 +213,18 @@ end
     }
   end
 
+  def handle_event("save", %{ stripe_config: stripe_config, form: form },  socket) do
+    # Handle the size information as needed
+    #IO.puts("Div width: #{width}, height: #{height}")
+    dbg("save")
+
+
+    {:noreply, socket
+      #|> assign(:leds_pixel, updated)
+      #|> push_event("stripe-select", updated)
+    }
+  end
+
   def handle_event("save", %{ "value" => value },  socket) do
     # Handle the size information as needed
     #IO.puts("Div width: #{width}, height: #{height}")
@@ -286,6 +298,43 @@ end
       "true" -> {:noreply, assign(socket, debug: true)}
     end
 
+  end
+
+  @impl true
+  def handle_info({Lightwarrior.Hyperion.StripeFormComponent, {:save, stripe_config, form}}, socket) do
+    #dbg(stripe_config)
+    #dbg(form.valid?())
+
+    leds = Helper.leds_to_coordinates!(
+      Enum.fetch!(socket.assigns.leds_pixel, socket.assigns.selected),
+      socket.assigns.mapping_container_size
+    )
+
+    stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
+    stripe_config_updated = Map.replace(stripe_config, "leds", leds)
+
+    #dbg(stripe_config_updated)
+    #save = %{"success"  => true}
+    save = Hyperion.save_current_config(stripe_config_updated)
+    dbg(save)
+    socket = case save do
+      %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
+      %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
+    end
+
+    {:noreply, socket
+      #|> stream_insert(:tests, test)
+    }
+  end
+
+  @impl true
+  def handle_info({Lightwarrior.Hyperion.StripeFormComponent, {:error, action, error}}, socket) do
+
+    {:noreply,
+      socket
+      |> put_flash(:error, error)
+      #|> push_patch(to: socket.assigns.patch)
+    }
   end
 
   defp page_title(:index), do: "Hyperion Led Mappings"

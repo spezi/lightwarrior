@@ -33,10 +33,21 @@ defmodule Lightwarrior.Hyperion.StripeFormComponent do
           phx-submit="save"
         >
 
-
             <.inputs_for :let={device} field={@form[:device]} as={:device} >
               <.input field={device[:host]} label="Host:" type="text" />
               <.input field={device[:port]} label="Port:" type="text" />
+            </.inputs_for>
+
+            <.inputs_for :let={smoothing} field={@form[:smoothing]} as={:smoothing} >
+
+                    <.simple_toggle
+                      title={"Smoothing"}
+                      switch={true}
+                      action={
+
+                      }
+                    >
+                    </.simple_toggle>
             </.inputs_for>
 
         <:actions>
@@ -105,7 +116,43 @@ defmodule Lightwarrior.Hyperion.StripeFormComponent do
     assign(socket, :form, to_form(stripe_data, id: "stripe_form"))
   end
 
-  defp save_stripe(socket, :edit, test_params) do
+  defp save_stripe(socket, :edit, params) do
+    dbg("save stripe")
+    dbg(socket.assigns.form.params)
+    dbg(socket.assigns.form.params["_target"])
+
+    # only change if something updated by params
+    stripe_data = case socket.assigns.form.params["_target"] do
+      nil ->
+        socket.assigns.stripe_data
+      _ ->
+        put_in(socket.assigns.stripe_data, socket.assigns.form.params["_target"], get_in(socket.assigns.form.params, socket.assigns.form.params["_target"]))
+    end
+
+    #dbg(stripe_data)
+    dbg(Map.get(socket.assigns.form.source, :valid? ))
+
+    #validation
+    case Map.get(socket.assigns.form.source, :valid? ) do
+      true ->
+        notify_parent({:save, stripe_data, socket.assigns.form})
+      false ->
+        notify_parent({:error, :validation, "Form not valid"})
+      nil ->
+        # if no changes
+        notify_parent({:save, stripe_data, socket.assigns.form})
+    end
+
+    #notify_parent({:save, stripe_data, socket.assigns.form})
+
+    {:noreply,
+      socket
+      #|> put_flash(:info, "Stripe update successfully")
+      #|> push_patch(to: socket.assigns.patch)
+    }
+  end
+
+  defp save_stripe_old(socket, :edit, test_params) do
     dbg("save stripe")
     #dbg(socket.assigns.form.params)
     changed_stripe_data = put_in(socket.assigns.stripe_data, socket.assigns.form.params["_target"], get_in(socket.assigns.form.params, socket.assigns.form.params["_target"]))
@@ -114,8 +161,10 @@ defmodule Lightwarrior.Hyperion.StripeFormComponent do
     save = Hyperion.save_current_config(changed_stripe_data)
     dbg(save)
     socket = case save do
-      %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
-      %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
+      %{"success" => true } ->
+        put_flash(socket, :info, "Stripe updated")
+      %{"success" => false } ->
+        put_flash(socket, :error, "Failed to update Stripe")
     end
 
     {:noreply,

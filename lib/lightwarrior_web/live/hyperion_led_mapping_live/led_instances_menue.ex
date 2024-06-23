@@ -20,13 +20,27 @@ defmodule Lightwarrior.Hyperion.LedInstanceMenue do
         <div class="content overflow-hidden shadow-xl origin-top transition-all duration-300 antialiased rounded-tr-xl rounded-br-xl rounded-bl-xl bg-zinc-50 dark:bg-zinc-900 ring-1 ring-gray-800/5">
           <div class="flex flex-wrap p-5">
               <div :for={instance <- @serverinfo["info"]["instance"]} class="">
-                <.led_instance title={instance["friendly_name"]} status={instance["running"]} instance={instance}/>
+                <.led_instance title={instance["friendly_name"]} status={instance["running"]} instance={instance} selected={@selected}/>
               </div>
           </div>
         </div>
       </div>
     """
   end
+
+  @impl true
+  #def update(%{test: test} = assigns, socket) do
+  def update(assigns, socket) do
+    #dbg(assigns)
+    #changeset = Play.change_test(test)
+
+    {:ok,
+     socket
+     |> assign(assigns)
+     #|> assign_form(changeset)
+    }
+  end
+
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 

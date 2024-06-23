@@ -563,17 +563,17 @@ defmodule LightwarriorWeb.CoreComponents do
   attr :title, :string, required: false
   attr :status, :boolean, required: false
   attr :instance, :map, required: true
+  attr :selected, :integer, required: true
 
 
   def led_instance(assigns) do
     ~H"""
       <.link patch={~p"/hyperion/ledmappings/#{@instance["instance"]}/edit"}>
         <button  class={
-              "m-1 p-2 rounded-full text-xs font-semibold text-white shadow-xl ring-1 " <>
-              if @status,
-              do: "bg-green-600 ring-green-900/5",
-              else: "bg-red-600 ring-red-900/5"
-            }
+                "m-1 p-2 rounded-full text-xs font-semibold text-white shadow-xl
+                #{if @status, do: "bg-green-600 ", else: "bg-red-600 "}
+                #{if @selected == @instance["instance"], do: "ring-offset-2 ring-2 ring-emerald-400 ", else: "" }
+              "}
         ><%= @title %>
         </button>
       </.link>
