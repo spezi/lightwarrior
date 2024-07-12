@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import { Transformer } from '@pixi-essentials/transformer';
 
 let Hooks = {}
 
@@ -20,6 +21,7 @@ var dragTarget = null;
 var stripe = new PIXI.Container();
 var stripe_start = new PIXI.Graphics();
 var stripe_end = new PIXI.Graphics();
+
 var stripes = null
 //var lines = new PIXI.Graphics();
 var lines_wrapper = new PIXI.Container();
@@ -34,6 +36,8 @@ var path = [
 var liveview = null
 
 var dragPosition = new PIXI.Point(0,0)
+var initialDistance = 0
+var lockDistance = true
 
 //var fetched_all_stripes_config = null
 //var selected_stripe_data_pixel = null
@@ -46,6 +50,11 @@ Hooks.Stage = {
     this.handleEvent("stripe-select", _info => this.select_stripe())
     this.handleEvent("stripe-ready", data => this.stripe_ready(data))
     this.handleEvent("stripes-ready", data => this.stripes_ready(data))
+    this.handleEvent("set-even-x", data => this.set_even_x(data))
+    this.handleEvent("set-even-y", data => this.set_even_y(data))
+
+    this.handleEvent("lock-distance", data => lockDistance = true )
+    this.handleEvent("unlock-distance", data => lockDistance = false )
     
     window.addEventListener("phx:page-loading-stop", 
     _info => this.reconnected()//headerMenue.hide()
@@ -56,6 +65,7 @@ Hooks.Stage = {
     //}
     app = new PIXI.Application();
 
+
     this.get_mapping_container_size();
     window.addEventListener("resize", _info => this.get_mapping_container_size());
 
@@ -65,7 +75,7 @@ Hooks.Stage = {
       backgroundAlpha: 0, 
       width: mapping_container_wrapper.offsetWidth, 
       height: mapping_container_wrapper.offsetHeight, 
-    
+      antialias: true,
       canvas: mapping_container
     });
   
@@ -151,6 +161,8 @@ Hooks.Stage = {
       */
     //}
 
+    
+
     stripe.destroy(true)
     stripe = new PIXI.Container();
     stripe_start = new PIXI.Graphics();
@@ -171,6 +183,7 @@ Hooks.Stage = {
       selected_stripe_data_pixel.start[0],
       selected_stripe_data_pixel.start[1]
       )
+
     stripe_start.circle(0, 0, 6);
     stripe_start.fill({color:'blue', alpha:1});
     stripe_start.zIndex = 3;
@@ -222,6 +235,13 @@ Hooks.Stage = {
     stripe.addChild(line);
 
     app.stage.addChild(stripe);
+
+    // Calculate initial distance between points
+    initialDistance = Math.sqrt((stripe_end.x - stripe_start.x) ** 2 + (stripe_end.y - stripe_start.y) ** 2);
+    console.log(initialDistance)
+    this.pushEvent("phx:initial-distance", { initialDistance });
+    //const length_input = document.getElementById('length');
+    //length_input.value = initialDistance
   },
   async stripes_ready(data) {
 
@@ -236,16 +256,18 @@ Hooks.Stage = {
     //stripes_stripe_end = new PIXI.Point();
     //lines = new PIXI.Graphics();
     //lines.clear();
-    app.stage.children.forEach(child => { 
-      //stage.removeChild(c)
-      console.log("penis")
-    });
+    //app.stage.children.forEach(child => { 
+    //  app.stage.removeChild(child)
+    //});
 
+    app.stage.removeChildren(0);
+    
     this.stripes_to_stage(data);
   },
   stripes_to_stage(data) {
     console.log(data)
     console.log("stripes to stage")
+    console.log(stripe)
 
     //console.log(mapping_container.offsetWidth)
     //console.log(mapping_container.offsetHeight)
@@ -279,8 +301,51 @@ Hooks.Stage = {
 
     //console.log(stripes)
 
-    console.log(app.stage)
+    //console.log(app.stage);
+    //transformer_test();
 
+  },
+  set_even_x(data){
+    console.log("set even x")
+    console.log(stripe_start.position.x)
+    console.log(stripe_end.position.x)
+    
+    stripe_end.position.set(
+      stripe_start.position.x,
+      stripe_end.position.y
+      )
+    
+    path = [
+      stripe_start.position.x, 
+      stripe_start.position.y, 
+      stripe_start.position.x, 
+      stripe_end.position.y
+    ];
+    line.clear()
+    line.poly(path);
+    line.stroke({ width: 4, color: 0xffd900 });
+    this.stripe_change_mapping();
+  },
+  set_even_y(data){
+    console.log("set even y")
+    console.log(stripe_start.position.y)
+    console.log(stripe_end.position.y)
+    
+    stripe_end.position.set(
+      stripe_end.position.x,
+      stripe_start.position.y
+      )
+
+    path = [
+      stripe_start.position.x, 
+      stripe_start.position.y, 
+      stripe_end.position.x, 
+      stripe_start.position.y
+    ];
+    line.clear()
+    line.poly(path);
+    line.stroke({ width: 4, color: 0xffd900 });
+    this.stripe_change_mapping();
   }
 }
 
@@ -343,35 +408,86 @@ function onDragMove(event)
   if (dragTarget)
     //console.log(dragTarget.label)
     { 
+      let dragData = event.data;
+
       if(dragTarget.label == 'stripe_start')
         {
+          //preserve distance
+          const dx = stripe_start.x - stripe_end.x;
+          const dy = stripe_start.y - stripe_end.y;
+          const currentDistance = Math.sqrt(dx * dx + dy * dy);
+          const scaleFactor = initialDistance / currentDistance;
+          /*
           path = [
             dragTarget.position.x, 
             dragTarget.position.y, 
             stripe_end.x, 
             stripe_end.y
-          ];
+          ];*/
+          if(lockDistance) {
+            path = [
+              stripe_end.x + dx * scaleFactor, 
+              stripe_end.y + dy * scaleFactor, 
+              stripe_end.x, 
+              stripe_end.y
+            ];
+          } else {
+            path = [
+              dragTarget.position.x, 
+              dragTarget.position.y, 
+              stripe_end.x, 
+              stripe_end.y
+            ];
+          }
+          
           line.clear()
           line.poly(path);
           line.stroke({ width: 4, color: 0xffd900 });
+          //maintainFixedDistance(stripe_end, dragTarget);
         }
       if(dragTarget.label == 'stripe_end')
         {
+          //preserve distance
+          const dx = stripe_end.x - stripe_start.x;
+          const dy = stripe_end.y - stripe_start.y;
+          const currentDistance = Math.sqrt(dx * dx + dy * dy);
+          const scaleFactor = initialDistance / currentDistance;
+          /*
           path = [
             stripe_start.x, 
             stripe_start.y,
             dragTarget.position.x, 
             dragTarget.position.y,
-          ];
+          ];*/
+          console.log(lockDistance)
+
+          if(lockDistance) {
+            path = [
+              stripe_start.x, 
+              stripe_start.y,
+              stripe_start.x + dx * scaleFactor, 
+              stripe_start.y + dy * scaleFactor,
+            ];
+          } else {
+            path = [
+              stripe_start.x, 
+              stripe_start.y,
+              dragTarget.position.x, 
+              dragTarget.position.y,
+            ];
+          }
+          
           line.clear()
           line.poly(path);
           line.stroke({ width: 4, color: 0xffd900 });
+          //maintainFixedDistance(stripe_start, dragTarget);
         }
       if(dragTarget.label == 'line')
         {
           //console.log(event.global)
           //dragTarget.parent.toLocal(event.global, null, dragTarget.parent.position);
-    
+          
+          //old way
           dragTarget.parent.position.set(event.global.x, event.global.y);
 
         } else {
@@ -400,7 +516,23 @@ function onDragEnd()
           
           //console.log(dragTarget.parent.position)
           //console.log(stripe_start.position)
+        } else {
+          // only need on points
+          if(lockDistance) {
+            // move point to fit line on preserve distance
+            stripe_start.position.set(
+              path[0],
+              path[1]
+            );
+  
+            stripe_end.position.set(
+              path[2],
+              path[3]
+            );
+          }
         }
+
+        
 
         app.stage.off('pointermove', onDragMove);
         dragTarget.alpha = 1;
@@ -413,6 +545,60 @@ function onDragEnd()
     }
 }
 
+function transformer_test(){
+  console.log("transformer test")   
+
+  app.stage.interactive = true;
+
+  // Create a container
+  const container = new PIXI.Container();
+  app.stage.addChild(container);
+
+  // Create a graphic element (e.g., a simple rectangle)
+  const rect = new PIXI.Graphics();
+  rect.beginFill(0xde3249);
+  rect.drawRect(0, 0, 100, 100);
+  rect.endFill();
+
+  // Add the rectangle to the container
+  container.addChild(rect);
+
+  // Set initial position of the container
+  container.x = 200;
+  container.y = 150;
+
+
+  // Initialize the transformer
+  const transformer = new Transformer({
+      target: container,
+      handles: {
+          pivot: true,
+          scale: true,
+          rotation: true,
+          shear: true
+      }
+  });
+  app.stage.addChild(transformer);
+}
+
+function maintainFixedDistance(fixedPoint, movingPoint) {
+  // Calculate the vector from the fixed point to the moving point
+  const dx = movingPoint.x - fixedPoint.x;
+  const dy = movingPoint.y - fixedPoint.y;
+  const currentDistance = Math.sqrt(dx * dx + dy * dy);
+  console.log(currentDistance)
+
+  // Calculate the scale factor to maintain the initial distance
+  const scaleFactor = initialDistance / currentDistance;
+  //console.log(scaleFactor)
+  //console.log(movingPoint)
+
+  // Update the position of the moving point
+  movingPoint.x = fixedPoint.x + dx * scaleFactor;
+  movingPoint.y = fixedPoint.y + dy * scaleFactor;
+
+  //console.log(movingPoint.x)
+}
 
 
 
