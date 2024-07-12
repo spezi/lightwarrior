@@ -162,6 +162,18 @@ end
       false -> socket.assigns.leds_pixel
     end
 
+    #dbg(Enum.fetch!(leds_pixel, socket.assigns.selected))
+    socket = case socket.assigns.selected do
+      nil -> socket
+        _ ->
+          step_h = Map.get(Enum.fetch!(Map.get(Enum.fetch!(leds_pixel, socket.assigns.selected), :leds), 0), "hmax") - Map.get(Enum.fetch!(Map.get(Enum.fetch!(leds_pixel, socket.assigns.selected), :leds), 0), "hmin")
+          step_v = Map.get(Enum.fetch!(Map.get(Enum.fetch!(leds_pixel, socket.assigns.selected), :leds), 0), "vmax") - Map.get(Enum.fetch!(Map.get(Enum.fetch!(leds_pixel, socket.assigns.selected), :leds), 0), "vmin")
+          socket
+          |> push_event("set_step_horizontal", %{direction: "h", step: step_h})
+          |> push_event("set_step_vertical", %{direction: "v", step: step_v})
+    end
+
+
     {:noreply, socket
       |> assign(:mapping_container_size, mapping_container_size)
       |> assign(:leds_pixel, leds_pixel)
@@ -185,7 +197,7 @@ end
 
     socket = case length(socket.assigns.leds_pixel) > 0 do
       true -> socket
-      |> push_event("stripe-ready", %{select: socket.assigns.selected, leds_pixel: Enum.fetch!(socket.assigns.leds_pixel, socket.assigns.selected)})
+        |> push_event("stripe-ready", %{select: socket.assigns.selected, leds_pixel: Enum.fetch!(socket.assigns.leds_pixel, socket.assigns.selected)})
       false -> socket
     end
 
@@ -304,22 +316,6 @@ end
   end
 
   @impl true
-  def handle_event("phx:set-even-x", _params,  socket) do
-    {:noreply,
-      socket
-      |> push_event("set-even-x", %{})
-    }
-  end
-
-  @impl true
-  def handle_event("phx:set-even-y", _params,  socket) do
-    {:noreply,
-      socket
-      |> push_event("set-even-y", %{})
-    }
-  end
-
-  @impl true
   def handle_event("phx:lock-distance", _params,  socket) do
     {:noreply,
       socket
@@ -338,10 +334,85 @@ end
   end
 
   @impl true
+  def handle_event("phx:set-even-x", _params,  socket) do
+    {:noreply,
+      socket
+      |> push_event("set-even-x", %{})
+    }
+  end
+
+  @impl true
+  def handle_event("phx:set-even-y", _params,  socket) do
+    {:noreply,
+      socket
+      |> push_event("set-even-y", %{})
+    }
+  end
+
+  @impl true
+  def handle_event("phx:move-stripe", params,  socket) do
+    dbg(params)
+    {:noreply,
+      socket
+      |> push_event("move-stripe", %{direction: params["direction"]})
+    }
+  end
+
+
+
+  @impl true
   def handle_event("phx:initial-distance", %{"initialDistance" => length},  socket) do
+    #dbg(length)
     {:noreply,
       socket
       |> assign(:stripelength, length)
+    }
+  end
+
+  def handle_event("set_stripe_length", %{"_target" => ["length"], "length" => stripe_length}, socket) do
+    #dbg(Float.parse(stripe_length))
+    # handle regular form change
+    dbg(Float.parse(stripe_length))
+    #{length, rest} = Float.parse(stripe_length)
+    case Float.parse(stripe_length) do
+      {length, rest} ->
+        {:noreply,
+          socket
+          |> assign(:stripelength, length)
+          |> push_event("set_stripe_length", %{length: length})
+        }
+      :error ->
+        {:noreply, socket}
+    end
+    #dbg(length)
+  end
+
+  def handle_event("set_stripe_length", %{"_target" => ["length_copy_select"], "length_copy_select" => instance}, socket) do
+    #dbg(Integer.parse(instance))
+    #dbg(socket.assigns.leds_pixel)
+    {instance_num , ""} = Integer.parse(instance)
+    source_stripe = Enum.fetch!(socket.assigns.leds_pixel, instance_num)
+    #dbg(source_stripe)
+
+    {:noreply,
+      socket
+      |> push_event("copy_from_instance", %{instance: instance, stripe: source_stripe})
+    }
+  end
+
+  def handle_event("set_stripe_length", %{"_target" => ["step_horizontal"], "step_horizontal" => step}, socket) do
+    dbg(step)
+    {:noreply,
+      socket
+      |> push_event("set_step_horizontal", %{step: step })
+    }
+  end
+
+  def handle_event("set_stripe_length", %{"_target" => ["step_vertical"], "step_vertical" => step}, socket) do
+    dbg(step)
+    {:noreply,
+      socket
+      |> push_event("set_step_vertical", %{step: step })
     }
   end
 

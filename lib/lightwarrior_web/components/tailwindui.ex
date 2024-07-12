@@ -63,7 +63,7 @@ defmodule LightwarriorWeb.TailwindUiComponents do
 
       <button
         :if={!@lockdistance}
-        title="{@title}"
+        title="lock distance"
         type="button"
         phx-click="phx:lock-distance"
         class="rounded bg-zinc-300 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
@@ -72,7 +72,7 @@ defmodule LightwarriorWeb.TailwindUiComponents do
       </button>
       <button
         :if={@lockdistance}
-        title="{@title}"
+        title="unlock distance"
         type="button"
         phx-click="phx:unlock-distance"
         class="rounded bg-zinc-300 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
@@ -82,7 +82,7 @@ defmodule LightwarriorWeb.TailwindUiComponents do
 
 
       <button
-        title="{@title}"
+        title="set even y"
         type="button"
         phx-click="phx:set-even-y"
         class="rounded bg-zinc-300 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
@@ -91,13 +91,15 @@ defmodule LightwarriorWeb.TailwindUiComponents do
       </button>
 
       <button
-        title="{@title}"
+        title="set even x"
         type="button"
         phx-click="phx:set-even-x"
         class="rounded bg-zinc-300 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
         >
         <svg class="h-6 w-6 text-zinc-500"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="12" y1="4" x2="12" y2="9" />  <line x1="12" y1="15" x2="12" y2="20" />  <rect x="6" y="9" width="12" height="6" rx="2" /></svg>
       </button>
+
+
 
     """
   end
