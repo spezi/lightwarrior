@@ -35,6 +35,8 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       |> assign(:leds_pixel, [])
       |> assign(:serverinfo, serverinfo)
       |> assign(:stripes, stripes_with_config)
+      |> assign(:lockdistance, true)
+      |> assign(:stripelength, 0)
     }
   end
 
@@ -256,7 +258,12 @@ end
       %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
     end
 
+    #{:ok, stripes} = Hyperion.collect_stripes(socket.assigns.serverinfo)
+    #{:ok, stripes_with_config } = Hyperion.get_all_stripes_config(stripes)
+
     {:noreply, socket
+      #|> assign(:stripes, stripes_with_config)
+      #|> push_event("stripes-ready", %{ stripes: stripes_with_config})
       #|> assign(:leds_pixel, updated)
       #|> push_event("stripe-select", updated)
     }
@@ -293,6 +300,48 @@ end
     {:noreply, socket
       |> assign(debug: debug)
       |> push_event("save-debug", %{debug: debug})
+    }
+  end
+
+  @impl true
+  def handle_event("phx:set-even-x", _params,  socket) do
+    {:noreply,
+      socket
+      |> push_event("set-even-x", %{})
+    }
+  end
+
+  @impl true
+  def handle_event("phx:set-even-y", _params,  socket) do
+    {:noreply,
+      socket
+      |> push_event("set-even-y", %{})
+    }
+  end
+
+  @impl true
+  def handle_event("phx:lock-distance", _params,  socket) do
+    {:noreply,
+      socket
+      |> assign(:lockdistance, true)
+      |> push_event("lock-distance", %{})
+    }
+  end
+
+  @impl true
+  def handle_event("phx:unlock-distance", _params,  socket) do
+    {:noreply,
+      socket
+      |> assign(:lockdistance, false)
+      |> push_event("unlock-distance", %{})
+    }
+  end
+
+  @impl true
+  def handle_event("phx:initial-distance", %{"initialDistance" => length},  socket) do
+    {:noreply,
+      socket
+      |> assign(:stripelength, length)
     }
   end
 
