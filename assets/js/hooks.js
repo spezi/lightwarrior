@@ -39,6 +39,12 @@ var dragPosition = new PIXI.Point(0,0)
 var initialDistance = 0
 var lockDistance = true
 
+var catchResize = []
+var waitforResize = false
+
+var step_h = 0
+var step_v = 0
+
 //var fetched_all_stripes_config = null
 //var selected_stripe_data_pixel = null
 
@@ -55,7 +61,14 @@ Hooks.Stage = {
 
     this.handleEvent("lock-distance", data => lockDistance = true )
     this.handleEvent("unlock-distance", data => lockDistance = false )
-    
+
+    this.handleEvent("copy_from_instance", data => this.copy_from_instance(data))
+    this.handleEvent("set_stripe_length", data => this.set_stripe_length(data))
+
+    this.handleEvent("set_step_horizontal", data => this.set_step({direction: "h", step: data.step}))
+    this.handleEvent("set_step_vertical", data => this.set_step({direction: "v", step: data.step}))
+    this.handleEvent("move-stripe", data => this.move_stripe(data))
+
     window.addEventListener("phx:page-loading-stop", 
     _info => this.reconnected()//headerMenue.hide()
     )
@@ -65,9 +78,10 @@ Hooks.Stage = {
     //}
     app = new PIXI.Application();
 
-
+    //catchResize 
     this.get_mapping_container_size();
-    window.addEventListener("resize", _info => this.get_mapping_container_size());
+    //window.addEventListener("resize", _info => this.get_mapping_container_size());
+    window.addEventListener("resize", _info => this.catch_resize(_info));
 
     //await this.init_stage();
 
@@ -100,12 +114,36 @@ Hooks.Stage = {
     //console.log(this)
     
   },
+  catch_resize(_info) {
+    const eventTime = new Date().getTime();
+    catchResize.push(eventTime)
+    
+    // debounce resize requests
+    if(!waitforResize) {
+      waitforResize = true
+      let timerId = setInterval(() => {
+        const currentTime = new Date().getTime();
+        //console.log(currentTime - catchResize[(catchResize.length - 1)])
+        if((currentTime - catchResize[(catchResize.length - 1)]) > 100) {
+          clearInterval(timerId);
+          catchResize = []
+          waitforResize = false
+          this.get_mapping_container_size();
+        }
+      }, 20);
+    }
+  },
   get_mapping_container_size() {
     console.log("get mapping size")
+
     const container = document.getElementById('mapping');
     const { width, height } = container.getBoundingClientRect();
     //console.log({width, height})
+
     this.pushEvent("phx:mapping-size", { width, height });
+
+    //initialDistance = Math.sqrt((stripe_end.x - stripe_start.x) ** 2 + (stripe_end.y - stripe_start.y) ** 2);
+    //this.pushEvent("phx:initial-distance", { initialDistance });
   },
   stripe_change_mapping() {
     //console.log(line.getBounds())
@@ -122,6 +160,9 @@ Hooks.Stage = {
       },
     };
     console.log(points) 
+    
+    this.update_stripe_length()
+
     liveview.pushEvent("phx:stripe_change_mapping", points); 
   },
   async select_stripe() {
@@ -237,9 +278,10 @@ Hooks.Stage = {
     app.stage.addChild(stripe);
 
     // Calculate initial distance between points
-    initialDistance = Math.sqrt((stripe_end.x - stripe_start.x) ** 2 + (stripe_end.y - stripe_start.y) ** 2);
-    console.log(initialDistance)
-    this.pushEvent("phx:initial-distance", { initialDistance });
+    //initialDistance = Math.sqrt((stripe_end.x - stripe_start.x) ** 2 + (stripe_end.y - stripe_start.y) ** 2);
+    //console.log(initialDistance)
+    //this.pushEvent("phx:initial-distance", { initialDistance });
+    this.update_stripe_length()
     //const length_input = document.getElementById('length');
     //length_input.value = initialDistance
   },
@@ -346,7 +388,112 @@ Hooks.Stage = {
     line.poly(path);
     line.stroke({ width: 4, color: 0xffd900 });
     this.stripe_change_mapping();
+  },
+  update_stripe_length(){
+    //this.update_stripe_length()
+    initialDistance = Math.sqrt((stripe_end.x - stripe_start.x) ** 2 + (stripe_end.y - stripe_start.y) ** 2);
+    liveview.pushEvent("phx:initial-distance", { initialDistance });
+  },
+  copy_from_instance(data) {
+    console.log(Number.parseInt(data.instance))
+    console.log(data.stripe)
+    //console.log(stripes)
+
+    //let test_distance = Math.sqrt((copy_path[2] - copy_path[0]) ** 2 + (copy_path[3] - copy_path[1]) ** 2);
+    let copy_path_distance = Math.sqrt((data.stripe.end[0] - data.stripe.start[0]) ** 2 + (data.stripe.end[1] - data.stripe.start[1]) ** 2);
+    //console.log(copy_path_distance)
+    data = {
+      length: copy_path_distance
+    }
+    this.set_stripe_length(data)
+  },
+  set_stripe_length(data){
+    console.log("set stripe length");
+    console.log(data.length);
+    console.log(path);
+    //preserve distance
+    const dx = stripe_end.x - stripe_start.x;
+    const dy = stripe_end.y - stripe_start.y;
+    const currentDistance = Math.sqrt(dx * dx + dy * dy);
+    const scaleFactor = data.length / currentDistance;
+    path = [
+      stripe_start.x, 
+      stripe_start.y,
+      stripe_start.x + dx * scaleFactor, 
+      stripe_start.y + dy * scaleFactor,
+    ];
+    stripe_end.position.set(
+      path[2],
+      path[3]
+    );
+    line.clear()
+    line.poly(path);
+    line.stroke({ width: 4, color: 0xffd900 });
+    this.stripe_change_mapping();
+  },
+  set_step(data) {
+    //{direction: "h", step: data.step}
+    if(data.direction == "h") step_h = data.step;
+    if(data.direction == "v") step_v = data.step;
+  }, 
+  move_stripe(data){
+    //this.handleEvent("move-stripe", data => this.move_stripe(data))
+    console.log(data.direction)
+    console.log(step_h)
+    console.log(step_v)
+    
+    if(data.direction == "left") {
+      path = [
+        (stripe_start.position.x - step_h), 
+        stripe_start.position.y, 
+        (stripe_end.position.x - step_h), 
+        stripe_start.position.y
+      ];
+    }
+
+    if(data.direction == "right") {
+      path = [
+        (stripe_start.position.x + step_h), 
+        stripe_start.position.y, 
+        (stripe_end.position.x + step_h), 
+        stripe_start.position.y
+      ];
+    }
+
+    if(data.direction == "up") {
+      path = [
+        stripe_start.position.x, 
+        (stripe_start.position.y - step_v), 
+        stripe_end.position.x, 
+        (stripe_start.position.y - step_v)
+      ];
+    }
+
+    if(data.direction == "down") {
+      path = [
+        stripe_start.position.x , 
+        (stripe_start.position.y + step_v), 
+        stripe_end.position.x, 
+        (stripe_start.position.y + step_v)
+      ];
+    }
+
+    stripe_start.position.set(
+      path[0],
+      path[1]
+    )
+
+    stripe_end.position.set(
+      path[2],
+      path[3]
+    )
+
+    line.clear()
+    line.poly(path);
+    line.stroke({ width: 4, color: 0xffd900 });
+    this.stripe_change_mapping();
   }
+  
 }
 
 function onSelectStripe(event)
@@ -459,7 +606,8 @@ function onDragMove(event)
             dragTarget.position.x, 
             dragTarget.position.y,
           ];*/
-          console.log(lockDistance)
+
+          //console.log(lockDistance)
 
           if(lockDistance) {
             path = [
@@ -532,12 +680,11 @@ function onDragEnd()
           }
         }
 
-        
-
         app.stage.off('pointermove', onDragMove);
         dragTarget.alpha = 1;
         dragTarget.parent.alpha = 1;
         dragTarget = null;
+
         Hooks.Stage.stripe_change_mapping();
         //console.log(this)
         //console.log(dragTarget)
