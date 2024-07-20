@@ -1,0 +1,32 @@
+<.header>
+  Gstreamer Image player 
+  <!--
+  <:actions>
+    <.link patch={~p"/iplayer/new"}>
+      <.button>New I player</.button>
+    </.link>
+  </:actions>
+  -->
+</.header>
+
+<.live_component
+    module={LightwarriorWeb.IPlayerLive.IPlayerFormComponent}
+    id="iplayer"
+    title={@page_title}
+    action={@live_action}
+    i_player={@i_player}
+    files={@files}
+    value={@value}
+  />
+
+<div class="mt-5">
+  <%= @command  %>
+</div>
+
+<div class="mt-5">
+  <.button phx-click="start_send_shmdata" class="ml-2">Start shmdata transmission</.button>
+</div>
+
+<div class="mt-5">
+  <p :if={@pid} ><%= @pid %></p>
+</div>

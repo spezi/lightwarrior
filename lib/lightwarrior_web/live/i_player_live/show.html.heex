@@ -1,0 +1,25 @@
+<.header>
+  I player <%= @i_player.id %>
+  <:subtitle>This is a i_player record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/iplayer/#{@i_player}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit i_player</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+</.list>
+
+<.back navigate={~p"/iplayer"}>Back to iplayer</.back>
+
+<.modal :if={@live_action == :edit} id="i_player-modal" show on_cancel={JS.patch(~p"/iplayer/#{@i_player}")}>
+  <.live_component
+    module={LightwarriorWeb.IPlayerLive.FormComponent}
+    id={@i_player.id}
+    title={@page_title}
+    action={@live_action}
+    i_player={@i_player}
+    patch={~p"/iplayer/#{@i_player}"}
+  />
+</.modal>

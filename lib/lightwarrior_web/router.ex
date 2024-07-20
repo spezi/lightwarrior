@@ -26,6 +26,13 @@ defmodule LightwarriorWeb.Router do
     #live "/hyperion/ledmappings/:id", HyperionLEDMappingLive.Show, :show
     #live "/hyperion/ledmappings/:id/show/edit", HyperionLEDMappingLive.Show, :edit
 
+    live "/iplayer", IPlayerLive.Index, :index
+    live "/iplayer/new", IPlayerLive.Index, :new
+    live "/iplayer/:id/edit", IPlayerLive.Index, :edit
+
+    live "/iplayer/:id", IPlayerLive.Show, :show
+    live "/iplayer/:id/show/edit", IPlayerLive.Show, :edit
+
   end
 
   # Other scopes may use custom stacks.
