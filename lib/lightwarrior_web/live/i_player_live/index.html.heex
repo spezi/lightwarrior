@@ -1,5 +1,5 @@
 <.header>
-  Gstreamer Image player 
+  SHM Player
   <!--
   <:actions>
     <.link patch={~p"/iplayer/new"}>
@@ -11,16 +11,14 @@
 
 <.live_component
     module={LightwarriorWeb.IPlayerLive.IPlayerFormComponent}
-    id="iplayer"
+    id="iplayer_file_form"
     title={@page_title}
     action={@live_action}
-    i_player={@i_player}
-    files={@files}
-    value={@value}
   />
 
-<div class="mt-5">
+<div class="mt-5 ring-1 droptarget">
   <%= @command  %>
+  <%= @file  %>
 </div>
 
 <div class="mt-5">

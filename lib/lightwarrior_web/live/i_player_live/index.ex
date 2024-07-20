@@ -7,18 +7,14 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     #{:ok, stream(socket, :iplayer, Imageplayer.list_iplayer())}
-    path = Path.absname("/home/lichtmaster/Pictures")
-    {:ok, files} = File.ls(path)
+    #path = Path.absname("~")
+    #{:ok, files} = File.ls(path)
 
     {:ok, socket
       |> assign(:debug, false)
-      |> assign(:i_player, Imageplayer.get_i_player!())
-      |> assign(:files, files)
-      |> assign(:file, "")
       |> assign(:command, ["gst-launch"])
-      |> assign(:value, "")
-      |> assign(:path, "/home/lichtmaster/Pictures/")
       |> assign(:pid, nil)
+      |> assign(:file, nil)
     }
   end
 
@@ -46,6 +42,48 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   end
 
   @impl true
+  def handle_info({LightwarriorWeb.IPlayerLive.IPlayerFormComponent, {:change_path, change_path}}, socket) do
+    {:noreply, socket
+      |> push_event("change_path", %{path: change_path})
+    }
+  end
+
+
+  @impl true
+  def handle_info({LightwarriorWeb.IPlayerLive.IPlayerFormComponent, {:selected, file}}, socket) do
+    IO.puts("select file")
+    #IO.puts(filename)
+
+    command_list = [
+      "gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ filesrc location=" <> file,
+      "decodebin",
+      "videoconvert",
+      "imagefreeze",
+      "shmdatasink socket-path=/tmp/lightwarrior_layer1"
+    ]
+
+    command_list = [
+      "gst-launch-1.0 filesrc location=" <> file,
+      "decodebin",
+      "videoconvert",
+      "imagefreeze",
+      "videoscale",
+      "video/x-raw,width=1280,height=720",
+      "autovideosink"
+    ]
+
+    command = Enum.join(command_list, " ! ")
+
+    #output = :os.cmd('ls -l')
+    #IO.puts(output)
+
+    {:noreply, socket
+      |> assign(:command, command)
+      |> assign(:value, file)
+    }
+  end
+
+  @impl true
   def handle_info({LightwarriorWeb.IPlayerLive.FormComponent, {:saved, i_player}}, socket) do
     {:noreply, stream_insert(socket, :iplayer, i_player)}
   end
@@ -67,37 +105,30 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     {:noreply, stream_delete(socket, :iplayer, i_player)}
   end
 
+
   @impl true
-  def handle_event("fileselect", %{"_target" => ["file_select"], "file_select" => filename}, socket) do
+  def handle_event("dropped", %{"filename" => filename, "path" => path}, socket) do
     #{:noreply, assign_form(socket, changeset)}
     #gst-launch-1.0 -v filesrc location=./stanzraum.png ! decodebin ! imagefreeze ! videoconvert ! autovideosink
     #gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/blender_shmdata_camera_Camera ! videoconvert ! shmdatasink socket-path=/tmp/blender_shmdata_camera_converted
-    IO.puts("select file")
-    IO.puts(filename)
-    command_list = [
-      "gst-launch-1.0 filesrc location=" <> socket.assigns.path <> filename,
-      "decodebin",
-      "videoconvert",
-      "imagefreeze",
-      "autovideosink"
-    ]
+    IO.puts("dropped file")
 
     command_list = [
-      "gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ filesrc location=" <> socket.assigns.path <> filename,
+      "gst-launch-1.0 filesrc location=" <> path <> "/" <> filename,
       "decodebin",
       "videoconvert",
       "imagefreeze",
-      "shmdatasink socket-path=/tmp/lightwarrior_layer1"
+      "videoscale",
+      "video/x-raw,width=1280,height=720",
+      "autovideosink"
     ]
 
     command = Enum.join(command_list, " ! ")
 
-    #output = :os.cmd('ls -l')
-    #IO.puts(output)
-
     {:noreply, socket
     |> assign(:command, command)
     |> assign(:value, filename)
+    |> push_event("file-drag", %{path: path,filename: filename})
     }
 
   end
@@ -113,7 +144,6 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #IO.puts(output)
     #IO.puts("Exit code: #{exit_code}")
 
-    dbg(Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command}))
     {:ok, pid} = case socket.assigns.pid do
       nil -> Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command})
       _ -> {:ok, nil}

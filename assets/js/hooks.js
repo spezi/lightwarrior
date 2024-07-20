@@ -747,6 +747,76 @@ function maintainFixedDistance(fixedPoint, movingPoint) {
   //console.log(movingPoint.x)
 }
 
+Hooks.FileSelect = {
+  mounted() {
+    this.el.addEventListener("change", e => {
+      let file = e.target.files[0];
+      console.log(file)
+      if (file) {
+        this.pushEvent("file_selected", {
+          filename: file.name,
+          filepath: file.webkitRelativePath.get() || file.name
+        });
+      }
+    });
+  }
+};
+
+var file_drag_data = null
+var draggable = document.querySelectorAll(".draggable")
+var dropTarget = document.querySelectorAll(".droptarget")
+var liveview_drag = null 
+
+Hooks.DragArea = {
+  mounted() {
+    let dragArea = this.el
+
+    
+    liveview_drag = this;
+    let dragged = null
+
+    this.update_draggable()
+
+    this.handleEvent("file-drag", data => this.file_drag_data(data))
+    this.handleEvent("change_path", _info => this.update_draggable())
+
+  },
+  file_drag_data(data) {
+    file_drag_data = data
+    console.log(file_drag_data)
+  },
+  update_draggable() {
+    draggable = document.querySelectorAll(".draggable")
+    dropTarget = document.querySelectorAll(".droptarget")
+
+    draggable.forEach((element) =>
+      element.addEventListener("dragstart", (event) => {
+        //event.dataTransfer.setData("text/plain", event.target.id)
+        dragged = event
+        console.log(dragged)
+      })
+    ) 
+
+    dropTarget.forEach(function(element) {
+      element.addEventListener("dragover", (event) => {
+        event.preventDefault()
+      })
+
+      element.addEventListener("drop", (event) => {
+        event.preventDefault()
+        console.log("DROP")
+        console.log(dragged)
+        //console.log(dragged.target.attributes[1])
+        //console.log(dragged.target.attributes[2])
+        console.log(liveview_drag)
+        liveview_drag.pushEvent("dropped", { path: dragged.target.attributes[1].value, filename: dragged.target.attributes[2].value})
+        //dragged = null
+      })
+    }); 
+
+    console.log(draggable)
+  }
+}
 
 
 export default Hooks;
