@@ -7,7 +7,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     #{:ok, stream(socket, :iplayer, Imageplayer.list_iplayer())}
-    path = Path.absname("/Users/spezi/Pictures")
+    path = Path.absname("/home/lichtmaster/Pictures")
     {:ok, files} = File.ls(path)
 
     {:ok, socket
@@ -17,7 +17,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       |> assign(:file, "")
       |> assign(:command, ["gst-launch"])
       |> assign(:value, "")
-      |> assign(:path, "/Users/spezi/Pictures/")
+      |> assign(:path, "/home/lichtmaster/Pictures/")
       |> assign(:pid, nil)
     }
   end
@@ -71,6 +71,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   def handle_event("fileselect", %{"_target" => ["file_select"], "file_select" => filename}, socket) do
     #{:noreply, assign_form(socket, changeset)}
     #gst-launch-1.0 -v filesrc location=./stanzraum.png ! decodebin ! imagefreeze ! videoconvert ! autovideosink
+    #gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/blender_shmdata_camera_Camera ! videoconvert ! shmdatasink socket-path=/tmp/blender_shmdata_camera_converted
     IO.puts("select file")
     IO.puts(filename)
     command_list = [
@@ -79,6 +80,14 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       "videoconvert",
       "imagefreeze",
       "autovideosink"
+    ]
+
+    command_list = [
+      "gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ filesrc location=" <> socket.assigns.path <> filename,
+      "decodebin",
+      "videoconvert",
+      "imagefreeze",
+      "shmdatasink socket-path=/tmp/lightwarrior_layer1"
     ]
 
     command = Enum.join(command_list, " ! ")
