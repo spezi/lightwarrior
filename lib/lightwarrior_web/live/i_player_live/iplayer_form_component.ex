@@ -8,37 +8,61 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
     ~H"""
     <div>
       <.header>
-        <%= @title %>
-        <:subtitle>Play Still images via gstreamer</:subtitle>
+        <!--<%= @title %>-->
+        <:subtitle>Controll Gstreamer to shmdata transmission</:subtitle>
       </.header>
 
-      <.form phx-change="fileselect" phx-submit="save">
-              <select
-                id="file_select"
-                name="file_select"
-                class="mt-2 block w-44 rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm"
-                value={@value}
-              >
-                <option value=""></option>
-                <%= for file <- @files do %>
+      <div class="flex" >
+        <div>
+        <.input name="path" value={@path}/>
+        <div id="filesystem" phx-hook="DragArea" class="overflow-hidden rounded-lg bg-slate-50 ring-1 shadow p-3 cursor-pointer" >
+          <ul>
+            <li phx-click="cd" phx-value-name=".." phx-target={@myself}> <b>..</b> </li>
+          </ul>
+          <ul :if={@dirs}>
+            <li
+              :for={dir <- @dirs}
+              :if={String.at(dir, 0) != "."}
+              phx-click="cd"
+              phx-value-name={dir}
+              phx-target={@myself}
+            >
+              <b><%= dir %></b>
+            </li>
+          </ul>
+          <ul :if={@files}>
+          <li
+              :for={file <- @files}
+              :if={String.at(file, 0) != "."}
+              phx-click="select"
+              phx-value-path={@path}
+              phx-value-filename={file}
+              phx-target={@myself}
+              class="draggable"
+              draggable="true"
+            >
+              <%= file %>
+            </li>
+          </ul>
+        </div>
+        </div>
+      </div>
 
-                  <option :if={ @value == file } value={file} selected><%= file %></option>
-                  <option :if={ @value != file } value={file} ><%= file %></option>
-
-                <% end %>
-              </select>
-              </.form>
     </div>
     """
   end
 
   @impl true
-  def update(%{i_player: i_player} = assigns, socket) do
+  def update(%{id: "iplayer_file_form", title: "Listing Iplayer", action: :index} = assigns, socket) do
     #changeset = Imageplayer.change_i_player(i_player)
+
+    path = Path.expand("~")
 
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:path, path)
+     |> ls()
      #|> assign_form(changeset)
      }
   end
@@ -54,40 +78,52 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
     {:noreply, socket}
   end
 
-  def handle_event("save", %{"i_player" => i_player_params}, socket) do
-    save_i_player(socket, socket.assigns.action, i_player_params)
+  def handle_event("cd", param, socket) do
+    #dbg(get_path(socket, param["name"]))
+    socket =
+      socket
+      |> assign(path: get_path(socket, param["name"]))
+      |> ls()
+
+    {:noreply, socket}
   end
 
-  defp save_i_player(socket, :edit, i_player_params) do
-    case Imageplayer.update_i_player(socket.assigns.i_player, i_player_params) do
-      {:ok, i_player} ->
-        notify_parent({:saved, i_player})
+  def handle_event("select", param, socket) do
+    dbg(param)
+    socket =
+      socket
+      #|> assign(path: path(socket, param[]))
+      |> ls()
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "I player updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+      notify_parent({:selected, get_path(socket, param["filename"])})
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        #{:noreply, assign_form(socket, changeset)}
-        {:noreply, socket}
+    {:noreply, socket}
+  end
+
+  defp ls(socket) do
+    case File.ls(socket.assigns.path) do
+      {:ok, entries} ->
+        {dirs, files} = Enum.split_with(entries,
+          fn x ->
+            #IO.puts(socket.assigns.path <> "/" <> x)
+            File.dir?(socket.assigns.path <> "/" <> x)
+          end
+        )
+
+        notify_parent({:change_path, get_path(socket, "")})
+
+        assign(socket, dirs: Enum.sort(dirs), files: Enum.sort(files))
+        #{dirs, files} = Enum.split_with(entries, &File.dir?(path(socket, &1)))
+        #assign(socket, dirs: Enum.sort(dirs), files: Enum.sort(files))
+        #socket
+      _ ->
+        socket
     end
   end
 
-  defp save_i_player(socket, :new, i_player_params) do
-    case Imageplayer.create_i_player(i_player_params) do
-      {:ok, i_player} ->
-        notify_parent({:saved, i_player})
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "I player created successfully")
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        #{:noreply, assign_form(socket, changeset)}
-        {:noreply, socket}
-    end
+  defp get_path(socket, param) do
+    #dbg(socket.assigns.path <> "/" <> param)
+    Path.expand(socket.assigns.path <> "/" <> param)
   end
 
   #defp assign_form(socket, %Ecto.Changeset{} = changeset) do
