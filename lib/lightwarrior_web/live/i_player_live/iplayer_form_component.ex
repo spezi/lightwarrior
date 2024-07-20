@@ -15,7 +15,7 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
       <div class="flex" >
         <div>
         <.input name="path" value={@path}/>
-        <div id="filesystem" phx-hook="DragArea" class="overflow-hidden rounded-lg bg-slate-50 ring-1 shadow p-3 cursor-pointer" >
+        <div id="filesystem" phx-hook="DragArea" class="overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-800 ring-1 shadow p-3 cursor-pointer" >
           <ul>
             <li phx-click="cd" phx-value-name=".." phx-target={@myself}> <b>..</b> </li>
           </ul>

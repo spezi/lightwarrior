@@ -89,6 +89,12 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   end
 
   @impl true
+  def handle_info({:DOWN, ref, :process, {nil, :nonode@nohost}, :noproc}, socket) do
+    IO.puts("Process went down")
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("phx:debug", %{"debug" => debug}, socket) do
     #{:noreply, assign(socket, debug: debug)}
     {:noreply, socket
@@ -144,14 +150,59 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #IO.puts(output)
     #IO.puts("Exit code: #{exit_code}")
 
-    {:ok, pid} = case socket.assigns.pid do
-      nil -> Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command})
-      _ -> {:ok, nil}
+    #exit_status = if socket.assigns.pid != nil do
+      #dbg(:sys.get_state(socket.assigns.pid))
+    #  %{
+    #    exit_status: exit_status,
+     #   port: port,
+     #   latest_output: latest_output
+     # } = :sys.get_state(socket.assigns.pid)
+     # exit_status
+    #else
+    #  1
+    #end
+
+    #dbg(exit_status)
+
+    #socket = case exit_status do
+    #  nil -> socket
+    #  _ -> assign(socket, :pid, nil)
+    #end
+
+    #dbg(socket.assigns.pid)
+
+    #{:ok, pid} = case socket.assigns.pid do
+    #  nil -> Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command, socket: socket})
+    #  _ ->
+    #    {:ok, nil}
+    #end
+
+    dbg(socket.assigns.pid)
+
+    pid = case socket.assigns.pid do
+      nil ->
+        {:ok, pid} = Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command, socket: socket})
+        pid
+      _ ->
+        %{
+          exit_status: exit_status,
+          port: port,
+          latest_output: latest_output
+         } = :sys.get_state(socket.assigns.pid)
+        if exit_status == nil do
+          socket.assigns.pid
+        else
+          {:ok, pid} = Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command, socket: socket})
+          pid
+        end
+
     end
 
+    dbg(pid)
 
     {:noreply, socket
-      |> assign(:pid, "Pid: #{inspect pid}")
+      #|> assign(:pid, "Pid: #{inspect pid}")
+      |> assign(:pid, pid)
     }
 
   end
