@@ -16,8 +16,9 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #{:ok, files} = File.ls(path)
 
     #dbg(Phoenix.Tracker.list(Lightwarrior.MyTracker, "player"))
-    dbg(Process.whereis(GenserverSupervisor))
-    dbg(DynamicSupervisor.count_children(GenserverSupervisor))
+    dbg(Process.whereis(Lightwarrior.Imageplayer.GenserverSupervisor))
+    #dbg(DynamicSupervisor.count_children(GenserverSupervisor))
+    #dbg(DynamicSupervisor.count_children(ImagePlayerSupervisor))
 
     {:ok, socket
       |> assign(:debug, false)
@@ -215,16 +216,17 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #dbg(socket.assigns.pid)
     #dbg(Process.whereis(:layer_one))
     #dbg(Process.whereis(GenserverSupervisor))
-    dbg(DynamicSupervisor.count_children(GenserverSupervisor))
+    #dbg(DynamicSupervisor.count_children(ImagePlayerSupervisor))
+    #dbg(DynamicSupervisor.count_children(GenserverSupervisor))
     #dbg(DynamicSupervisor.child_spec([]))
-    dbg(DynamicSupervisor.which_children(GenserverSupervisor))
+    #dbg(DynamicSupervisor.which_children(GenserverSupervisor))
 
     Enum.each(DynamicSupervisor.which_children(GenserverSupervisor), fn x ->
       {:undefined, pid, :worker, [Lightwarrior.Imageplayer.GenserverInstance]} = x
-      dbg(Process.monitor(pid))
-      dbg(Process.monitor(pid))
-      dbg(Process.info(pid))
-      dbg(Process.get_keys())
+      #dbg(Process.monitor(pid))
+      #dbg(Process.monitor(pid))
+      #dbg(Process.info(pid))
+      #dbg(Process.get_keys())
     end)
 
     pid = case socket.assigns.pid do

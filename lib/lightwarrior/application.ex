@@ -17,7 +17,8 @@ defmodule Lightwarrior.Application do
       # {Lightwarrior.Worker, arg},
       # Start to serve requests, typically the last entry
       LightwarriorWeb.Endpoint,
-      {Lightwarrior.Imageplayer.GenserverSupervisor, [name: GenserverSupervisor]},
+      {DynamicSupervisor, name: Lightwarrior.Imageplayer.GenserverSupervisor, strategy: :one_for_one},
+      #{Lightwarrior.Imageplayer.GenserverSupervisor, [name: GenserverSupervisor]},
       #{Lightwarrior.MyTracker, [name: MyTracker, pubsub_server: Lightwarrior.PubSub]}
       #{Lightwarrior.Imageplayer.LayerTracker, []},
       #{Lightwarrior.Worker, args}
