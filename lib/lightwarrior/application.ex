@@ -6,7 +6,7 @@ defmodule Lightwarrior.Application do
   use Application
 
   @impl true
-  def start(_type, _args) do
+  def start(_type, args) do
     children = [
       LightwarriorWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:lightwarrior, :dns_cluster_query) || :ignore},
@@ -16,7 +16,11 @@ defmodule Lightwarrior.Application do
       # Start a worker by calling: Lightwarrior.Worker.start_link(arg)
       # {Lightwarrior.Worker, arg},
       # Start to serve requests, typically the last entry
-      LightwarriorWeb.Endpoint
+      LightwarriorWeb.Endpoint,
+      {Lightwarrior.Imageplayer.GenserverSupervisor, [name: GenserverSupervisor]},
+      #{Lightwarrior.MyTracker, [name: MyTracker, pubsub_server: Lightwarrior.PubSub]}
+      #{Lightwarrior.Imageplayer.LayerTracker, []},
+      #{Lightwarrior.Worker, args}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
