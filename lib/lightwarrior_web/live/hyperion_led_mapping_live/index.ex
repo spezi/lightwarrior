@@ -316,6 +316,16 @@ end
   end
 
   @impl true
+  def handle_event("phx:debug", %{"debug" => debug}, socket) do
+    case debug do
+      nil -> {:noreply, socket}
+      "false" -> {:noreply, assign(socket, debug: false)}
+      "true" -> {:noreply, assign(socket, debug: true)}
+    end
+
+  end
+
+  @impl true
   def handle_event("phx:lock-distance", _params,  socket) do
     {:noreply,
       socket
@@ -414,16 +424,6 @@ end
       socket
       |> push_event("set_step_vertical", %{step: step })
     }
-  end
-
-  @impl true
-  def handle_event("phx:debug", %{"debug" => debug}, socket) do
-    case debug do
-      nil -> {:noreply, socket}
-      "false" -> {:noreply, assign(socket, debug: false)}
-      "true" -> {:noreply, assign(socket, debug: true)}
-    end
-
   end
 
   @impl true

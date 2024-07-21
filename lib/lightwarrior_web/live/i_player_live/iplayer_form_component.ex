@@ -12,39 +12,76 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
         <:subtitle>Controll Gstreamer to shmdata transmission</:subtitle>
       </.header>
 
-      <div class="flex" >
-        <div>
-        <.input name="path" value={@path}/>
-        <div id="filesystem" phx-hook="DragArea" class="overflow-hidden rounded-lg bg-slate-50 ring-1 shadow p-3 cursor-pointer" >
-          <ul>
-            <li phx-click="cd" phx-value-name=".." phx-target={@myself}> <b>..</b> </li>
-          </ul>
-          <ul :if={@dirs}>
+      <div class="flex flex-row gap-4" >
+        <div class="basis-28">
+          <.input name="path" value={@path}/>
+          <div id="filesystem" phx-hook="DragArea" class="overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-800 ring-1 shadow p-3 cursor-pointer" >
+            <ul>
+              <li phx-click="cd" phx-value-name=".." phx-target={@myself}> <b>..</b> </li>
+            </ul>
+            <ul :if={@dirs}>
+              <li
+                :for={dir <- @dirs}
+                :if={String.at(dir, 0) != "."}
+                phx-click="cd"
+                phx-value-name={dir}
+                phx-target={@myself}
+              >
+                <b><%= dir %></b>
+              </li>
+            </ul>
+            <ul :if={@files}>
             <li
-              :for={dir <- @dirs}
-              :if={String.at(dir, 0) != "."}
-              phx-click="cd"
-              phx-value-name={dir}
-              phx-target={@myself}
-            >
-              <b><%= dir %></b>
-            </li>
-          </ul>
-          <ul :if={@files}>
-          <li
-              :for={file <- @files}
-              :if={String.at(file, 0) != "."}
-              phx-click="select"
-              phx-value-path={@path}
-              phx-value-filename={file}
-              phx-target={@myself}
-              class="draggable"
-              draggable="true"
-            >
-              <%= file %>
-            </li>
-          </ul>
+                :for={file <- @files}
+                :if={String.at(file, 0) != "."}
+                phx-click="select"
+                phx-value-path={@path}
+                phx-value-filename={file}
+                phx-target={@myself}
+                class="draggable"
+                draggable="true"
+              >
+                <%= file %>
+              </li>
+            </ul>
+          </div>
         </div>
+        <div class="basis-5/6">
+          <div class="mt-2 overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-800 ring-1 shadow p-3">
+            <div class="grid grid-cols-4 gap-4">
+
+              <div class="h-full">
+                <%= if @thumbnail_path do %>
+                  <div class={"h-48 w-48 overflow-hidden bg-center bg-no-repeat bg-cover ring-1 m-2 droptarget"} style={"background-image: url('#{@thumbnail_path}');"}>
+                      <!--<%= @path %>
+                      <%= @filename %>
+                      <%= @file %>
+                      <%= @thumbnail_path %>-->
+                  </div>
+                <% else %>
+                  <div class="h-48 w-48 overflow-hidden bg-gradient-to-r from-purple-500 to-pink-500 ring-1 m-2 droptarget">
+                      <!--<%= @path %>
+                      <%= @filename %>
+                      <%= @file %>
+                      <%= @thumbnail_path %>-->
+                  </div>
+                <% end %>
+                <div :if={@file} >
+                  <.button phx-click="start_send_shmdata" class="ml-2">
+                    <.icon name="hero-play-solid" class="h-5 w-5" />
+                  </.button>
+
+                  <div class="info">
+                    <p>File: <%= @file %></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="h-full">02</div>
+              <div class="h-full">03</div>
+              <div class="h-full">04</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -56,7 +93,14 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
   def update(%{id: "iplayer_file_form", title: "Listing Iplayer", action: :index} = assigns, socket) do
     #changeset = Imageplayer.change_i_player(i_player)
 
-    path = Path.expand("~")
+    #avoid jump back to home on refresh
+    path = if Map.has_key?(socket.assigns, :path) do
+      socket.assigns.path
+    else
+      Path.expand("~")
+    end
+
+
 
     {:ok,
      socket
