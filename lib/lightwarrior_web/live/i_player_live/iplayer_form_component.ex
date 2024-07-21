@@ -51,10 +51,11 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
             <div class="grid grid-cols-4 gap-4">
 
               <div class="h-full">
-                <div class="h-48 w-48 overflow-hidden bg-slate-900 ring-1 m-2 droptarget">
+                <div class="h-48 w-48 overflow-hidden bg-gradient-to-r from-purple-500 to-pink-500 ring-1 m-2 droptarget">
                     <%= @path %>
                     <%= @filename %>
                     <%= @file %>
+                    <%= @thumbnail_path %>
                 </div>
 
                 <.button phx-click="start_send_shmdata" class="ml-2">
