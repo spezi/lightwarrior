@@ -18,6 +18,16 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #dbg(Phoenix.Tracker.list(Lightwarrior.MyTracker, "player"))
     dbg(Process.whereis(GenserverSupervisor))
     dbg(DynamicSupervisor.count_children(GenserverSupervisor))
+    dbg(DynamicSupervisor.which_children(GenserverSupervisor))
+
+    Enum.each(DynamicSupervisor.which_children(GenserverSupervisor), fn x ->
+      {:undefined, pid, :worker, [Lightwarrior.Imageplayer.GenserverInstance]} = x
+      dbg(Process.monitor(pid))
+      dbg(Process.monitor(pid))
+      dbg(Process.info(pid))
+      dbg(Process.get_keys())
+      DynamicSupervisor.terminate_child(GenserverSupervisor, pid)
+    end)
 
     {:ok, socket
       |> assign(:debug, false)
@@ -105,10 +115,12 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   end
 
   @impl true
-  def handle_info({:DOWN, ref, :process, {nil, :nonode@nohost}, :noproc}, socket) do
+  def handle_info({:DOWN, ref, :process, pid, :shutdown}, socket) do
     IO.puts("Process went down")
     {:noreply, socket}
   end
+
+  GenserverSupervisor
 
   @impl true
   def handle_event("phx:debug", %{"debug" => debug, "value" => _value}, socket) do
@@ -122,6 +134,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   @impl true
   def handle_event("phx:debug", %{"debug" => debug}, socket) do
     case debug do
+      "null" -> {:noreply, socket}
       nil -> {:noreply, socket}
       "false" -> {:noreply, assign(socket, debug: false)}
       "true" -> {:noreply, assign(socket, debug: true)}
@@ -155,10 +168,21 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       "autovideosink"
     ]
 
+    command_list = [
+      "gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ filesrc location=" <> path <> "/" <> filename,
+      "decodebin",
+      "videoconvert",
+      "imagefreeze",
+      "videoscale",
+      "video/x-raw,width=1280,height=720",
+      "shmdatasink socket-path=/tmp/lightwarrior_layer1"
+    ]
+
     command = Enum.join(command_list, " ! ")
     file = path <> "/" <> filename
 
     #dbg(Thumbnail.generate_thumbnail(path))
+    dbg(command)
 
     {:noreply, socket} = case Thumbnail.generate_thumbnail(file, %{w: 192, h: 192}) do
       {:ok, thumbnail_path, static_url} ->
@@ -229,7 +253,10 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       dbg(Process.monitor(pid))
       dbg(Process.info(pid))
       dbg(Process.get_keys())
+      DynamicSupervisor.terminate_child(GenserverSupervisor, pid)
     end)
+
+    dbg(socket.assigns.command)
 
     pid = case socket.assigns.pid do
       nil ->
