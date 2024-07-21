@@ -4,6 +4,8 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   alias Lightwarrior.Imageplayer
   alias Lightwarrior.Imageplayer.IPlayer
 
+  alias Lightwarrior.Imageplayer.Thumbnail
+
   @impl true
   def mount(_params, _session, socket) do
     #{:ok, stream(socket, :iplayer, Imageplayer.list_iplayer())}
@@ -15,6 +17,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       |> assign(:command, ["gst-launch"])
       |> assign(:pid, nil)
       |> assign(:file, nil)
+      |> assign(:filename, nil)
     }
   end
 
@@ -130,10 +133,23 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     ]
 
     command = Enum.join(command_list, " ! ")
+    file = path <> "/" <> filename
+
+    #dbg(Thumbnail.generate_thumbnail(path))
+
+    socket = case Thumbnail.generate_thumbnail(path) do
+      {:ok, thumbnail_path} ->
+        {:noreply, assign(socket, thumbnail_path: thumbnail_path)}
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Failed to create thumbnail.")}
+    end
+
+
 
     {:noreply, socket
     |> assign(:command, command)
-    |> assign(:value, filename)
+    |> assign(:filename, filename)
+    |> assign(:file, file)
     |> push_event("file-drag", %{path: path,filename: filename})
     }
 
