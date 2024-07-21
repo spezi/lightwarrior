@@ -5,12 +5,19 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   alias Lightwarrior.Imageplayer.IPlayer
 
   alias Lightwarrior.Imageplayer.Thumbnail
+  alias Lightwarrior.MyTracker
+
+  alias Lightwarrior.Imageplayer.GenserverSupervisor
 
   @impl true
   def mount(_params, _session, socket) do
     #{:ok, stream(socket, :iplayer, Imageplayer.list_iplayer())}
     #path = Path.absname("~")
     #{:ok, files} = File.ls(path)
+
+    #dbg(Phoenix.Tracker.list(Lightwarrior.MyTracker, "player"))
+    dbg(Process.whereis(GenserverSupervisor))
+    dbg(DynamicSupervisor.count_children(GenserverSupervisor))
 
     {:ok, socket
       |> assign(:debug, false)
@@ -100,12 +107,22 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   end
 
   @impl true
-  def handle_event("phx:debug", %{"debug" => debug}, socket) do
+  def handle_event("phx:debug", %{"debug" => debug, "value" => _value}, socket) do
     #{:noreply, assign(socket, debug: debug)}
     {:noreply, socket
       |> assign(debug: debug)
       |> push_event("save-debug", %{debug: debug})
     }
+  end
+
+  @impl true
+  def handle_event("phx:debug", %{"debug" => debug}, socket) do
+    case debug do
+      nil -> {:noreply, socket}
+      "false" -> {:noreply, assign(socket, debug: false)}
+      "true" -> {:noreply, assign(socket, debug: true)}
+    end
+
   end
 
   @impl true
@@ -139,9 +156,9 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
     #dbg(Thumbnail.generate_thumbnail(path))
 
-    {:noreply, socket} = case Thumbnail.generate_thumbnail(file) do
-      {:ok, thumbnail_path} ->
-        {:noreply, assign(socket, thumbnail_path: thumbnail_path)}
+    {:noreply, socket} = case Thumbnail.generate_thumbnail(file, %{w: 192, h: 192}) do
+      {:ok, thumbnail_path, static_url} ->
+        {:noreply, assign(socket, thumbnail_path: static_path(socket, static_url))}
       {:error, _reason} ->
         {:noreply, put_flash(socket, :error, "Failed to create thumbnail.")}
     end
@@ -195,27 +212,43 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #    {:ok, nil}
     #end
 
-    dbg(socket.assigns.pid)
+    #dbg(socket.assigns.pid)
+    #dbg(Process.whereis(:layer_one))
+    #dbg(Process.whereis(GenserverSupervisor))
+    dbg(DynamicSupervisor.count_children(GenserverSupervisor))
+    #dbg(DynamicSupervisor.child_spec([]))
+    dbg(DynamicSupervisor.which_children(GenserverSupervisor))
+
+    Enum.each(DynamicSupervisor.which_children(GenserverSupervisor), fn x ->
+      {:undefined, pid, :worker, [Lightwarrior.Imageplayer.GenserverInstance]} = x
+      dbg(Process.monitor(pid))
+      dbg(Process.monitor(pid))
+      dbg(Process.info(pid))
+      dbg(Process.get_keys())
+    end)
 
     pid = case socket.assigns.pid do
       nil ->
-        {:ok, pid} = Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command, socket: socket})
+        #{:ok, pid} = Lightwarrior.Imageplayer.GenserverInstance.start_link(%{command: socket.assigns.command, socket: socket}, name: {:global, :layer_one})
+        {:ok, pid} = GenserverSupervisor.start_worker(%{command: socket.assigns.command})
         pid
       _ ->
         %{
           exit_status: exit_status,
-          port: port,
-          latest_output: latest_output
+          port: _port,
+          latest_output: _latest_output
          } = :sys.get_state(socket.assigns.pid)
         if exit_status == nil do
           socket.assigns.pid
         else
-          {:ok, pid} = Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command, socket: socket})
+          #{:ok, pid} = Lightwarrior.Imageplayer.GenserverInstance.start_link(%{command: socket.assigns.command, socket: socket}, name: {:global, :layer_one})
+          {:ok, pid} = GenserverSupervisor.start_worker(%{command: socket.assigns.command})
           pid
         end
 
     end
 
+    dbg(DynamicSupervisor.count_children(GenserverSupervisor))
     dbg(pid)
 
     {:noreply, socket

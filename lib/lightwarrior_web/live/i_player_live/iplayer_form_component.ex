@@ -51,16 +51,30 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
             <div class="grid grid-cols-4 gap-4">
 
               <div class="h-full">
-                <div class="h-48 w-48 overflow-hidden bg-gradient-to-r from-purple-500 to-pink-500 ring-1 m-2 droptarget">
-                    <%= @path %>
-                    <%= @filename %>
-                    <%= @file %>
-                    <%= @thumbnail_path %>
-                </div>
+                <%= if @thumbnail_path do %>
+                  <div class={"h-48 w-48 overflow-hidden bg-center bg-no-repeat bg-cover ring-1 m-2 droptarget"} style={"background-image: url('#{@thumbnail_path}');"}>
+                      <!--<%= @path %>
+                      <%= @filename %>
+                      <%= @file %>
+                      <%= @thumbnail_path %>-->
+                  </div>
+                <% else %>
+                  <div class="h-48 w-48 overflow-hidden bg-gradient-to-r from-purple-500 to-pink-500 ring-1 m-2 droptarget">
+                      <!--<%= @path %>
+                      <%= @filename %>
+                      <%= @file %>
+                      <%= @thumbnail_path %>-->
+                  </div>
+                <% end %>
+                <div :if={@file} >
+                  <.button phx-click="start_send_shmdata" class="ml-2">
+                    <.icon name="hero-play-solid" class="h-5 w-5" />
+                  </.button>
 
-                <.button phx-click="start_send_shmdata" class="ml-2">
-                  <.icon name="hero-play-solid" class="h-5 w-5" />
-                </.button>
+                  <div class="info">
+                    <p>File: <%= @file %></p>
+                  </div>
+                </div>
               </div>
 
               <div class="h-full">02</div>
@@ -79,8 +93,14 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
   def update(%{id: "iplayer_file_form", title: "Listing Iplayer", action: :index} = assigns, socket) do
     #changeset = Imageplayer.change_i_player(i_player)
 
+    #avoid jump back to home on refresh
+    path = if Map.has_key?(socket.assigns, :path) do
+      socket.assigns.path
+    else
+      Path.expand("~")
+    end
 
-    path = Path.expand("~")
+
 
     {:ok,
      socket
