@@ -36,6 +36,7 @@ defmodule Lightwarrior.MixProject do
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.20.1"},
+      {:phoenix_pubsub, "~> 2.0"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.2"},
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
@@ -52,7 +53,9 @@ defmodule Lightwarrior.MixProject do
       {:pixijs, github: "pixijs/pixijs", app: false, compile: false},
       {:math, "~> 0.6.0"},
       {:ecto_sql, "~> 3.0"},
-      {:phoenix_ecto, "~> 4.0"}
+      {:phoenix_ecto, "~> 4.0"},
+      {:thumbnex, "~> 0.5.1"},
+      {:rambo, "~> 0.3"}
     ]
   end
 

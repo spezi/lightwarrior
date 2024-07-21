@@ -14,17 +14,25 @@
     id="iplayer_file_form"
     title={@page_title}
     action={@live_action}
+    command={@command}
+    filename={@filename}
+    file={@file}
+    thumbnail_path={@thumbnail_path}
   />
 
-<div class="mt-5 ring-1 droptarget">
-  <%= @command  %>
-  <%= @file  %>
-</div>
 
-<div class="mt-5">
-  <.button phx-click="start_send_shmdata" class="ml-2">Start shmdata transmission</.button>
-</div>
+<div :if={@debug} id="debug" phx-change={JS.dispatch("save:debug", to: "window")}>
 
-<div class="mt-5">
-  <p :if={@pid} ><%= @pid %></p>
+  <div class="mt-5 ring-1 droptarget">
+    <%= @command  %>
+    <%= @file  %>
+  </div>
+
+  <div class="mt-5">
+    <.button phx-click="start_send_shmdata" class="ml-2">Start shmdata transmission</.button>
+  </div>
+
+  <div class="mt-5">
+    <p :if={@pid} ><%= "Pid: #{inspect @pid}"%></p>
+  </div>
 </div>

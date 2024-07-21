@@ -46,7 +46,7 @@ config :lightwarrior, LightwarriorWeb.Endpoint,
 config :lightwarrior, LightwarriorWeb.Endpoint,
   live_reload: [
     patterns: [
-      ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/static/(?!thumbnails/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/lightwarrior_web/(controllers|live|components)/.*(ex|heex)$"
     ]
