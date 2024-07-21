@@ -18,6 +18,8 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       |> assign(:pid, nil)
       |> assign(:file, nil)
       |> assign(:filename, nil)
+      |> assign(:thumbnail_path, nil)
+
     }
   end
 
@@ -137,7 +139,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
     #dbg(Thumbnail.generate_thumbnail(path))
 
-    socket = case Thumbnail.generate_thumbnail(path) do
+    {:noreply, socket} = case Thumbnail.generate_thumbnail(file) do
       {:ok, thumbnail_path} ->
         {:noreply, assign(socket, thumbnail_path: thumbnail_path)}
       {:error, _reason} ->
@@ -147,10 +149,10 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
 
     {:noreply, socket
-    |> assign(:command, command)
-    |> assign(:filename, filename)
-    |> assign(:file, file)
-    |> push_event("file-drag", %{path: path,filename: filename})
+      |> assign(:command, command)
+      |> assign(:filename, filename)
+      |> assign(:file, file)
+      #|> push_event("file-drag", %{path: path,filename: filename})
     }
 
   end
