@@ -54,13 +54,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     IO.puts("select file")
     #IO.puts(filename)
 
-    command_list = [
-      "gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ filesrc location=" <> file,
-      "decodebin",
-      "videoconvert",
-      "imagefreeze",
-      "shmdatasink socket-path=/tmp/lightwarrior_layer1"
-    ]
+
 
     command_list = [
       "gst-launch-1.0 filesrc location=" <> file,
@@ -70,6 +64,16 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       "videoscale",
       "video/x-raw,width=1280,height=720",
       "autovideosink"
+    ]
+
+    command_list = [
+      "gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ filesrc location=" <> file,
+      "decodebin",
+      "videoconvert",
+      "imagefreeze",
+      "videoscale",
+      "video/x-raw,width=1280,height=720",
+      "shmdatasink socket-path=/tmp/lightwarrior_layer1"
     ]
 
     command = Enum.join(command_list, " ! ")
