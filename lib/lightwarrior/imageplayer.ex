@@ -41,14 +41,51 @@ defmodule Lightwarrior.Imageplayer.GenserverInstance do
     GenServer.start_link(__MODULE__, args, opts)
   end
 
+  def via_tuple(name) do
+    {:via, Registry, {Lightwarrior.Imageplayer.Registry, name}}
+  end
+
   def init(args \\ []) do
+    Process.flag(:trap_exit, true)
     #dbg(args)
     #port = Port.open({:spawn, @command}, [:binary, :exit_status])
     port = Port.open({:spawn, args.command}, [:binary, :exit_status])
     Port.monitor(port)
 
+
+
     {:ok, %{port: port, latest_output: nil, exit_status: nil} }
     #{:ok, %{}}
+  end
+
+  def get_port_info(pid) do
+    GenServer.call(pid, :get_port_info)
+  end
+
+  def terminate(reason, %{port: port} = state) do
+    Logger.info "** TERMINATE: #{inspect reason}. This is the last chance to clean up after this process."
+    Logger.info "Final state: #{inspect state}"
+
+    #send(port, {self(), {:command, "SIGINT"}})
+    #dbg(Port.call port, SIGINT)
+    #dbg(send(port, "SIGINT"))
+    dbg(port)
+
+    port_info = Port.info(port)
+    os_pid = port_info[:os_pid]
+
+    Logger.warn "Orphaned OS process: #{os_pid}"
+
+     # Send SIGINT signal to the external process
+     :os.cmd('kill -s INT #{os_pid}')
+
+     # Optionally, you can handle the exit status of the port
+     receive do
+       {^port, {:exit_status, status}} ->
+         IO.puts("Process exited with status: #{status}")
+     end
+
+    :normal
   end
 
   # This callback handles data incoming from the command's STDOUT
@@ -67,7 +104,12 @@ defmodule Lightwarrior.Imageplayer.GenserverInstance do
   end
 
   def handle_info({:DOWN, _ref, :port, port, :normal}, state) do
-    Logger.info "Handled :DOWN message from port: #{inspect port}"
+    Logger.info "Genserver Handled :DOWN message from port: #{inspect port}"
+    {:noreply, state}
+  end
+
+  def handle_info({:EXIT, port, :normal}, state) do
+    Logger.info "handle_info: EXIT"
     {:noreply, state}
   end
 
