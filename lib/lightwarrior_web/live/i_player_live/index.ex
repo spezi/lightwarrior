@@ -18,7 +18,10 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #dbg(Phoenix.Tracker.list(Lightwarrior.MyTracker, "player"))
     dbg(Process.whereis(Lightwarrior.Imageplayer.GenserverSupervisor))
     #dbg(DynamicSupervisor.count_children(GenserverSupervisor))
-    #dbg(DynamicSupervisor.count_children(ImagePlayerSupervisor))
+    dbg(DynamicSupervisor.count_children(Lightwarrior.Imageplayer.GenserverSupervisor))
+    dbg(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor))
+
+    #dbg(self())
 
     {:ok, socket
       |> assign(:debug, false)
@@ -180,6 +183,27 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #{:noreply, assign_form(socket, changeset)}
     #gst-launch-1.0 -v filesrc location=./stanzraum.png ! decodebin ! imagefreeze ! videoconvert ! autovideosink
     IO.puts("start shmdata transmission")
+
+    Enum.each(DynamicSupervisor.which_children(GenserverSupervisor), fn x ->
+      {:undefined, pid, :worker, [Lightwarrior.Imageplayer.GenserverInstance]} = x
+      dbg(x)
+      Lightwarrior.Imageplayer.GenserverSupervisor.terminate_worker(pid)
+    end)
+
+    {:ok, pid} = GenserverSupervisor.start_worker(%{command: socket.assigns.command, name: {:global, :layer_one}})
+
+    {:noreply, socket
+      #|> assign(:pid, "Pid: #{inspect pid}")
+      |> assign(:pid, pid)
+    }
+
+  end
+
+  @impl true
+  def handle_event_bak("start_send_shmdata", %{"value" => value}, socket) do
+    #{:noreply, assign_form(socket, changeset)}
+    #gst-launch-1.0 -v filesrc location=./stanzraum.png ! decodebin ! imagefreeze ! videoconvert ! autovideosink
+    IO.puts("start shmdata transmission")
     #output = :os.cmd('ls -l')
     #output = :os.cmd(socket.assigns.command)
     #{output, exit_code} = System.cmd(socket.assigns.command, [])
@@ -223,6 +247,13 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
     Enum.each(DynamicSupervisor.which_children(GenserverSupervisor), fn x ->
       {:undefined, pid, :worker, [Lightwarrior.Imageplayer.GenserverInstance]} = x
+      dbg(x)
+      #Lightwarrior.Imageplayer.GenserverInstance.get_port_info(pid)
+      #Lightwarrior.Imageplayer.GenserverInstance.terminate(:shutdown)
+
+      Lightwarrior.Imageplayer.GenserverSupervisor.terminate_worker(pid)
+
+      #Process.exit(pid, :normal)
       #dbg(Process.monitor(pid))
       #dbg(Process.monitor(pid))
       #dbg(Process.info(pid))
@@ -250,8 +281,8 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
     end
 
-    dbg(DynamicSupervisor.count_children(GenserverSupervisor))
-    dbg(pid)
+    #dbg(DynamicSupervisor.count_children(GenserverSupervisor))
+    #dbg(pid)
 
     {:noreply, socket
       #|> assign(:pid, "Pid: #{inspect pid}")
