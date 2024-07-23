@@ -242,7 +242,8 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
     end))
 
-    Process.sleep(1000)
+    #timout because of leaky reload
+    #Process.sleep(1000)
 
     {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command}, name: {:global, String.to_atom(layer)})
 

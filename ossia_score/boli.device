@@ -1,0 +1,1 @@
+{"Device":{"Name":"score (boli)","Protocol":"9a42de4b-f6eb-4bca-9564-01b975f601b9","Config":{"Mode":1,"Version":0,"Framing":1,"Transport":{"UDP":{"Local":{"Host":"0.0.0.0","Port":9996,"Broadcast":false},"Remote":{"Host":"127.0.0.1","Port":6666,"Broadcast":true}}}}}}
