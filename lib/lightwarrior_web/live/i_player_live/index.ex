@@ -7,8 +7,6 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   alias Lightwarrior.Imageplayer.Thumbnail
   alias Lightwarrior.MyTracker
 
-  alias Lightwarrior.Imageplayer.GenserverSupervisor
-
   @impl true
   def mount(_params, _session, socket) do
     #{:ok, stream(socket, :iplayer, Imageplayer.list_iplayer())}
@@ -17,8 +15,20 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
     #dbg(Phoenix.Tracker.list(Lightwarrior.MyTracker, "player"))
     dbg(Process.whereis(Lightwarrior.Imageplayer.GenserverSupervisor))
-    #dbg(DynamicSupervisor.count_children(GenserverSupervisor))
+    dbg(DynamicSupervisor.count_children(Lightwarrior.Imageplayer.GenserverSupervisor))
     #dbg(DynamicSupervisor.count_children(ImagePlayerSupervisor))
+    Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
+      dbg(x)
+      {:undefined, pid, :worker, [Lightwarrior.Imageplayer.GenserverInstance]} = x
+      #dbg(Process.monitor(pid))
+      #dbg(Process.monitor(pid))
+      #dbg(Process.info(pid))
+      dbg(Process.alive?(pid))
+      #DynamicSupervisor.terminate_child(Lightwarrior.Imageplayer.GenserverSupervisor, pid)
+      #dbg(Process.get_keys())
+    end)
+
+    dbg(DynamicSupervisor.count_children(Lightwarrior.Imageplayer.GenserverSupervisor))
 
     {:ok, socket
       |> assign(:debug, false)
@@ -110,8 +120,6 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     IO.puts("Process went down")
     {:noreply, socket}
   end
-
-  GenserverSupervisor
 
   @impl true
   def handle_event("phx:debug", %{"debug" => debug, "value" => _value}, socket) do
@@ -239,20 +247,33 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #dbg(DynamicSupervisor.child_spec([]))
     #dbg(DynamicSupervisor.which_children(GenserverSupervisor))
 
-    Enum.each(DynamicSupervisor.which_children(GenserverSupervisor), fn x ->
+    pids = Enum.map(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
       {:undefined, pid, :worker, [Lightwarrior.Imageplayer.GenserverInstance]} = x
+
+      #DynamicSupervisor.terminate_child(Lightwarrior.Imageplayer.GenserverSupervisor, pid)
       #dbg(Process.monitor(pid))
-      #dbg(Process.monitor(pid))
-      #dbg(Process.info(pid))
+      dbg(Process.monitor(pid))
+      dbg(Process.info(pid))
+      #dbg(DynamicSupervisor.terminate_child(Lightwarrior.Imageplayer.GenserverSupervisor, pid))
+      #Process.exit(pid, :shutdown)
       #dbg(Process.get_keys())
+      pid
     end)
 
+    dbg(pids)
+    Enum.each( pids, fn pid ->
+      #dbg(Process.exit(pid, :shutdown))
+      dbg(DynamicSupervisor.terminate_child(Lightwarrior.Imageplayer.GenserverSupervisor, pid))
+    end)
+    #Process.exit(pid, :shutdown)
+
     dbg(socket.assigns.command)
+    dbg(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor))
 
     pid = case socket.assigns.pid do
       nil ->
         #{:ok, pid} = Lightwarrior.Imageplayer.GenserverInstance.start_link(%{command: socket.assigns.command, socket: socket}, name: {:global, :layer_one})
-        {:ok, pid} = GenserverSupervisor.start_worker(%{command: socket.assigns.command})
+        {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command})
         pid
       _ ->
         %{
@@ -264,13 +285,13 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
           socket.assigns.pid
         else
           #{:ok, pid} = Lightwarrior.Imageplayer.GenserverInstance.start_link(%{command: socket.assigns.command, socket: socket}, name: {:global, :layer_one})
-          {:ok, pid} = GenserverSupervisor.start_worker(%{command: socket.assigns.command})
+          {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command})
           pid
         end
 
     end
 
-    dbg(DynamicSupervisor.count_children(GenserverSupervisor))
+
     dbg(pid)
 
     {:noreply, socket
