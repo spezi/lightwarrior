@@ -11,9 +11,11 @@ defmodule Lightwarrior.Imageplayer.GenserverSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def start_worker(arg, _opts) do
+  def start_worker(arg, opts) do
     #spec = {Lightwarrior.Imageplayer.GenserverInstance, arg}
     #DynamicSupervisor.start_child(__MODULE__, spec)
+    dbg(arg)
+    dbg(opts)
     child_spec = %{
       id: Lightwarrior.Imageplayer.GenserverInstance,
       start: {Lightwarrior.Imageplayer.GenserverInstance, :start_link, [arg]},

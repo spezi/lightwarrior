@@ -55,7 +55,8 @@ defmodule Lightwarrior.MixProject do
       {:ecto_sql, "~> 3.0"},
       {:phoenix_ecto, "~> 4.0"},
       {:thumbnex, "~> 0.5.1"},
-      {:rambo, "~> 0.3"}
+      {:rambo, "~> 0.3"},
+      {:websockex, "~> 0.4.3"}
     ]
   end
 
