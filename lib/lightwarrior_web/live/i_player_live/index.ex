@@ -20,7 +20,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     dbg(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor))
     dbg(Process.registered())
 
-    Enum.each(DynamicSupervisor.which_children(GenserverSupervisor), fn x ->
+    Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
       {:undefined, pid, :supervisor, [Lightwarrior.Imageplayer.GenserverInstance]} = x
       dbg(x)
       #Lightwarrior.Imageplayer.GenserverInstance.get_port_info(pid)
@@ -213,7 +213,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     IO.puts("start shmdata transmission")
     #IO.puts(layer)
 
-    Enum.each(DynamicSupervisor.which_children(GenserverSupervisor), fn x ->
+    Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
       {:undefined, pid, :supervisor, [Lightwarrior.Imageplayer.GenserverInstance]} = x
       #dbg(x)
 
@@ -228,7 +228,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
     end)
 
-    {:ok, pid} = GenserverSupervisor.start_worker(%{command: socket.assigns.command}, name: {:global, layer})
+    {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command}, name: {:global, layer})
 
     if layer == "layer_one" do
       dbg(Process.register(pid, :layer_one))
