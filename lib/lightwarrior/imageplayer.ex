@@ -11,19 +11,19 @@ defmodule Lightwarrior.Imageplayer.GenserverSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def start_worker(arg) do
+  def start_worker(arg, _opts) do
     #spec = {Lightwarrior.Imageplayer.GenserverInstance, arg}
     #DynamicSupervisor.start_child(__MODULE__, spec)
     child_spec = %{
       id: Lightwarrior.Imageplayer.GenserverInstance,
-      start: {Lightwarrior.Imageplayer.GenserverInstance, :start_link, [arg] },
+      start: {Lightwarrior.Imageplayer.GenserverInstance, :start_link, [arg]},
       #start: Lightwarrior.Imageplayer.GenserverInstance.start_link(%{command: socket.assigns.command, socket: socket}, name: :layer_one),
       #restart: :transient,
       #shutdown: 5000,
-      type: :worker
+      type: :supervisor
     }
 
-    DynamicSupervisor.start_child(__MODULE__, child_spec)
+    dbg(DynamicSupervisor.start_child(__MODULE__, child_spec))
   end
 
   def terminate_worker(pid) do
@@ -38,7 +38,9 @@ defmodule Lightwarrior.Imageplayer.GenserverInstance do
 
   # GenServer API
   def start_link(args \\ [], opts \\ []) do
-    GenServer.start_link(__MODULE__, args, opts)
+    dbg(args)
+    dbg(opts)
+    GenServer.start_link(__MODULE__, args, name: {:global, "layer_one"})
   end
 
   def via_tuple(name) do
