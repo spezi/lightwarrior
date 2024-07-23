@@ -53,7 +53,7 @@ defmodule Lightwarrior.Imageplayer.GenserverInstance do
 
   # This callback handles data incoming from the command's STDOUT
   def handle_info({port, {:data, text_line}}, %{port: port} = state) do
-    Logger.info "Data: #{inspect text_line}"
+    #Logger.info "Data: #{inspect text_line}"
     {:noreply, %{state | latest_output: String.trim(text_line)}}
   end
 
