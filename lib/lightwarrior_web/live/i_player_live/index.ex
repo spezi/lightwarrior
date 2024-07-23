@@ -20,6 +20,14 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     dbg(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor))
     dbg(Process.registered())
 
+    #{:ok, ws_pid} = Lightwarrior.WebSocketClient.start_link("ws://127.0.0.1:9999")
+    {:ok, ws_pid} = Lightwarrior.WebSocketClient.start_link("ws://127.0.0.1:10212")
+    dbg(ws_pid)
+    #https://ossia.io/score-docs/in-depth/remote.html
+    #/Users/spezi/git/score/src/plugins/score-plugin-remotecontrol/js-remote
+
+    #Lightwarrior.WebSocketClient.send_message_ossia_score(ws_pid, %{ Message: "Play" } )
+
     Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
       {:undefined, pid, :supervisor, [Lightwarrior.Imageplayer.GenserverInstance]} = x
       dbg(x)
@@ -28,8 +36,8 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       #Process.exit(pid, :normal)
       #dbg(Process.monitor(pid))
       #dbg(Process.monitor(pid))
-      dbg(Process.info(pid))
-      dbg(Process.info(pid, :registered_name))
+      #dbg(Process.info(pid))
+      #dbg(Process.info(pid, :registered_name))
       #dbg(Process.get_keys())
     end)
 
@@ -42,6 +50,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       |> assign(:file, nil)
       |> assign(:filename, nil)
       |> assign(:thumbnail_path, nil)
+      |> assign(:ws_pid, ws_pid)
 
     }
   end
@@ -210,10 +219,14 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
   def handle_event("start_send_shmdata", %{"layer" => layer}, socket) do
     #{:noreply, assign_form(socket, changeset)}
     #gst-launch-1.0 -v filesrc location=./stanzraum.png ! decodebin ! imagefreeze ! videoconvert ! autovideosink
-    IO.puts("start shmdata transmission")
-    #IO.puts(layer)
 
-    Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
+    #stop player workaround
+    Lightwarrior.WebSocketClient.send_message_ossia_score(socket.assigns.ws_pid, %{ Message: "Stop" } )
+
+    IO.puts("start shmdata transmission")
+    IO.puts(layer)
+
+    dbg(Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
       {:undefined, pid, :supervisor, [Lightwarrior.Imageplayer.GenserverInstance]} = x
       #dbg(x)
 
@@ -224,20 +237,20 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       if "#{layer}" == "#{layer_name}" do
         Process.unregister(layer_name)
         Lightwarrior.Imageplayer.GenserverSupervisor.terminate_worker(pid)
+
       end
 
-    end)
+    end))
 
-    {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command}, name: {:global, layer})
+    {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command}, name: {:global, String.to_atom(layer)})
 
-    if layer == "layer_one" do
-      dbg(Process.register(pid, :layer_one))
-    end
 
-    if layer == "layer_two" do
-      dbg(Process.register(pid, :layer_two))
-    end
 
+    dbg(Process.register(pid, String.to_atom(layer)))
+
+
+    dbg(socket.assigns.ws_pid)
+    Lightwarrior.WebSocketClient.send_message_ossia_score(socket.assigns.ws_pid, %{ Message: "Play" } )
 
     {:noreply, socket
       #|> assign(:pid, "Pid: #{inspect pid}")

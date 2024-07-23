@@ -26,6 +26,7 @@ import Hooks from "./hooks";
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
+//let OssiaScoreSocket = new LiveSocket("ws://192.168.1.24:9999", Socket, {params: {}})
 
 // Show progress bar on live navigation and form submits
 headerMenue.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
@@ -44,10 +45,13 @@ window.addEventListener("phx:save-debug",
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
+//OssiaScoreSocket.connect()
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
+//window.OssiaScoreSocket = OssiaScoreSocket
 
+//console.log(OssiaScoreSocket)
