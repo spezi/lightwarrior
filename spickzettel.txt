@@ -1,0 +1,1 @@
+gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/lightwarrior_layer1 ! videoconvert ! videoscale ! video/x-raw,width=1280,height=720 ! shmdatasink socket-path=/tmp/lightwarrior_layer1_constant
