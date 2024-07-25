@@ -56,7 +56,8 @@ defmodule Lightwarrior.MixProject do
       {:phoenix_ecto, "~> 4.0"},
       {:thumbnex, "~> 0.5.1"},
       {:rambo, "~> 0.3"},
-      {:websockex, "~> 0.4.3"}
+      {:websockex, "~> 0.4.3"},
+      {:mogrify, "~> 0.9.3"}
     ]
   end
 

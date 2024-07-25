@@ -14,7 +14,14 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     #{:ok, files} = File.ls(path)
 
     #dbg(Phoenix.Tracker.list(Lightwarrior.MyTracker, "player"))
-    dbg(Process.whereis(Lightwarrior.Imageplayer.GenserverSupervisor))
+    #dbg(Process.whereis(Lightwarrior.Imageplayer.GenserverSupervisor))
+    dbg(Process.whereis(:layer_one))
+
+    if Process.whereis(:layer_one) do
+      dbg(Process.info(Process.whereis(:layer_one)))
+    end
+
+
     #dbg(DynamicSupervisor.count_children(GenserverSupervisor))
     dbg(DynamicSupervisor.count_children(Lightwarrior.Imageplayer.GenserverSupervisor))
     dbg(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor))
@@ -31,6 +38,8 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
       {:undefined, pid, :supervisor, [Lightwarrior.Imageplayer.GenserverInstance]} = x
       dbg(x)
+      dbg(Process.info(pid))
+      #dbg(x)
       #Lightwarrior.Imageplayer.GenserverInstance.get_port_info(pid)
       #Lightwarrior.Imageplayer.GenserverInstance.terminate(:shutdown)
       #Process.exit(pid, :normal)
@@ -43,15 +52,39 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
     #dbg(self())
 
+    output_options = [
+      autovideosink: "autovideosink",
+      shmdatasink: "shmdatasink"
+    ]
+
+    form = %Lightwarrior.Imageplayer.IPlayer{}
+    |> Ecto.Changeset.change()
+    |> to_form()
+
+    changesets = %{layer_one: form, layer_two: form}
+
+    layerdata_inner = %{
+      file: nil,
+      thumbnail: nil,
+      type: nil,
+      command: nil
+    }
+
+    layerdata = %{
+      layer_one: layerdata_inner,
+      layer_two: layerdata_inner,
+    }
+
+    dbg(layerdata)
+
     {:ok, socket
       |> assign(:debug, false)
-      |> assign(:command, ["gst-launch"])
-      |> assign(:pid, nil)
       |> assign(:file, nil)
       |> assign(:filename, nil)
-      |> assign(:thumbnail_path, nil)
       |> assign(:ws_pid, ws_pid)
-
+      |> assign(:output_options, output_options)
+      |> assign(changesets: changesets)
+      |> assign(layerdata: layerdata)
     }
   end
 
@@ -85,6 +118,99 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     }
   end
 
+  #change player
+  def handle_info({LightwarriorWeb.IPlayerLive.IPlayerFormComponent, {:change_player, params}}, socket) do
+
+    player_values = params["i_player"]
+    dbg(player_values)
+
+    {output, layer_name} = case params["i_player"] do
+      %{"name" => layer_name, "output_type" => output_type} ->
+        case output_type do
+          "shmdatasink" -> {"#{output_type} socket-path=/tmp/lightwarrior_#{layer_name}", layer_name}
+          _ -> {output_type, layer_name}
+        end
+      _ -> nil
+    end
+
+    command_list = cond do
+      player_values["type"] == "image" ->
+              [
+                "gst-launch-1.0 filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file,
+                "decodebin",
+                "videoconvert",
+                "imagefreeze",
+                "videoscale",
+                "video/x-raw,width=1920,height=1080",
+                output
+              ]
+      player_values["type"] == "video" ->
+              [
+                "gst-launch-1.0 filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file,
+                "decodebin",
+                "videoconvert",
+                "videoscale",
+                "video/x-raw,width=1920,height=1080",
+                output
+              ]
+    end
+
+    #command_list = [
+    #  "gst-launch-1.0 filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file,
+    #  "decodebin",
+    #  "videoconvert",
+    #  "imagefreeze",
+    #  "videoscale",
+    #  "video/x-raw,width=1920,height=1080",
+    #  output
+    #]
+
+    command = Enum.join(command_list, " ! ")
+
+    dbg(command)
+
+    #############################
+    Lightwarrior.WebSocketClient.send_message_ossia_score(socket.assigns.ws_pid, %{ Message: "Stop" } )
+
+    dbg(Process.whereis(String.to_atom(player_values["name"])))
+
+
+    case Process.whereis(String.to_atom(player_values["name"])) do
+      nil -> IO.puts("first start " <> player_values["name"])
+      pid ->
+        #dbg(Process.unregister(String.to_atom(player_values["name"])))
+        dbg(Lightwarrior.Imageplayer.GenserverSupervisor.terminate_worker(pid))
+        dbg(Process.info(pid))
+    end
+
+    ready = Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
+      {:undefined, pid, :supervisor, [Lightwarrior.Imageplayer.GenserverInstance]} = x
+      dbg(x)
+      info = Process.info(pid)
+      if info[:registered_name] == String.to_atom(player_values["name"]) do
+        dbg(Lightwarrior.Imageplayer.GenserverSupervisor.terminate_worker(pid))
+      end
+    end)
+
+    socket = case ready do
+       :ok ->
+          {:ok, new_pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: command}, %{name: String.to_atom(player_values["name"])})
+          Process.register(new_pid, String.to_atom(player_values["name"]))
+          assign(socket, :pid, new_pid)
+        _ -> socket
+    end
+
+    #websocket connection to ossia score
+    dbg(socket.assigns.ws_pid)
+    dbg(Lightwarrior.WebSocketClient.send_message_ossia_score(socket.assigns.ws_pid, %{ Message: "Play" } ))
+
+    #############################
+
+    {:noreply, socket
+      #|> assign(:command, command)
+    }
+  end
+
 
   @impl true
   def handle_info({LightwarriorWeb.IPlayerLive.IPlayerFormComponent, {:selected, file}}, socket) do
@@ -113,13 +239,13 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       "shmdatasink socket-path=/tmp/lightwarrior_layer1"
     ]
 
-    command = Enum.join(command_list, " ! ")
+    #command = Enum.join(command_list, " ! ")
 
     #output = :os.cmd('ls -l')
     #IO.puts(output)
 
     {:noreply, socket
-      |> assign(:command, command)
+      #|> assign(:command, command)
       |> assign(:value, file)
     }
   end
@@ -163,9 +289,21 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     {:noreply, stream_delete(socket, :iplayer, i_player)}
   end
 
+  @impl true
+  def handle_event("phx:get_layerdata_cache", %{"layerdata" => layerdata_cache}, socket) do
+    #{:noreply, assign(socket, debug: debug)}
+    {:ok, layerdata } = Jason.decode(layerdata_cache, [keys: :atoms])
+
+    {:noreply, socket
+    |> assign(layerdata: layerdata)
+      #|> assign(debug: debug)
+      #|> push_event("save-debug", %{debug: debug})
+    }
+  end
+
 
   @impl true
-  def handle_event("dropped", %{"filename" => filename, "path" => path}, socket) do
+  def handle_event("dropped", %{"filename" => filename, "path" => path, "target" => target}, socket) do
     #{:noreply, assign_form(socket, changeset)}
     #gst-launch-1.0 -v filesrc location=./stanzraum.png ! decodebin ! imagefreeze ! videoconvert ! autovideosink
     #gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/blender_shmdata_camera_Camera ! videoconvert ! shmdatasink socket-path=/tmp/blender_shmdata_camera_converted
@@ -191,11 +329,27 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       "shmdatasink socket-path=/tmp/lightwarrior_layer1"
     ]
 
-    command = Enum.join(command_list, " ! ")
-    file = path <> "/" <> filename
+    #command = Enum.join(command_list, " ! ")
+    original_file = path <> "/" <> filename
+
+    images_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".svg", ".ico"]
+    video_extensions = [".mp4", ".mov", ".wmv", ".flv", ".avi", ".mkv", ".webm", ".vob", ".ogv", ".ogg", ".drc", ".mng", ".mts", ".m2ts", ".ts", ".mxf", ".roq", ".nsv", ".f4v", ".f4p", ".f4a", ".f4b"]
+
+    original_file_extension = Path.extname(original_file)
+
+    {:ok, file, type} = cond do
+      Enum.member?(images_extensions, original_file_extension) ->
+        #convert to fit output video caps
+        {:ok, file} = Thumbnail.convert_original(original_file, %{w: 1920, h: 1080})
+        {:ok, file, :image}
+      Enum.member?(video_extensions, original_file_extension) ->
+        {:ok, original_file, :video}
+    end
+
+    dbg(type)
 
     #dbg(Thumbnail.generate_thumbnail(path))
-    dbg(command)
+    #dbg(command)
 
     {:noreply, socket} = case Thumbnail.generate_thumbnail(file, %{w: 192, h: 192}) do
       {:ok, thumbnail_path, static_url} ->
@@ -204,13 +358,33 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
         {:noreply, put_flash(socket, :error, "Failed to create thumbnail.")}
     end
 
+    layer = case target do
+      "i_player_image_layer_one" ->
+        dbg(Map.get(socket.assigns.layerdata, :layer_one))
+        #Map.replace(socket.assigns.layerdata.layer_one, :file, file)
+        :layer_one
+      "i_player_image_layer_two" ->
+        #Map.replace(socket.assigns.layerdata.layer_two, :file, file)
+        dbg(Map.get(socket.assigns.layerdata, :layer_two))
+        :layer_two
+    end
 
+    data = socket.assigns.layerdata
+
+    this_layer = Map.get(socket.assigns.layerdata, layer)
+    |> Map.replace(:file, file)
+    |> Map.replace(:thumbnail, socket.assigns.thumbnail_path)
+    |> Map.replace(:type, type)
+
+    new_layerdata = Map.replace(data, layer, this_layer)
+
+    dbg(new_layerdata)
 
     {:noreply, socket
-      |> assign(:command, command)
+      #|> assign(:command, command)
       |> assign(:filename, filename)
-      |> assign(:file, file)
-      #|> push_event("file-drag", %{path: path,filename: filename})
+      |> assign(:layerdata, new_layerdata)
+      |> push_event("set-layer-data", new_layerdata)
     }
 
   end
@@ -226,7 +400,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
     IO.puts("start shmdata transmission")
     IO.puts(layer)
 
-    dbg(Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
+    terminate_current = Enum.each(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
       {:undefined, pid, :supervisor, [Lightwarrior.Imageplayer.GenserverInstance]} = x
       #dbg(x)
 
@@ -236,123 +410,29 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
 
       if "#{layer}" == "#{layer_name}" do
         Process.unregister(layer_name)
-        Lightwarrior.Imageplayer.GenserverSupervisor.terminate_worker(pid)
+        dbg(Lightwarrior.Imageplayer.GenserverSupervisor.terminate_worker(pid))
 
       end
 
-    end))
+    end)
 
-    {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command}, name: {:global, String.to_atom(layer)})
+    socket = case terminate_current do
+      :ok ->
+        {:ok, new_pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command}, name: {:global, String.to_atom(layer)})
+          Process.register(new_pid, String.to_atom(layer))
+          assign(socket, :pid, new_pid)
+      _  ->
+          IO.puts("terminate current not ok!")
+          socket
+    end
 
-
-
-    dbg(Process.register(pid, String.to_atom(layer)))
-
-
+    #websocket connection to ossia score
     dbg(socket.assigns.ws_pid)
     Lightwarrior.WebSocketClient.send_message_ossia_score(socket.assigns.ws_pid, %{ Message: "Play" } )
 
     {:noreply, socket
       #|> assign(:pid, "Pid: #{inspect pid}")
-      |> assign(:pid, pid)
-    }
-
-  end
-
-  @impl true
-  def handle_event_bak("start_send_shmdata", %{"value" => value}, socket) do
-    #{:noreply, assign_form(socket, changeset)}
-    #gst-launch-1.0 -v filesrc location=./stanzraum.png ! decodebin ! imagefreeze ! videoconvert ! autovideosink
-    IO.puts("start shmdata transmission")
-    #output = :os.cmd('ls -l')
-    #output = :os.cmd(socket.assigns.command)
-    #{output, exit_code} = System.cmd(socket.assigns.command, [])
-    #IO.puts(output)
-    #IO.puts("Exit code: #{exit_code}")
-
-    #exit_status = if socket.assigns.pid != nil do
-      #dbg(:sys.get_state(socket.assigns.pid))
-    #  %{
-    #    exit_status: exit_status,
-     #   port: port,
-     #   latest_output: latest_output
-     # } = :sys.get_state(socket.assigns.pid)
-     # exit_status
-    #else
-    #  1
-    #end
-
-    #dbg(exit_status)
-
-    #socket = case exit_status do
-    #  nil -> socket
-    #  _ -> assign(socket, :pid, nil)
-    #end
-
-    #dbg(socket.assigns.pid)
-
-    #{:ok, pid} = case socket.assigns.pid do
-    #  nil -> Lightwarrior.Imageplayer.start_link(%{command: socket.assigns.command, socket: socket})
-    #  _ ->
-    #    {:ok, nil}
-    #end
-
-    #dbg(socket.assigns.pid)
-    #dbg(Process.whereis(:layer_one))
-    #dbg(Process.whereis(GenserverSupervisor))
-    #dbg(DynamicSupervisor.count_children(ImagePlayerSupervisor))
-    #dbg(DynamicSupervisor.count_children(GenserverSupervisor))
-    #dbg(DynamicSupervisor.child_spec([]))
-    #dbg(DynamicSupervisor.which_children(GenserverSupervisor))
-
-    pids = Enum.map(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor), fn x ->
-      {:undefined, pid, :worker, [Lightwarrior.Imageplayer.GenserverInstance]} = x
-      #dbg(Process.monitor(pid))
-      dbg(Process.monitor(pid))
-      dbg(Process.info(pid))
-      #dbg(DynamicSupervisor.terminate_child(Lightwarrior.Imageplayer.GenserverSupervisor, pid))
-      #Process.exit(pid, :shutdown)
-      #dbg(Process.get_keys())
-      pid
-    end)
-
-    dbg(pids)
-    Enum.each( pids, fn pid ->
-      #dbg(Process.exit(pid, :shutdown))
-      dbg(DynamicSupervisor.terminate_child(Lightwarrior.Imageplayer.GenserverSupervisor, pid))
-    end)
-    #Process.exit(pid, :shutdown)
-
-    dbg(socket.assigns.command)
-    dbg(DynamicSupervisor.which_children(Lightwarrior.Imageplayer.GenserverSupervisor))
-
-    pid = case socket.assigns.pid do
-      nil ->
-        #{:ok, pid} = Lightwarrior.Imageplayer.GenserverInstance.start_link(%{command: socket.assigns.command, socket: socket}, name: {:global, :layer_one})
-        {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command})
-        pid
-      _ ->
-        %{
-          exit_status: exit_status,
-          port: _port,
-          latest_output: _latest_output
-         } = :sys.get_state(socket.assigns.pid)
-        if exit_status == nil do
-          socket.assigns.pid
-        else
-          #{:ok, pid} = Lightwarrior.Imageplayer.GenserverInstance.start_link(%{command: socket.assigns.command, socket: socket}, name: {:global, :layer_one})
-          {:ok, pid} = Lightwarrior.Imageplayer.GenserverSupervisor.start_worker(%{command: socket.assigns.command})
-          pid
-        end
-
-    end
-
-    dbg(DynamicSupervisor.count_children(GenserverSupervisor))
-    dbg(pid)
-
-    {:noreply, socket
-      #|> assign(:pid, "Pid: #{inspect pid}")
-      |> assign(:pid, pid)
+      #|> assign(:pid, pid)
     }
 
   end
