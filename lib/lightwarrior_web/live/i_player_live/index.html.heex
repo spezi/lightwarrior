@@ -24,15 +24,4 @@
 
 <div :if={@debug} id="debug" phx-change={JS.dispatch("save:debug", to: "window")}>
 
-  <div class="mt-5 ring-1 droptarget">
-    <%= @command  %>
-  </div>
-
-  <div class="mt-5">
-    <.button phx-click="start_send_shmdata" class="ml-2">Start shmdata transmission</.button>
-  </div>
-
-  <div class="mt-5">
-    <p :if={@pid} ><%= "Pid: #{inspect @pid}"%></p>
-  </div>
 </div>
