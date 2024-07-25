@@ -17,13 +17,14 @@ defmodule Lightwarrior.Imageplayer.GenserverSupervisor do
     dbg(arg)
     dbg(opts)
     child_spec = %{
-      id: Lightwarrior.Imageplayer.GenserverInstance,
-      start: {Lightwarrior.Imageplayer.GenserverInstance, :start_link, [arg]},
+      id: opts.name,
+      start: {Lightwarrior.Imageplayer.GenserverInstance, :start_link, [arg, opts],},
       #start: Lightwarrior.Imageplayer.GenserverInstance.start_link(%{command: socket.assigns.command, socket: socket}, name: :layer_one),
       #restart: :transient,
       #shutdown: 5000,
       type: :supervisor
     }
+    dbg(child_spec)
 
     dbg(DynamicSupervisor.start_child(__MODULE__, child_spec))
   end
@@ -42,7 +43,7 @@ defmodule Lightwarrior.Imageplayer.GenserverInstance do
   def start_link(args \\ [], opts \\ []) do
     dbg(args)
     dbg(opts)
-    GenServer.start_link(__MODULE__, args, name: {:global, "layer_one"})
+    GenServer.start_link(__MODULE__, args, name: {:global, opts.name})
   end
 
   def via_tuple(name) do
@@ -55,8 +56,6 @@ defmodule Lightwarrior.Imageplayer.GenserverInstance do
     #port = Port.open({:spawn, @command}, [:binary, :exit_status])
     port = Port.open({:spawn, args.command}, [:binary, :exit_status])
     Port.monitor(port)
-
-
 
     {:ok, %{port: port, latest_output: nil, exit_status: nil} }
     #{:ok, %{}}
@@ -79,15 +78,18 @@ defmodule Lightwarrior.Imageplayer.GenserverInstance do
     os_pid = port_info[:os_pid]
 
     Logger.warn "Orphaned OS process: #{os_pid}"
+    dbg(port_info)
 
-     # Send SIGINT signal to the external process
-     :os.cmd('kill -s INT #{os_pid}')
+    if os_pid do
+      # Send SIGINT signal to the external process
+      :os.cmd('kill -s INT #{os_pid}')
 
-     # Optionally, you can handle the exit status of the port
-     receive do
-       {^port, {:exit_status, status}} ->
-         IO.puts("Process exited with status: #{status}")
-     end
+      # Optionally, you can handle the exit status of the port
+      receive do
+        {^port, {:exit_status, status}} ->
+          IO.puts("Process exited with status: #{status}")
+      end
+    end
 
     :normal
   end
@@ -108,12 +110,32 @@ defmodule Lightwarrior.Imageplayer.GenserverInstance do
   end
 
   def handle_info({:DOWN, _ref, :port, port, :normal}, state) do
+
+    #dbg(GenServer.call(__MODULE__, {:get_pid, _ref}))
+    #dbg(GenServer.call(_ref, :get_pid))
+
+    #dbg(Port.info(port))
+    #dbg(_ref)
+
+    #dbg(Process.monitor(_ref))
+    #Process.info(_ref)
     Logger.info "Genserver Handled :DOWN message from port: #{inspect port}"
     {:noreply, state}
   end
 
   def handle_info({:EXIT, port, :normal}, state) do
+
+    #dbg(info[:registered_name])
+
     Logger.info "handle_info: EXIT"
+    #dbg(state)
+    #dbg(port)
+
+    #info = Process.info(self())
+
+    #dbg(Process.exit(self(), :kill))
+    #dbg(Process.unregister(info[:registered_name]))
+
     {:noreply, state}
   end
 
