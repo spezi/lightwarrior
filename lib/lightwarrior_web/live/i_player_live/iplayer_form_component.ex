@@ -95,7 +95,8 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
                     type="select"
                     label="output"
                     options={@output_options}
-                    selected="autovideosink"
+                    selected="shmdatasink"
+                    value="shmdatasink"
                     />
                 </div>
                 <div>
@@ -162,7 +163,8 @@ defmodule LightwarriorWeb.IPlayerLive.IPlayerFormComponent do
                     type="select"
                     label="output"
                     options={@output_options}
-                    selected="autovideosink"
+                    selected="shmdatasink"
+                    value="shmdatasink"
                     class="dark:text-zinc-900"
                     />
                 </div>

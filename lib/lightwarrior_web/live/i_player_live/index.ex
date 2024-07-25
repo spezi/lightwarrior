@@ -133,32 +133,44 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       _ -> nil
     end
 
+    dbg(output)
+
     init_command = cond do
-      output == "shmdatasink" ->
-        "gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file
+      player_values["output_type"] == "shmdatasink" ->
+          "gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/"
+      # catch all others
       true ->
-        "gst-launch-1.0 filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file,
+          "gst-launch-1.0"
     end
+
+    file_src = cond do
+      player_values["type"] == "image" ->
+        "filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file
+      player_values["type"] == "video" ->
+        "multifilesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file <> " loop=True stop-index=-1 ! queue"
+    end
+
+    input = init_command <> " " <> file_src
 
     command_list = cond do
       player_values["type"] == "image" ->
 
               [
-                init_command,
+                input,
                 "decodebin",
-                "videoconvert",
                 "imagefreeze",
                 "videoscale",
-                "video/x-raw,width=1920,height=1080",
+                "videoconvert",
+                "video/x-raw,format=RGBA,width=1920,height=1080",
                 output
               ]
       player_values["type"] == "video" ->
               [
-                init_command,
+                input,
                 "decodebin",
-                "videoconvert",
                 "videoscale",
-                "video/x-raw,width=1920,height=1080",
+                "videoconvert",
+                "video/x-raw,format=RGBA,width=1920,height=1080",
                 output
               ]
     end
