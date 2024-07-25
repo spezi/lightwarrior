@@ -133,10 +133,18 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
       _ -> nil
     end
 
+    init_command = cond do
+      output == "shmdatasink" ->
+        "gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file
+      true ->
+        "gst-launch-1.0 filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file,
+    end
+
     command_list = cond do
       player_values["type"] == "image" ->
+
               [
-                "gst-launch-1.0 filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file,
+                init_command,
                 "decodebin",
                 "videoconvert",
                 "imagefreeze",
@@ -146,7 +154,7 @@ defmodule LightwarriorWeb.IPlayerLive.Index do
               ]
       player_values["type"] == "video" ->
               [
-                "gst-launch-1.0 filesrc location=" <> socket.assigns.layerdata[String.to_atom(layer_name)].file,
+                init_command,
                 "decodebin",
                 "videoconvert",
                 "videoscale",
