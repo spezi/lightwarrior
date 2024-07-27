@@ -779,14 +779,17 @@ Hooks.DragArea = {
 
     this.handleEvent("file-drag", data => this.file_drag_data(data))
     this.handleEvent("change_path", _info => this.update_draggable())
+    this.handleEvent("set-layer-data", data => this.set_layerdata(data))
 
+    this.get_layerdata();
   },
   file_drag_data(data) {
     file_drag_data = data
     console.log(file_drag_data)
   },
   update_draggable() {
-    draggable = document.querySelectorAll(".draggable")
+    let dragArea = this.el
+    draggable = dragArea.querySelectorAll(".draggable")
     dropTarget = document.querySelectorAll(".droptarget")
 
     draggable.forEach((element) =>
@@ -806,15 +809,26 @@ Hooks.DragArea = {
         event.preventDefault()
         console.log("DROP")
         console.log(dragged)
+        console.log(event)
         //console.log(dragged.target.attributes[1])
         //console.log(dragged.target.attributes[2])
         console.log(liveview_drag)
-        liveview_drag.pushEvent("dropped", { path: dragged.target.attributes[1].value, filename: dragged.target.attributes[2].value})
+        liveview_drag.pushEvent("dropped", { path: dragged.target.attributes[1].value, filename: dragged.target.attributes[2].value, target: event.target.id})
         //dragged = null
       })
     }); 
 
     console.log(draggable)
+  },
+  get_layerdata(data) {
+      this.pushEvent("phx:get_layerdata_cache", {
+      layerdata: localStorage.getItem("layerdata"),
+    })
+  },
+  set_layerdata(data) {
+    console.log("set Layerdata")
+    console.log(data)
+    localStorage.setItem("layerdata", JSON.stringify(data))
   }
 }
 
