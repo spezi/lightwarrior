@@ -7,9 +7,9 @@ defmodule Lightwarrior.WebSocketClient do
 
   @impl true
   def handle_connect(conn, state) do
-    IO.puts "Connected!"
-    dbg(state)
-    dbg(conn)
+    IO.puts "Websocket Connected!"
+    #dbg(state)
+    #dbg(conn)
 
     {:ok, state}
   end
@@ -22,13 +22,13 @@ defmodule Lightwarrior.WebSocketClient do
 
   @impl true
   def handle_cast({:send, {type, msg} = frame}, state) do
-    IO.puts "Sending #{type} frame with payload: #{msg}"
+    IO.puts "Websocket Sending #{type} frame with payload: #{msg}"
     {:reply, frame, state}
   end
 
   @impl true
   def handle_disconnect(_reason, state) do
-    IO.puts "Disconnected!"
+    IO.puts "Websocket Disconnected!"
     {:ok, state}
   end
 
@@ -37,7 +37,7 @@ defmodule Lightwarrior.WebSocketClient do
   end
 
   def send_message_ossia_score(pid, message) do
-    {status, result} = Jason.encode(message)
+    {_status, result} = Jason.encode(message)
     WebSockex.send_frame(pid, {:text, result})
   end
 
