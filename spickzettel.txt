@@ -3,3 +3,5 @@ gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc socket
 sudo tcpdump -i enx3c18a0d4d929
 
 tcpdump -i enp5s0 -n udp port 6454 -X
+
+ip route add 10.0.0.0/24 dev enp5s0 
