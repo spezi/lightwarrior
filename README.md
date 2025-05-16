@@ -13,3 +13,12 @@ mix phx.gen.live Hyperion --no-schema
 mix phx.gen.live Imageplayer --no-schema
 
 mix phx.gen.live Imageplayer IPlayer iplayer --no-schema
+
+
+# screenshot ossia
+
+gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ \
+  shmdatasrc socket-path=/tmp/score_shm_video \
+  ! videoconvert \
+  ! jpegenc \
+  ! multifilesink location=stripes.jpg next-file=key-frame max-files=1

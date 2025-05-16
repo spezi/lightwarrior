@@ -57,7 +57,9 @@ defmodule Lightwarrior.MixProject do
       {:thumbnex, "~> 0.5.1"},
       {:rambo, "~> 0.3"},
       {:websockex, "~> 0.4.3"},
-      {:mogrify, "~> 0.9.3"}
+      {:mogrify, "~> 0.9.3"},
+      {:oscx, "~> 0.1.1"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 

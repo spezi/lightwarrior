@@ -41,7 +41,7 @@ defmodule Lightwarrior.Helper do
     #leds = Map.get(config, "leds")
     #dbg(leds)
     result = Enum.map_every(configs, 1, fn config ->
-      leds = Map.get(config.config, "info")
+      leds = Map.get(config["config"], "info")
              |> Map.get("leds")
 
       leds_pixel = Enum.map_every(leds, 1, fn led ->
@@ -53,8 +53,8 @@ defmodule Lightwarrior.Helper do
               }
              end)
       %{
-        instance: config.instance,
-        friendly_name: config.friendly_name,
+        instance: config["instance"],
+        friendly_name: config["friendly_name"],
         leds: leds_pixel,
         start: get_stripe_start_pixipoint!(leds_pixel),
         end: get_stripe_end_pixipoint!(leds_pixel),

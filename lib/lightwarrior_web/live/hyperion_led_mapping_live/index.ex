@@ -18,9 +18,26 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
         {:ok, stripes_with_config } = Hyperion.get_all_stripes_config(stripes)
         {serverinfo, stripes_with_config}
 
+      {:ok, serverinfo} ->
+        {:ok, stripes} = Hyperion.collect_stripes(serverinfo)
+        {:ok, stripes_with_config} = Hyperion.get_all_stripes_config(stripes)
+        {serverinfo, stripes_with_config}
+
       {:error, :econnrefused} ->
         {nil, []}
     end
+
+    #dbg(stripes_with_config)
+
+    # Dump stripes_with_config to file for debugging
+    #backup = %{"stripes_with_config" => stripes_with_config}
+    #File.write!("./mappings/stripes_config_dump.json", Jason.encode!(backup, pretty: true))
+
+    # Read and parse the JSON file
+    json_content = File.read!("./mappings/stripes_config_dump.json")
+    parsed_data = Jason.decode!(json_content)
+    #dbg(parsed_data)
+    stripes_with_config = Map.get(parsed_data, "stripes_with_config")
 
     socket = case serverinfo do
       nil -> socket |> put_flash(:error, "connection to hyperion failed")
@@ -54,7 +71,7 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
     end
 
     socket = socket
-      |> push_event("stripes-ready", %{ stripes: socket.assigns.stripes})
+      |> push_event("stripes-ready", %{stripes: socket.assigns.stripes})
 
     {:noreply, socket
       |> assign(:page_title, page_title(socket.assigns.live_action))
@@ -74,7 +91,7 @@ def handle_event("phx:stripe_change", params, socket) do
   stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
 
   stripe = case params do
-    %{"smoothing" => smoothing, "value" => ""} -> put_in(stripe, [:config, "info", "smoothing", "enable"], smoothing)
+    %{"smoothing" => smoothing, "value" => ""} -> put_in(stripe, ["config", "info", "smoothing", "enable"], smoothing)
     _ -> stripe
   end
 
@@ -100,7 +117,7 @@ def handle_event("phx:global_change", params, socket) do
     #dbg(stripe)
     case params do
       %{"smoothing" => smoothing, "value" => ""} ->
-          dbg(put_in(stripe, [:config, "info", "smoothing", "enable"], smoothing))
+          dbg(put_in(stripe, ["config", "info", "smoothing", "enable"], smoothing))
       _ -> stripe
     end
   end)
@@ -131,10 +148,10 @@ end
     check_error = case check_stripes do
       true ->
         first_stripe_in_response = Enum.fetch!(socket.assigns.stripes, 0)
-        success = Map.get(first_stripe_in_response.config, "success")
+        success = Map.get(first_stripe_in_response["config"], "success")
         case success do
           true -> %{success: true, error: nil}
-          false -> %{success: false, error: Map.get(first_stripe_in_response.config, "error")}
+          false -> %{success: false, error: Map.get(first_stripe_in_response["config"], "error")}
         end
       false ->
 
@@ -216,7 +233,7 @@ end
 
     #dbg(Enum.fetch!(socket.assigns.stripes, socket.assigns.selected))
     stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
-    num_leds = stripe.config["info"]["device"]["hardwareLedCount"]
+    num_leds = stripe["config"]["info"]["device"]["hardwareLedCount"]
 
     #lightwarrior.ex ;)
     updated = Lightwarrior.update_selected_stripe_data_pixel(
@@ -257,14 +274,17 @@ end
 
     #dbg(Enum.fetch!(socket.assigns.stripes, socket.assigns.selected))
     stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
-    stripe_config = Map.get(Map.get(stripe, :config), "info")
+    stripe_config = Map.get(Map.get(stripe, "config"), "info")
     #dbg(stripe_config)
     stripe_config_updated = Map.replace(stripe_config, "leds", leds)
 
     #dbg(stripe_config_updated)
     #save = %{"success"  => true}
-    save = Hyperion.save_current_config(stripe_config_updated)
-    dbg(save)
+    #save = Hyperion.save_current_config(stripe_config_updated)
+    #dbg(save)
+
+    save = %{"success" => true }
+
     socket = case save do
       %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
       %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
@@ -289,7 +309,7 @@ end
     stripes = Enum.map_every(socket.assigns.stripes, 1, fn stripe ->
       #dbg(stripe)
       dbg(Hyperion.switch_instance(stripe))
-      save = Hyperion.save_current_config(Map.get(Map.get(stripe, :config), "info"))
+      save = Hyperion.save_current_config(Map.get(Map.get(stripe, "config"), "info"))
       dbg(save)
       socket = case save do
         %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
@@ -439,10 +459,28 @@ end
     stripe = Enum.fetch!(socket.assigns.stripes, socket.assigns.selected)
     stripe_config_updated = Map.replace(stripe_config, "leds", leds)
 
+
+    stripes_with_config = List.update_at(socket.assigns.stripes, socket.assigns.selected, fn stripe -> Map.put(stripe, "config", %{"info" => stripe_config_updated}) end)
+
+    # Dump stripes_with_config to file for debugging
+    backup = %{"stripes_with_config" => stripes_with_config}
+    File.write!("./mappings/stripes_config_dump.json", Jason.encode!(backup, pretty: true))
+
+    Lightwarrior.Hyperion.update_stripe_ossia(leds, socket.assigns.selected)
+
+
     #dbg(stripe_config_updated)
     #save = %{"success"  => true}
-    save = Hyperion.save_current_config(stripe_config_updated)
-    dbg(save)
+    #save = Hyperion.save_current_config(stripe_config_updated)
+    #dbg(save)
+
+    #dbg(stripe_config_updated)
+    #dbg(socket.assigns.stripes)
+    #dbg(socket.assigns.selected)
+
+
+    save = %{"success" => true }
+
     socket = case save do
       %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
       %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
@@ -450,8 +488,14 @@ end
 
 
 
-    {:ok, stripes} = Hyperion.collect_stripes(socket.assigns.serverinfo)
-    {:ok, stripes_with_config } = Hyperion.get_all_stripes_config(stripes)
+    #{:ok, stripes} = Hyperion.collect_stripes(socket.assigns.serverinfo)
+    #{:ok, stripes_with_config } = Hyperion.get_all_stripes_config(stripes)
+
+    # Read and parse the JSON file
+    json_content = File.read!("./mappings/stripes_config_dump.json")
+    parsed_data = Jason.decode!(json_content)
+    #dbg(parsed_data)
+    stripes_with_config = Map.get(parsed_data, "stripes_with_config")
 
     {:noreply, socket
       #|> stream_insert(:tests, test)
@@ -477,5 +521,15 @@ end
 
   defp page_title(:index), do: "Hyperion Led Mappings"
   defp page_title(:edit), do: "Hyperion Led Mappings Edit"
+
+  # Calculate center point of coordinates
+  defp calculate_center(coords) do
+    h_center = (coords["hmax"] + coords["hmin"]) / 2
+    v_center = (coords["vmax"] + coords["vmin"]) / 2
+    %{
+      "h" => h_center,
+      "v" => v_center
+    }
+  end
 
 end
