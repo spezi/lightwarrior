@@ -6,6 +6,8 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
   alias Phoenix.LiveView.AsyncResult
   alias Lightwarrior.Helper
 
+  alias Lightwarrior.Hyperion.SC
+
   @impl true
   def mount(_params, _session, socket) do
 
@@ -44,6 +46,8 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
         _ -> socket
     end
 
+    {:ok, sc_pid} = SC.start_link()
+
 
     {:ok, socket
       |> assign(:debug, false)
@@ -54,6 +58,7 @@ defmodule LightwarriorWeb.HyperionLEDMappingLive.Index do
       |> assign(:stripes, stripes_with_config)
       |> assign(:lockdistance, true)
       |> assign(:stripelength, 0)
+      |> assign(:sc_pid, sc_pid)
     }
   end
 
@@ -152,6 +157,7 @@ end
         case success do
           true -> %{success: true, error: nil}
           false -> %{success: false, error: Map.get(first_stripe_in_response["config"], "error")}
+          error -> %{success: true, error: error}
         end
       false ->
 
@@ -466,7 +472,7 @@ end
     backup = %{"stripes_with_config" => stripes_with_config}
     File.write!("./mappings/stripes_config_dump.json", Jason.encode!(backup, pretty: true))
 
-    Lightwarrior.Hyperion.update_stripe_ossia(leds, socket.assigns.selected)
+    Lightwarrior.Hyperion.update_stripe_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
 
 
     #dbg(stripe_config_updated)

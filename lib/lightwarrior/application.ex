@@ -18,7 +18,7 @@ defmodule Lightwarrior.Application do
       # Start to serve requests, typically the last entry
       LightwarriorWeb.Endpoint,
       {Registry, keys: :unique, name: Lightwarrior.Imageplayer.Registry},
-      {DynamicSupervisor, name: Lightwarrior.Imageplayer.GenserverSupervisor, strategy: :one_for_one},
+      {DynamicSupervisor, name: Lightwarrior.Imageplayer.GenserverSupervisor, strategy: :one_for_one}
       #{Lightwarrior.Imageplayer.GenserverSupervisor, [name: GenserverSupervisor]},
       #{Lightwarrior.MyTracker, [name: MyTracker, pubsub_server: Lightwarrior.PubSub]}
       #{Lightwarrior.Imageplayer.LayerTracker, []},

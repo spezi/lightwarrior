@@ -182,14 +182,14 @@ defmodule Lightwarrior.Hyperion do
     @doc """
   Save config of current active stripe
   """
-  def update_stripe_ossia(leds, selected) do
+  def update_stripe_ossia(leds, selected, sc_pid) do
 
     #dbg(leds)
     start = calculate_center(Enum.at(leds, 0))
     stop = calculate_center(Enum.at(leds, -1))
     #dbg(start)
     #dbg(stop)
-    update_ossia_via_osc(start, stop, selected)
+    update_ossia_via_osc(start, stop, selected, sc_pid)
   end
 
   defp calculate_center(coords) do
@@ -201,13 +201,13 @@ defmodule Lightwarrior.Hyperion do
     }
   end
 
-  defp update_ossia_via_osc(start, stop, selected) do
+  defp update_ossia_via_osc(start, stop, selected, sc_pid) do
     # IP or host and port number for the UDP connection
-    ip_address = '127.0.0.1' # This could be changed to named address, like 'localhost'
-    port_num = 9997 # In this example, this is the default port used by Protokol
+    #ip_address = '127.0.0.1' # This could be changed to named address, like 'localhost'
+    #port_num = 9997 # In this example, this is the default port used by Protokol
 
     # Open a port
-    {:ok, port} = :gen_udp.open(0, [:binary, {:active, true}])
+    #{:ok, port} = :gen_udp.open(0, [:binary, {:active, true}])
 
     start_address = "/start" <> Integer.to_string(selected)
     end_address = "/end" <> Integer.to_string(selected)
@@ -217,11 +217,15 @@ defmodule Lightwarrior.Hyperion do
     osc_message_end = %OSCx.Message{address: end_address, arguments: [stop["h"], stop["v"]]} |> OSCx.encode()
 
     # Send message
-    dbg(:gen_udp.send(port, ip_address, port_num, osc_message_start))
-    dbg(:gen_udp.send(port, ip_address, port_num, osc_message_end))
+    #dbg(:gen_udp.send(port, ip_address, port_num, osc_message_start))
+    #dbg(:gen_udp.send(port, ip_address, port_num, osc_message_end))
+    #Lightwarrior.Hyperion.OSC.send_message(osc_message_start, [])
+    #Lightwarrior.Hyperion.OSC.send_message(osc_message_end, [])
+    dbg(Lightwarrior.Hyperion.SC.send(sc_pid, osc_message_start))
+    dbg(Lightwarrior.Hyperion.SC.send(sc_pid, osc_message_end))
 
     # Close the port
-    :gen_udp.close(port)
+    #:gen_udp.close(port)
 
   end
 
