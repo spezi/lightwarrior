@@ -5,3 +5,11 @@ sudo tcpdump -i enx3c18a0d4d929
 tcpdump -i enp5s0 -n udp port 6454 -X
 
 ip route add 10.0.0.0/24 dev enp5s0 
+
+
+
+
+
+### visual 1
+
+tcpdump -i enp2s0 -n udp port 6454 -X
