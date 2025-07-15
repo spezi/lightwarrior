@@ -1,0 +1,39 @@
+<Layouts.app flash={@flash} debug={@debug}>
+
+    <div class="flex flex-row w-full gap-4">
+        <div class="basis-128">
+            <.led_instances_menue state={@state} selected={@selected}>
+            </.led_instances_menue>
+        </div>
+        <div class="basis-full">
+            <div class="card card-xl lg:card-side">
+                <div class="card-body p-2">
+                    <h2 class="card-title">Mapping</h2>
+
+                    <!-- name of each tab group should be unique -->
+                    <div class="tabs tabs-lift">
+                        <input type="radio" name="my_tabs_3" class="tab" aria-label="input mapping" checked="checked" />
+                        <div class="tab-content bg-base-100 border-base-300 p-2">
+                        <div id="mapping_wrapper_input" class="bg-[url('/images/rohteil.jpeg')] bg-opacity-25 bg-cover w-full aspect-[16/9] bg-slate-100 relative" phx-hook="Stage">
+                            <canvas id="mapping_input" class="max-w-full w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0" phx-update="ignore"></canvas>
+                        </div>
+                        </div>
+
+                        <input type="radio" name="my_tabs_3" class="tab" aria-label="output mapping" />
+                        <div class="tab-content bg-base-100 border-base-300 p-2">
+                            <div id="mapping_wrapper_output" class="bg-[url('/images/stripes.png')] bg-opacity-25 bg-cover w-full aspect-[16/9] bg-slate-100 relative">
+                                <canvas id="mapping_output" class="max-w-full w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0" phx-update="ignore"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>   
+        </div>
+    </div>
+
+      
+
+</Layouts.app>
+
+<Layouts.debug :if={@debug} state={@state}>
+</Layouts.debug>
