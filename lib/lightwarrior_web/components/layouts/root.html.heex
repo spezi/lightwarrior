@@ -24,6 +24,27 @@
         setTheme(localStorage.getItem("phx:theme") || "system");
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
         window.addEventListener("phx:set-theme", ({ detail: { theme } }) => setTheme(theme));
+
+
+        const toggleLocalstorage = (data) => {
+          console.log("toggle local storage:")
+          //console.log(data.debug)
+          //console.log(data.autosave) 
+            
+            if( data.debug != undefined ) {
+              console.log("debug: " + data.debug)
+              localStorage.setItem("phx:debug", data.debug);
+            }
+
+            if( data.autosave != undefined ) {
+              console.log("autosave: " + data.autosave)
+              localStorage.setItem("phx:autosave", data.autosave);
+            }
+
+        };
+    
+        window.addEventListener("phx:localstorage_toggle", ({ detail: data  }) => toggleLocalstorage(data));
+
       })();
     </script>
   </head>

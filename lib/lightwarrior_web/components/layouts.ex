@@ -23,6 +23,9 @@ defmodule LightwarriorWeb.Layouts do
       <div class="flex-none">
         <ul class="flex flex-column px-1 space-x-4 items-center">
           <li>
+            <.autosave_toggle autosave={@autosave} />
+          </li>
+          <li>
             <.debug_toggle debug={@debug} />
           </li>
           <li>
@@ -116,22 +119,58 @@ defmodule LightwarriorWeb.Layouts do
 
   attr :debug, :boolean, doc: "the checked flag for checkbox inputs"
 
-  def debug_toggle(assigns) do
+  def autosave_toggle(assigns) do
     ~H"""
-    <div class="relative flex flex-row gap-2 items-center rounded-full">
+    <div id="autosave_switch_wrapper" class="relative flex flex-row gap-2 items-center rounded-full" phx-hook="LocalStorage">
 
-        <span>debug</span><input id="debug_switch" phx-click="toggle_debug" type="checkbox" class="toggle" checked={@debug}/>
+        <span>autosave</span><input id="autosave_switch" phx-click={
+          JS.push("phx.toggle_autosave")
+          #|>  JS.dispatch("phx:localstorage_toggle", detail: %{ autosave: @autosave } )
+        }
+        type="checkbox" class="toggle" checked={@autosave}/>
 
     </div>
     """
   end
 
+  @doc """
+  Provides debug toggle switch.
+  """
+
+  attr :debug, :boolean, doc: "the checked flag for checkbox inputs"
+
+  def debug_toggle(assigns) do
+    ~H"""
+    <div id="debug_switch_wrapper" class="relative flex flex-row gap-2 items-center rounded-full" phx-hook="LocalStorage">
+
+        <span>debug</span><input id="debug_switch" phx-click={
+          JS.push("phx.toggle_debug")
+          #|> JS.dispatch("phx:localstorage_toggle", detail: %{ debug: @debug } )
+        }
+        type="checkbox" class="toggle" checked={@debug}/>
+
+    </div>
+    """
+  end
+
+  attr :selected, :integer, doc: "selected id"
 
   def debug(assigns) do
     ~H"""
       <hr class="mt-10">
-      <div class="flex">
-        <div class="basis-1/3">
+      <div class="flex text-xs">
+      <div class="basis-1/4">
+          <h2>assigns</h2>
+          <pre class="w-64">
+              <%=
+                #pretty_json = Jason.encode!(Map.delete(assigns, :state), pretty: true)
+                #raw(pretty_json)
+                assigns_no_state = Map.drop(assigns, [:state, :inner_block, :__changed__, :__given__])
+                Kernel.inspect(assigns_no_state, pretty: true)
+            %>
+          </pre>
+        </div>
+        <div class="basis-1/4">
           <h2>serverinfo</h2>
           <pre>
             <%=
@@ -140,7 +179,7 @@ defmodule LightwarriorWeb.Layouts do
             %>
           </pre>
         </div>
-        <div class="basis-1/3">
+        <div class="basis-1/4">
           <h2>stripes</h2>
           <pre>
             <%=
@@ -149,7 +188,7 @@ defmodule LightwarriorWeb.Layouts do
             %>
           </pre>
         </div>
-        <div class="basis-1/3">
+        <div class="basis-1/4">
         <h2>stripes_with_config</h2>
           <pre>
             <%=

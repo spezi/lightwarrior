@@ -7,6 +7,8 @@ import { Transformer } from '@pixi-essentials/transformer';
 
 let Hooks = {}
 
+// local storage in lightwarrior_web/components/layouts/root.html.heex
+
 // Create a PixiJS application.
 var app = null
 const mapping_container = document.getElementById('mapping_input');
@@ -40,6 +42,16 @@ var waitforResize = false
 var step_h = 0
 var step_v = 0
 
+Hooks.LocalStorage= { 
+  mounted() {
+    console.log("localStorageInit")
+
+    this.pushEvent("phx:init-autosave", localStorage.getItem("phx:autosave"));
+    this.pushEvent("phx:init-debug", localStorage.getItem("phx:debug"));
+
+  }
+}
+
 Hooks.Stage= {
   async mounted() {
     console.log("stage mounted")
@@ -67,7 +79,7 @@ Hooks.Stage= {
     app.canvas.height = mapping_container_wrapper.offsetHeight
     
     
-    this.pushEvent("phx:get-stripes-config");
+    
 
     console.log(app)
 
@@ -87,7 +99,7 @@ Hooks.Stage= {
     */
     for (const instance of data.instance_data_pixel) {
       instance_points = { start: instance.start, end: instance.end}
-      console.log(instance_points);
+      //console.log(instance_points);
       instances.push(instance_points) 
     }
 

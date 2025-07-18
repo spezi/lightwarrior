@@ -173,23 +173,26 @@ defmodule Lightwarrior.Hyperion do
   Get config of any stripe
   """
   def get_all_stripes_config(stripes) do
+    if stripes != nil do
+      stripes = Enum.map_every(stripes, 1, fn stripe ->
+        config = case switch_instance(stripe) do
+          {:ok, switch} -> get_current_config()
+          {:error, error} -> error
+        end
 
-    stripes = Enum.map_every(stripes, 1, fn stripe ->
-      config = case switch_instance(stripe) do
-        {:ok, switch} -> get_current_config()
-        {:error, error} -> error
-      end
+        config = case config do
+          {:ok, config} -> config
+          {:error, error} -> error
+        end
 
-      config = case config do
-        {:ok, config} -> config
-        {:error, error} -> error
-      end
+        Map.put(stripe, :config, config)
+      end)
 
-      Map.put(stripe, :config, config)
-    end)
-
-    #dbg(stripes)
-    {:ok, stripes}
+      #dbg(stripes)
+      {:ok, stripes}
+    else
+      {:error, nil}
+    end
   end
 
   @doc """
@@ -202,12 +205,16 @@ defmodule Lightwarrior.Hyperion do
 
   """
   def collect_stripes(serverinfo) do
-    Logger.info("collect stripes")
-    %{"info" => info} = serverinfo
-    %{"instance" => stripes } = info
-    stripes = Enum.map_every(stripes, 1, fn stripe -> Helper.string_keys_to_atom_keys(stripe) end)
-    #raise "TODO"
-    {:ok, stripes}
+    if serverinfo do
+      Logger.info("collect stripes")
+      %{"info" => info} = serverinfo
+      %{"instance" => stripes } = info
+      stripes = Enum.map_every(stripes, 1, fn stripe -> Helper.string_keys_to_atom_keys(stripe) end)
+      #raise "TODO"
+      {:ok, stripes}
+    else
+      {:error, nil}
+    end
   end
 
   def get_instance_leds(current_config) do

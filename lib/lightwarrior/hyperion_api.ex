@@ -23,7 +23,7 @@ defmodule Lightwarrior.HyperionApi do
 
     {:ok,
       %{
-        serverinfo: "penis",
+        serverinfo: nil,
         stripes: nil,
         stripes_with_config: nil
       }
@@ -32,9 +32,21 @@ defmodule Lightwarrior.HyperionApi do
 
   @impl true
   def handle_info(:load_initial_data, state) do
-    {:ok, serverinfo} = Hyperion.get_serverinfo()
-    {:ok, stripes} = Hyperion.collect_stripes(serverinfo)
-    {:ok, stripes_with_config} = Hyperion.get_all_stripes_config(stripes)
+
+    serverinfo = case Hyperion.get_serverinfo() do
+      {:ok, serverinfo} -> serverinfo
+      {:error, :econnrefused} -> nil
+    end
+
+    stripes = case Hyperion.collect_stripes(serverinfo) do
+      {:ok, stripes } -> stripes
+      {:error, nil} -> nil
+    end
+
+    stripes_with_config = case Hyperion.get_all_stripes_config(stripes) do
+      {:ok, stripes_with_config } -> stripes_with_config
+      {:error, nil} -> nil
+    end
 
     #dbg(serverinfo)
     #dbg(stripes)
