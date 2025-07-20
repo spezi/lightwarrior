@@ -240,7 +240,7 @@ defmodule LightwarriorWeb.CoreComponents do
     ~H"""
     <fieldset class="fieldset mb-2">
       <label>
-        <span :if={@label} class="fieldset-label mb-1">{@label}</span>
+        <span :if={@label} class="fieldset-label mb-2">{@label}</span>
         <input
           type={@type}
           name={@name}
@@ -248,7 +248,26 @@ defmodule LightwarriorWeb.CoreComponents do
           min="0"
           max="100"
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
-          class={["w-full range range-sm", @errors != [] && "input-error"]}
+          class={["w-full range range-accent range-xs",  @errors != [] && "input-error"]}
+          {@rest}
+        />
+      </label>
+      <.error :for={msg <- @errors}>{msg}</.error>
+    </fieldset>
+    """
+  end
+
+  def input(%{type: "color"} = assigns) do
+    ~H"""
+    <fieldset class="fieldset mb-2">
+      <label>
+        <span :if={@label} class="fieldset-label mb-1">{@label}</span>
+        <input
+          type={@type}
+          name={@name}
+          id={@id}
+          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+          class={["w-full",  @errors != [] && "input-error"]}
           {@rest}
         />
       </label>

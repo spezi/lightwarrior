@@ -5,52 +5,7 @@ import { Transformer } from '@pixi-essentials/transformer';
  * @type {import("phoenix_live_view").HooksOptions}
  */
 
-let Hooks = {}
-
-// local storage in lightwarrior_web/components/layouts/root.html.heex
-Hooks.LocalStorage= { 
-  mounted() {
-    console.log("localStorageInit")
-    this.pushEvent("phx:init-autosave", localStorage.getItem("phx:autosave"));
-    this.pushEvent("phx:init-debug", localStorage.getItem("phx:debug"));
-    this.pushEvent("phx:init-input_opacity", localStorage.getItem("phx:input_opacity"));
-    this.pushEvent("phx:init-output_opacity", localStorage.getItem("phx:output_opacity"));
-    this.pushEvent("phx:init-uniform_opacity", localStorage.getItem("phx:uniform_opacity"));
-    this.pushEvent("phx:last_open_tab", { last_open_tab: localStorage.getItem("phx:last_open_tab")});
-
-    this.handleEvent("localstorage", data => this.localstorage_set(data))
-  },
-  localstorage_set(data) {
-    console.log(data)
-    if( data.debug != undefined ) {
-      console.log("debug: " + data.debug)
-      localStorage.setItem("phx:debug", data.debug);
-    }
-
-    if( data.autosave != undefined ) {
-      console.log("autosave: " + data.autosave)
-      localStorage.setItem("phx:autosave", data.autosave);
-    }
-
-    if( data.input_opacity != undefined ) {
-      console.log("input_opacity: " + data.input_opacity)
-      localStorage.setItem("phx:input_opacity", data.input_opacity);
-    }
-
-    if( data.output_opacity != undefined ) {
-      console.log("output_opacity: " + data.output_opacity)
-      localStorage.setItem("phx:output_opacity", data.output_opacity);
-    }
-    if( data.uniform_opacity != undefined ) {
-      console.log("uniform_opacity: " + data.uniform_opacity)
-      localStorage.setItem("phx:uniform_opacity", data.uniform_opacity);
-    }
-    if( data.last_open_tab != undefined ) {
-      console.log("last_open_tab: " + data.last_open_tab)
-      localStorage.setItem("phx:last_open_tab", data.last_open_tab);
-    }
-  }
-}
+let MappingHooks = {}
 
 // Create a PixiJS application.
 
@@ -84,7 +39,7 @@ var lockDistance = true
 var step_h = 0
 var step_v = 0
 
-Hooks.Stage= {
+MappingHooks.Stage= {
   async mounted() {
     console.log("stage mounted")
     console.log(this)
@@ -205,4 +160,4 @@ Hooks.Stage= {
   }
 }
 
-export default Hooks
+export default MappingHooks

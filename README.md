@@ -37,3 +37,14 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 * Docs: https://hexdocs.pm/phoenix
 * Forum: https://elixirforum.com/c/phoenix-forum
 * Source: https://github.com/phoenixframework/phoenix
+
+### Code Navigator
+
+#### for restore on init localstorage
+
+* add field to: lib/lightwarrior/structs/mapping_menue.ex
+    * add field to cast
+* set default on mount in lib/lightwarrior_web/live/hyperion_config_live/index.ex
+* push_event if wants to save in local storage :
+    * |> push_event("localstorage", %{ input_opacity: mapping_tools_form["opacity"] })
+
