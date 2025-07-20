@@ -90,7 +90,7 @@ defmodule LightwarriorWeb.HyperionComponents do
     <.form for={@form} phx-change="validate" >
     <div class="flex flex-row m-3 gap-1 text-xs">
 
-
+        <.input name="side" type="hidden" value={@side} placeholder="Stripe length" />
 
         <div class="w-26">
             <.input type="text" field={@form[:stripe_length]}  placeholder="Stripe length" />
@@ -133,10 +133,11 @@ defmodule LightwarriorWeb.HyperionComponents do
 
         <div class="flex flex-row-reverse flex-end gap-1 w-64 grow m-1">
 
-          <button :if={!@mapping.lockdistance} phx-click="phx:toggle-distance-lock" class="btn btn-sm btn-neutral btn-square">
+
+          <button :if={!@mapping["lockdistance"]} phx-click="phx:toggle-distance-lock" phx-value-side={@side} phx-value-value={@mapping["lockdistance"]} class="btn btn-sm btn-neutral btn-square">
             <.icon name="hero-lock-closed-mini" class="size-5 opacity-40 group-hover:opacity-70" />
           </button>
-          <button :if={@mapping.lockdistance} phx-click="phx:toggle-distance-lock" class="btn btn-sm btn-neutral btn-square">
+          <button :if={@mapping["lockdistance"]} phx-click="phx:toggle-distance-lock" phx-value-side={@side} phx-value-value={!@mapping["lockdistance"]} class="btn btn-sm btn-neutral btn-square">
             <.icon name="hero-lock-open-mini" class="size-5 opacity-40 group-hover:opacity-70" />
           </button>
 

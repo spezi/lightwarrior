@@ -17,14 +17,18 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     form_data = %MappingMenueForm{}
 
+    mapping = %{"lockdistance"=> true, "opacity"=> 70}
+
     {:ok,
      socket
      |> assign(:page_title, "Listing Hyperionconfigs")
      |> assign(:state, Lightwarrior.HyperionApi.get_data())
      |> assign(:selected, nil)
      |> assign(:debug, false)
-     |> assign(:mapping, %{lockdistance: true, opacity: 70})
+     |> assign(:mapping_input, mapping)
+     |> assign(:mapping_output, mapping)
      |> assign(form: to_form(Map.from_struct(form_data)))
+     |> assign(:side, "input")
      |> assign(:autosave, false)
      |> assign(:mapping_container_size, %{width: 0.0, height: 0.0})
      #|> stream(:hyperionconfigs, Hyperion.list_hyperionconfigs())
@@ -45,16 +49,33 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     {:noreply, socket}
   end
 
-  def handle_event("validate", %{"_target" => target, "opacity" => opacity} = _referer, socket) do
+  def handle_event("validate", %{"_target" => target, "opacity" => opacity, "side" => side} = _referer, socket) do
 
-    mapping = %{lockdistance: socket.assigns.mapping.lockdistance, opacity: String.to_integer(opacity)}
-    dbg(mapping)
+    #mapping = %{lockdistance: socket.assigns.mapping.lockdistance, opacity: String.to_integer(opacity)}
+    #dbg(opacity)
 
-    {:noreply,
-      socket
-      |> assign(:mapping, mapping)
-    }
+    case side do
+      "input" ->
+
+        mapping = %{"lockdistance"=> socket.assigns.mapping_input["lockdistance"], "opacity"=> String.to_integer(opacity)}
+
+        {:noreply,
+          socket
+          |> assign(:mapping_input, mapping)
+          |> assign(:side, side)
+        }
+      "output" ->
+        mapping = %{"lockdistance"=> socket.assigns.mapping_output["lockdistance"], "opacity"=> String.to_integer(opacity)}
+        {:noreply,
+          socket
+          |> assign(:mapping_output, mapping)
+          |> assign(:side, side)
+        }
+    end
+
+
   end
+
 
   def handle_event("phx:move-stripe", %{"direction" => direction, "value" => value}, socket) do
 
