@@ -1,5 +1,26 @@
 # Lightwarrior
 
+## Prerequisites
+
+```
+npm install --prefix assets
+```
+
+### Arch Linux
+
+```
+pacman -S \
+    elixir \
+    erlang-asn1 \
+    erlang-parsetools \
+    erlang-public_key \
+    erlang-ssl \
+    erlang-syntax_tools \
+    erlang-xmerl
+```
+
+## Setup
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies
