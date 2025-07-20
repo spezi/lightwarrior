@@ -55,9 +55,11 @@ defmodule Lightwarrior.Helper do
                 "vmin" => coordinate_to_pixel(led["vmin"], mapping_container_size.height),
               }
              end)
+
+      #dbg(config)
       %{
-        instance: config["instance"],
-        friendly_name: config["friendly_name"],
+        instance: config.instance,
+        friendly_name: config.friendly_name,
         leds: leds_pixel,
         start: get_stripe_start_pixipoint!(leds_pixel),
         end: get_stripe_end_pixipoint!(leds_pixel),

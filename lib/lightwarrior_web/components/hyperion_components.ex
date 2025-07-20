@@ -86,16 +86,18 @@ defmodule LightwarriorWeb.HyperionComponents do
   end
 
   def mapping_tool_menue(assigns) do
+    #dbg(assigns.mapping_changeset)
     ~H"""
-    <.form for={@form} phx-change="validate" >
+    <.form id={"mapping-menue-form-#{@side}"} for={@mapping_changeset} phx-change="validate">
     <div class="flex flex-row m-3 gap-1 text-xs">
 
-        <.input name="side" type="hidden" value={@side} placeholder="Stripe length" />
+        <.input type="hidden" field={@mapping_changeset[:side]} />
+        <.input type="hidden" field={@mapping_changeset[:lockdistance]} value={@mapping_changeset.params["lockdistance"]}/>
 
+        <!-- stripe length -->
         <div class="w-26">
-            <.input type="text" field={@form[:stripe_length]}  placeholder="Stripe length" />
+            <.input type="text" field={@mapping_changeset[:stripe_length]}  placeholder="Stripe length" />
         </div>
-
         <div>
           <div class="flex flex-row w-fit p-1">
             <select type="select" class="select select-sm">
@@ -112,6 +114,7 @@ defmodule LightwarriorWeb.HyperionComponents do
           </div>
         </div>
 
+         <!-- move stripe -->
         <div class="flex flex-row gap-1 m-1">
           <span class="py-1">move: </span>
           <button phx-click="phx:move-stripe" phx-value-direction="left" class="btn btn-sm btn-neutral btn-square">
@@ -129,18 +132,17 @@ defmodule LightwarriorWeb.HyperionComponents do
           <input type="text" placeholder="steps" class="input input-sm w-16" />
         </div>
 
-        <.input type="range" label="opacity" field={@form[:opacity]} class="range range-sm" value={@mapping[:opacity]}/>
+        <!-- opacity -->
+        <.input type="range" label="opacity" field={@mapping_changeset[:opacity]} class="range range-sm" />
 
+        <!-- stripe functions  -->
         <div class="flex flex-row-reverse flex-end gap-1 w-64 grow m-1">
-
-
-          <button :if={!@mapping["lockdistance"]} phx-click="phx:toggle-distance-lock" phx-value-side={@side} phx-value-value={@mapping["lockdistance"]} class="btn btn-sm btn-neutral btn-square">
+          <button :if={!@mapping_changeset[:lockdistance]} phx-click="phx:toggle-distance-lock" phx-value-side={@side} phx-value-value={@mapping_changeset[:lockdistance].value} class="btn btn-sm btn-neutral btn-square">
             <.icon name="hero-lock-closed-mini" class="size-5 opacity-40 group-hover:opacity-70" />
           </button>
-          <button :if={@mapping["lockdistance"]} phx-click="phx:toggle-distance-lock" phx-value-side={@side} phx-value-value={!@mapping["lockdistance"]} class="btn btn-sm btn-neutral btn-square">
+          <button :if={@mapping_changeset[:lockdistance]} phx-click="phx:toggle-distance-lock" phx-value-side={@side} phx-value-value={!@mapping_changeset[:lockdistance].value} class="btn btn-sm btn-neutral btn-square">
             <.icon name="hero-lock-open-mini" class="size-5 opacity-40 group-hover:opacity-70" />
           </button>
-
           <button
             title="set even y"
             type="button"
@@ -149,7 +151,6 @@ defmodule LightwarriorWeb.HyperionComponents do
             >
             <svg class="size-5 opacity-40 group-hover:opacity-70"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="4" y1="12" x2="9" y2="12" />  <line x1="15" y1="12" x2="20" y2="12" />  <rect x="9" y="6" width="6" height="12" rx="2" /></svg>
           </button>
-
           <button
             title="set even x"
             type="button"

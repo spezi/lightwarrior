@@ -14,28 +14,42 @@
 
         <div class="basis-3/4">
                 <div class="text-right w-3/4 absolute px-4 py-3 sm:px-6 lg:px-8">
-                    <span class="text-xs px-4 sm:px-6 lg:px-8"><%= "#{@mapping_container_size.width} x #{@mapping_container_size.height}" %></span>
+                    <span :if={@side != "services"} class="text-xs px-4 sm:px-6 lg:px-8"><%= "#{@mapping_container_size.width}px x #{@mapping_container_size.height}px" %></span>
                 </div>
                 <!-- name of each tab group should be unique -->
                 <div class="tabs tabs-lift">
                     <!--<input type="radio" name="mapping_tabs_1" class="tab" aria-label={"input mapping"} checked="checked" />-->
-                    <input type="radio" name="mapping_tabs_1" class="tab" aria-label={"input mapping"} checked={if @side == "input" do true else false end } />
+                    <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="input" name="mapping_tabs_1" class="tab" aria-label={"input mapping"} checked={if @side == "input" do true else false end } />
                     <div class="tab-content bg-base-100 border-base-300 p-2">
                         <div id="mapping_wrapper_input" class={"w-full aspect-[16/9] relative"} phx-hook="Stage">
-                            <div id="mapping_backdrop_input" style={"opacity: #{@mapping_input["opacity"] * 0.01};"} class={"bg-[url('/images/maxresdefault.jpg')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
+                            <div id="mapping_backdrop_input" style={"opacity: #{@mapping_input.source.changes.opacity * 0.01};"} class={"bg-[url('/images/maxresdefault.jpg')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
                             <canvas id="mapping_input" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
                         </div>
-                        <.mapping_tool_menue side="input" state={@state} selected={@selected} mapping={@mapping_input} form={@form}/>
+                        <.mapping_tool_menue side="input" state={@state} selected={@selected} mapping_changeset={@mapping_input}/>
                     </div>
 
-                    <input type="radio" name="mapping_tabs_1" class="tab" aria-label="output mapping" checked={if @side == "output" do true else false end } />
+                    <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="output" name="mapping_tabs_1" class="tab" aria-label="output mapping" checked={if @side == "output" do true else false end } />
                     <div class="tab-content bg-base-100 border-base-300 p-2">
                         <div id="mapping_wrapper_output" class={"w-full aspect-[16/9] relative"} phx-hook="Stage">
-                            <div id="mapping_backdrop_output" style={"opacity: #{@mapping_output["opacity"] * 0.01};"} class={"bg-[url('/images/stripes.png')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
+                            <div id="mapping_backdrop_output" style={"opacity: #{@mapping_output.source.changes.opacity * 0.01};"} class={"bg-[url('/images/stripes.png')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
                             <canvas id="mapping_output" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
                         </div>
-                        <.mapping_tool_menue side="output" state={@state} selected={@selected} mapping={@mapping_output} form={@form}/>
+                        <.mapping_tool_menue side="output" state={@state} selected={@selected} mapping_changeset={@mapping_output}/>
                     </div>
+
+                    <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="uniform" name="mapping_tabs_1" class="tab" aria-label="uniform mapping" checked={if @side == "uniform" do true else false end } />
+                    <div class="tab-content bg-base-100 border-base-300 p-2">
+                        <div id="mapping_wrapper_uniform" class={"w-full aspect-[16/9] relative"} phx-hook="Stage">
+                            <div id="mapping_backdrop_uniform" style={"opacity: #{@mapping_uniform.source.changes.opacity * 0.01};"} class={"bg-[url('/images/maxresdefault.jpg')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
+                            <canvas id="mapping_uniform" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
+                        </div>
+                        <.mapping_tool_menue side="uniform" state={@state} selected={@selected} mapping_changeset={@mapping_uniform}/>
+                    </div>
+
+                    <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="services" name="mapping_tabs_1" class="tab" aria-label="services" checked={if @side == "services" do true else false end } />
+                    <div class="tab-content bg-base-100 border-base-300 p-2">
+                    </div>
+
                 </div>
             </div>
         </div>   
@@ -43,5 +57,5 @@
 </Layouts.app>
 <Layouts.debug :if={@debug} state={@state} selected={@selected}>
 </Layouts.debug>
-<div :if={!@debug} class="min-h-64">
+<div :if={!@debug} class="min-h-128">
 </div>

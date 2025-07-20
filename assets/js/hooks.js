@@ -11,17 +11,51 @@ let Hooks = {}
 Hooks.LocalStorage= { 
   mounted() {
     console.log("localStorageInit")
-
     this.pushEvent("phx:init-autosave", localStorage.getItem("phx:autosave"));
     this.pushEvent("phx:init-debug", localStorage.getItem("phx:debug"));
+    this.pushEvent("phx:init-input_opacity", localStorage.getItem("phx:input_opacity"));
+    this.pushEvent("phx:init-output_opacity", localStorage.getItem("phx:output_opacity"));
+    this.pushEvent("phx:init-uniform_opacity", localStorage.getItem("phx:uniform_opacity"));
+    this.pushEvent("phx:last_open_tab", { last_open_tab: localStorage.getItem("phx:last_open_tab")});
 
+    this.handleEvent("localstorage", data => this.localstorage_set(data))
+  },
+  localstorage_set(data) {
+    console.log(data)
+    if( data.debug != undefined ) {
+      console.log("debug: " + data.debug)
+      localStorage.setItem("phx:debug", data.debug);
+    }
+
+    if( data.autosave != undefined ) {
+      console.log("autosave: " + data.autosave)
+      localStorage.setItem("phx:autosave", data.autosave);
+    }
+
+    if( data.input_opacity != undefined ) {
+      console.log("input_opacity: " + data.input_opacity)
+      localStorage.setItem("phx:input_opacity", data.input_opacity);
+    }
+
+    if( data.output_opacity != undefined ) {
+      console.log("output_opacity: " + data.output_opacity)
+      localStorage.setItem("phx:output_opacity", data.output_opacity);
+    }
+    if( data.uniform_opacity != undefined ) {
+      console.log("uniform_opacity: " + data.uniform_opacity)
+      localStorage.setItem("phx:uniform_opacity", data.uniform_opacity);
+    }
+    if( data.last_open_tab != undefined ) {
+      console.log("last_open_tab: " + data.last_open_tab)
+      localStorage.setItem("phx:last_open_tab", data.last_open_tab);
+    }
   }
 }
 
 // Create a PixiJS application.
-var app = null
-const mapping_container = document.getElementById('mapping_input');
-const mapping_container_wrapper = document.getElementById('mapping_wrapper_input');
+
+//const mapping_container = document.getElementById('mapping_input');
+//const mapping_container_wrapper = document.getElementById('mapping_wrapper_input');
 var dragTarget = null;
 
 var stripe = new PIXI.Container();
@@ -45,8 +79,7 @@ var dragPosition = new PIXI.Point(0,0)
 var initialDistance = 0
 var lockDistance = true
 
-var catchResize = []
-var waitforResize = false
+
 
 var step_h = 0
 var step_v = 0
@@ -54,35 +87,45 @@ var step_v = 0
 Hooks.Stage= {
   async mounted() {
     console.log("stage mounted")
+    console.log(this)
     liveview = this
-    app = new PIXI.Application();
+
+    this.app = new PIXI.Application();
+    this.mapping_container_wrapper = this.el;
+    this.mapping_container = this.mapping_container_wrapper.querySelector("canvas")
+    this.width = 0;
+    this.height = 0;
+    this.catchResize = []
+    this.waitforResize = false
+    //this.mapping_container_wrapper = document.getElementById('mapping_wrapper_input');
 
     //catchResize 
-    this.get_mapping_container_size();
-    //window.addEventListener("resize", _info => this.get_mapping_container_size());
     window.addEventListener("resize", _info => this.catch_resize(_info));
-    this.handleEvent("instance-data-pixel", data => this.get_instance_data_pixel(data))
+    this.handleEvent("instance-data-pixel", data => this.get_instance_data_pixel(data));
 
-    //await this.init_stage();
+    await this.init_stage();
 
-    await app.init({
-      backgroundAlpha: 0, 
-      width: mapping_container_wrapper.offsetWidth, 
-      height: mapping_container_wrapper.offsetHeight, 
-      antialias: true,
-      canvas: mapping_container
-    });
-  
-    
-    app.canvas.width = mapping_container_wrapper.offsetWidth
-    app.canvas.height = mapping_container_wrapper.offsetHeight
-    
-    
-    
-
-    console.log(app)
+    console.log(this.app);
 
     //this.render_instances();
+  },
+  updated() {
+    if(!this.width && !this.height) {
+      this.get_mapping_container_size();
+    }
+  },
+  async init_stage(){
+    await this.app.init({
+      backgroundAlpha: 0, 
+      width: this.mapping_container_wrapper.offsetWidth, 
+      height: this.mapping_container_wrapper.offsetHeight, 
+      antialias: true,
+      canvas: this.mapping_container
+    });
+
+    this.app.canvas.width = this.mapping_container_wrapper.offsetWidth
+    this.app.canvas.height = this.mapping_container_wrapper.offsetHeight
+
   },
   get_instance_data_pixel(data){
     console.log(data)
@@ -102,20 +145,9 @@ Hooks.Stage= {
       instances.push(instance_points) 
     }
 
-    this.render_instances(instances);
+    //this.render_instances(instances);
   },
   async render_instances(instances) {
-      // Create a new application
-    const app = new PIXI.Application();
-
-    // Initialize the application
-    await app.init({
-      backgroundAlpha: 0, 
-      width: mapping_container_wrapper.offsetWidth, 
-      height: mapping_container_wrapper.offsetHeight, 
-      antialias: true,
-      canvas: mapping_container
-    });
 
     const graphics = new PIXI.Graphics();
 
@@ -132,22 +164,22 @@ Hooks.Stage= {
       alpha: 1
     });
 
-    app.stage.addChild(graphics);
+    this.app.stage.addChild(graphics);
   },
   catch_resize(_info) {
     const eventTime = new Date().getTime();
-    catchResize.push(eventTime)
+    this.catchResize.push(eventTime)
     
     // debounce resize requests
-    if(!waitforResize) {
-      waitforResize = true
+    if(!this.waitforResize) {
+      this.waitforResize = true
       let timerId = setInterval(() => {
         const currentTime = new Date().getTime();
         //console.log(currentTime - catchResize[(catchResize.length - 1)])
-        if((currentTime - catchResize[(catchResize.length - 1)]) > 100) {
+        if((currentTime - this.catchResize[(this.catchResize.length - 1)]) > 100) {
           clearInterval(timerId);
-          catchResize = []
-          waitforResize = false
+          this.catchResize = []
+          this.waitforResize = false
           this.get_mapping_container_size();
         }
       }, 20);
@@ -155,12 +187,18 @@ Hooks.Stage= {
   },
   get_mapping_container_size() {
     console.log("get mapping size")
-
-    const container = document.getElementById('mapping_input');
-    const { width, height } = container.getBoundingClientRect();
+    //console.log(this.mapping_container)
+    //console.log(this.mapping_container_wrapper)
+    //console.log(this.mapping_container_wrapper.getBoundingClientRect())
+    const { width, height } = this.mapping_container_wrapper.getBoundingClientRect();
     //console.log({width, height})
 
-    this.pushEvent("phx:mapping-size", { width, height });
+    this.width = width
+    this.height = height
+
+    if(this.width && this.height) {
+      this.pushEvent("phx:mapping-size", { width, height });
+    } 
 
     //initialDistance = Math.sqrt((stripe_end.x - stripe_start.x) ** 2 + (stripe_end.y - stripe_start.y) ** 2);
     //this.pushEvent("phx:initial-distance", { initialDistance });

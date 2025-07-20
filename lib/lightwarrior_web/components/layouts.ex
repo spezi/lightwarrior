@@ -21,7 +21,7 @@ defmodule LightwarriorWeb.Layouts do
         </a>
       </div>
       <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
+        <ul id="topmenue" class="flex flex-column px-1 space-x-4 items-center" phx-hook="LocalStorage">
           <li>
             <.autosave_toggle autosave={@autosave} />
           </li>
@@ -121,7 +121,7 @@ defmodule LightwarriorWeb.Layouts do
 
   def autosave_toggle(assigns) do
     ~H"""
-    <div id="autosave_switch_wrapper" class="relative flex flex-row gap-2 items-center rounded-full" phx-hook="LocalStorage">
+    <div id="autosave_switch_wrapper" class="relative flex flex-row gap-2 items-center rounded-full" >
 
         <span>autosave</span><input id="autosave_switch" phx-click={
           JS.push("phx.toggle_autosave")
@@ -141,7 +141,7 @@ defmodule LightwarriorWeb.Layouts do
 
   def debug_toggle(assigns) do
     ~H"""
-    <div id="debug_switch_wrapper" class="relative flex flex-row gap-2 items-center rounded-full" phx-hook="LocalStorage">
+    <div id="debug_switch_wrapper" class="relative flex flex-row gap-2 items-center rounded-full" >
 
         <span>debug</span><input id="debug_switch" phx-click={
           JS.push("phx.toggle_debug")
