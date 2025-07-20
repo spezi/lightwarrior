@@ -6,6 +6,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   alias Lightwarrior.Helper
   require Logger
 
+  alias Lightwarrior.MappingMenueForm
+
   @impl true
   def mount(_params, _session, socket) do
 
@@ -13,14 +15,18 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #  Phoenix.PubSub.subscribe(Lightwarrior.PubSub, "state")
     #end
 
+    form_data = %MappingMenueForm{}
+
     {:ok,
      socket
      |> assign(:page_title, "Listing Hyperionconfigs")
      |> assign(:state, Lightwarrior.HyperionApi.get_data())
      |> assign(:selected, nil)
      |> assign(:debug, false)
+     |> assign(:mapping, %{lockdistance: true, opacity: 70})
+     |> assign(form: to_form(Map.from_struct(form_data)))
      |> assign(:autosave, false)
-     |> assign(:mapping_container_size, nil)
+     |> assign(:mapping_container_size, %{width: 0.0, height: 0.0})
      #|> stream(:hyperionconfigs, Hyperion.list_hyperionconfigs())
     }
   end
@@ -37,6 +43,26 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   @impl true
   def handle_params(%{}, _referer, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("validate", %{"_target" => target, "opacity" => opacity} = _referer, socket) do
+
+    mapping = %{lockdistance: socket.assigns.mapping.lockdistance, opacity: String.to_integer(opacity)}
+    dbg(mapping)
+
+    {:noreply,
+      socket
+      |> assign(:mapping, mapping)
+    }
+  end
+
+  def handle_event("phx:move-stripe", %{"direction" => direction, "value" => value}, socket) do
+
+    dbg(direction)
+
+    {:noreply,
+      socket
+    }
   end
 
   def handle_event("refresh", %{"value" => ""} = _referer, socket) do

@@ -8,6 +8,15 @@ import { Transformer } from '@pixi-essentials/transformer';
 let Hooks = {}
 
 // local storage in lightwarrior_web/components/layouts/root.html.heex
+Hooks.LocalStorage= { 
+  mounted() {
+    console.log("localStorageInit")
+
+    this.pushEvent("phx:init-autosave", localStorage.getItem("phx:autosave"));
+    this.pushEvent("phx:init-debug", localStorage.getItem("phx:debug"));
+
+  }
+}
 
 // Create a PixiJS application.
 var app = null
@@ -41,16 +50,6 @@ var waitforResize = false
 
 var step_h = 0
 var step_v = 0
-
-Hooks.LocalStorage= { 
-  mounted() {
-    console.log("localStorageInit")
-
-    this.pushEvent("phx:init-autosave", localStorage.getItem("phx:autosave"));
-    this.pushEvent("phx:init-debug", localStorage.getItem("phx:debug"));
-
-  }
-}
 
 Hooks.Stage= {
   async mounted() {

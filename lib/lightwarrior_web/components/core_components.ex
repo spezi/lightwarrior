@@ -206,7 +206,7 @@ defmodule LightwarriorWeb.CoreComponents do
         <select
           id={@id}
           name={@name}
-          class={["w-full select", @errors != [] && "select-error"]}
+          class={["w-full select select-sm", @errors != [] && "select-error"]}
           multiple={@multiple}
           {@rest}
         >
@@ -236,6 +236,27 @@ defmodule LightwarriorWeb.CoreComponents do
     """
   end
 
+  def input(%{type: "range"} = assigns) do
+    ~H"""
+    <fieldset class="fieldset mb-2">
+      <label>
+        <span :if={@label} class="fieldset-label mb-1">{@label}</span>
+        <input
+          type={@type}
+          name={@name}
+          id={@id}
+          min="0"
+          max="100"
+          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+          class={["w-full range range-sm", @errors != [] && "input-error"]}
+          {@rest}
+        />
+      </label>
+      <.error :for={msg <- @errors}>{msg}</.error>
+    </fieldset>
+    """
+  end
+
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
@@ -247,7 +268,7 @@ defmodule LightwarriorWeb.CoreComponents do
           name={@name}
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
-          class={["w-full input", @errors != [] && "input-error"]}
+          class={["w-full input input-sm", @errors != [] && "input-error"]}
           {@rest}
         />
       </label>

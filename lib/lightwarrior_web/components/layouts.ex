@@ -157,6 +157,7 @@ defmodule LightwarriorWeb.Layouts do
 
   def debug(assigns) do
     ~H"""
+      <div class="px-4 py-4 sm:px-6 lg:px-8">
       <hr class="mt-10">
       <div class="flex text-xs">
       <div class="basis-1/4">
@@ -171,7 +172,7 @@ defmodule LightwarriorWeb.Layouts do
           </pre>
         </div>
         <div class="basis-1/4">
-          <h2>serverinfo</h2>
+          <h2>state.serverinfo</h2>
           <pre>
             <%=
                 pretty_json = Jason.encode!(@state.serverinfo, pretty: true)
@@ -180,7 +181,7 @@ defmodule LightwarriorWeb.Layouts do
           </pre>
         </div>
         <div class="basis-1/4">
-          <h2>stripes</h2>
+          <h2>state.stripes</h2>
           <pre>
             <%=
                 pretty_json = Jason.encode!(@state.stripes, pretty: true)
@@ -189,7 +190,7 @@ defmodule LightwarriorWeb.Layouts do
           </pre>
         </div>
         <div class="basis-1/4">
-        <h2>stripes_with_config</h2>
+        <h2>state.stripes_with_config</h2>
           <pre>
             <%=
                 pretty_json = Jason.encode!(@state.stripes_with_config, pretty: true)
@@ -198,6 +199,7 @@ defmodule LightwarriorWeb.Layouts do
           </pre>
         </div>
       </div>
+    </div>
     """
   end
 end
