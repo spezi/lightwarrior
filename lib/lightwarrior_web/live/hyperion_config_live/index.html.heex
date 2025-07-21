@@ -21,17 +21,16 @@
                     <!--<input type="radio" name="mapping_tabs_1" class="tab" aria-label={"input mapping"} checked="checked" />-->
                     <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="input" name="mapping_tabs_1" class="tab" aria-label={"input mapping"} checked={if @side == "input" do true else false end } />
                     <div class="tab-content bg-base-100 border-base-300 p-2">
-                        <div id="mapping_wrapper_input" class={"w-full aspect-[16/9] relative"} phx-hook="Stage">
+                        <div id="mapping_wrapper_input" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_input.params["side"]} data-stripes_color={@mapping_input.params["stripes_color"]}  >
                             <div id="mapping_backdrop_input" style={"opacity: #{(@mapping_input[:opacity].value || 10) * 0.01};"} class={"bg-[url('/images/maxresdefault.jpg')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
-                            <canvas id="mapping_input" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
-                            <%= Kernel.inspect(@mapping_input[:opacity].value) %>
+                            <canvas id="mapping_input" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas> 
                         </div>
                         <.mapping_tool_menue side="input" state={@state} selected={@selected} mapping_changeset={@mapping_input}/>
                     </div>
 
                     <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="output" name="mapping_tabs_1" class="tab" aria-label="output mapping" checked={if @side == "output" do true else false end } />
                     <div class="tab-content bg-base-100 border-base-300 p-2">
-                        <div id="mapping_wrapper_output" class={"w-full aspect-[16/9] relative"} phx-hook="Stage">
+                        <div id="mapping_wrapper_output" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_output.params["side"]} data-stripes_color={@mapping_output.params["stripes_color"]} >
                             <div id="mapping_backdrop_output" style={"opacity: #{(@mapping_output[:opacity].value || 10) * 0.01};"} class={"bg-[url('/images/stripes.png')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
                             <canvas id="mapping_output" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
                         </div>
@@ -40,9 +39,9 @@
 
                     <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="uniform" name="mapping_tabs_1" class="tab" aria-label="uniform mapping" checked={if @side == "uniform" do true else false end } />
                     <div class="tab-content bg-base-100 border-base-300 p-2">
-                        <div id="mapping_wrapper_uniform" class={"w-full aspect-[16/9] relative"} phx-hook="Stage">
-                            <div id="mapping_backdrop_uniform" style={"opacity: #{(@mapping_uniform[:opacity].value || 10) * 0.01};"} class={"bg-[url('/images/maxresdefault.jpg')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
-                            <canvas id="mapping_uniform" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
+                        <div id="mapping_wrapper_uniform" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_uniform.params["side"]} data-stripes_color={@mapping_uniform.params["stripes_color"]} >
+                            <div id="mapping_backdrop_uniform" style={"opacity: #{(@mapping_uniform[:opacity].value || 10) * 0.01};"} class={"bg-[url('/images/maxresdefault.jpg')] bg-cover w-full aspect-[16/9] absolute"}></div>
+                            <canvas id="mapping_uniform" class="max-w-full w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
                         </div>
                         <.mapping_tool_menue side="uniform" state={@state} selected={@selected} mapping_changeset={@mapping_uniform}/>
                     </div>

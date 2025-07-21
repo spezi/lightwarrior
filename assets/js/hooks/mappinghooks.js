@@ -7,157 +7,152 @@ import { Transformer } from '@pixi-essentials/transformer';
 
 let MappingHooks = {}
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Create a PixiJS application.
 
-//const mapping_container = document.getElementById('mapping_input');
-//const mapping_container_wrapper = document.getElementById('mapping_wrapper_input');
-var dragTarget = null;
-
-var stripe = new PIXI.Container();
-var stripe_start = new PIXI.Graphics();
-var stripe_end = new PIXI.Graphics();
-
-var stripes = null
-//var lines = new PIXI.Graphics();
-var lines_wrapper = new PIXI.Container();
-var line = new PIXI.Graphics();
-var path = [
-  0, 
-  0, 
-  0, 
-  0
-];
-
-var liveview = null
-
-var dragPosition = new PIXI.Point(0,0)
-var initialDistance = 0
-var lockDistance = true
-
-
-
-var step_h = 0
-var step_v = 0
-
 MappingHooks.Stage= {
-  async mounted() {
-    console.log("stage mounted")
-    console.log(this)
-    liveview = this
-
-    this.app = new PIXI.Application();
-    this.mapping_container_wrapper = this.el;
-    this.mapping_container = this.mapping_container_wrapper.querySelector("canvas")
-    this.width = 0;
-    this.height = 0;
-    this.catchResize = []
-    this.waitforResize = false
-    //this.mapping_container_wrapper = document.getElementById('mapping_wrapper_input');
-
-    //catchResize 
-    window.addEventListener("resize", _info => this.catch_resize(_info));
-    this.handleEvent("instance-data-pixel", data => this.get_instance_data_pixel(data));
-
-    await this.init_stage();
-
-    console.log(this.app);
-
-    //this.render_instances();
+  selected() { return this.el.dataset.selected },
+  side() { return this.el.dataset.side },
+  stripe_color() { return this.el.dataset.stripes_color },
+  async poll_mapping_container_size() {
+    for (let i = 0; i < 10; i++) {
+        //console.log("Loop iteration", i);
+        this.get_mapping_container_size()
+        if (this.size.width > 0 && this.size.width > 0) {
+          console.log("mapping container size: " + this.size.width + " x " + this.size.height )
+          break
+        }
+        await sleep(500); // Pause for 500 milliseconds
+      }
+    return true
   },
-  updated() {
-    if(!this.width && !this.height) {
-      this.get_mapping_container_size();
+  get_mapping_container_size() {
+    //console.log("get mapping size")
+    const { width, height } = this.mapping_container_wrapper.getBoundingClientRect();
+    this.size = { width, height }
+    if (this.size.width > 0 && this.size.width > 0) {
+      this.pushEvent("phx:mapping-size", this.size);
     }
-  },
-  async init_stage(){
-    await this.app.init({
-      backgroundAlpha: 0, 
-      width: this.mapping_container_wrapper.offsetWidth, 
-      height: this.mapping_container_wrapper.offsetHeight, 
-      antialias: true,
-      canvas: this.mapping_container
-    });
-
-    this.app.canvas.width = this.mapping_container_wrapper.offsetWidth
-    this.app.canvas.height = this.mapping_container_wrapper.offsetHeight
-
-  },
-  get_instance_data_pixel(data){
-    console.log(data)
-
-    var instances = []
-    /*
-    const instances = [
-      { start: [100, 100], end: [200, 100] },
-      { start: [200, 100], end: [200, 200] },
-      { start: [200, 200], end: [100, 200] },
-      { start: [100, 200], end: [100, 100] }, // forms a square
-    ];
-    */
-    for (const instance of data.instance_data_pixel) {
-      instance_points = { start: instance.start, end: instance.end}
-      //console.log(instance_points);
-      instances.push(instance_points) 
-    }
-
-    //this.render_instances(instances);
-  },
-  async render_instances(instances) {
-
-    const graphics = new PIXI.Graphics();
-
-    // Draw each line
-    for (const line of instances) {
-      graphics.moveTo(...line.start);
-      graphics.lineTo(...line.end);
-    }
-
-    // Apply stroke style and render all lines
-    graphics.stroke({
-      width: 4,
-      color: 0xffffff,
-      alpha: 1
-    });
-
-    this.app.stage.addChild(graphics);
   },
   catch_resize(_info) {
+    var catchResize = []
+    var waitforResize = false
+
     const eventTime = new Date().getTime();
-    this.catchResize.push(eventTime)
+    catchResize.push(eventTime)
     
     // debounce resize requests
-    if(!this.waitforResize) {
-      this.waitforResize = true
+    if(!waitforResize) {
+      waitforResize = true
       let timerId = setInterval(() => {
         const currentTime = new Date().getTime();
         //console.log(currentTime - catchResize[(catchResize.length - 1)])
-        if((currentTime - this.catchResize[(this.catchResize.length - 1)]) > 100) {
+        if((currentTime - catchResize[(catchResize.length - 1)]) > 100) {
           clearInterval(timerId);
-          this.catchResize = []
-          this.waitforResize = false
+          catchResize = []
+          waitforResize = false
           this.get_mapping_container_size();
         }
       }, 20);
     }
   },
-  get_mapping_container_size() {
-    console.log("get mapping size")
-    //console.log(this.mapping_container)
-    //console.log(this.mapping_container_wrapper)
-    //console.log(this.mapping_container_wrapper.getBoundingClientRect())
-    const { width, height } = this.mapping_container_wrapper.getBoundingClientRect();
-    //console.log({width, height})
+  reset_stage() {
+    this.app.stage.removeChildren(0);
+    this.ready() 
+    //this.app.destroy(false, { children: true, texture: true, baseTexture: true });
+    //poll_mapping_container_size()
+    //this.test();
+  },
+  mounted() {
+    console.log(this.el.dataset)
+    this.handleEvent("ready", data => this.ready());
+    
+    this.handleEvent("tabchange", data => this.reset_stage());
+    this.handleEvent("stripe_color", data => this.reset_stage());
 
-    this.width = width
-    this.height = height
+    window.addEventListener("resize", _info => this.catch_resize(_info));
 
-    if(this.width && this.height) {
-      this.pushEvent("phx:mapping-size", { width, height });
-    } 
+    this.width = 0;
+    this.height = 0;
 
-    //initialDistance = Math.sqrt((stripe_end.x - stripe_start.x) ** 2 + (stripe_end.y - stripe_start.y) ** 2);
-    //this.pushEvent("phx:initial-distance", { initialDistance });
-  }
+    this.mapping_container_wrapper = this.el;
+    this.mapping_container = this.mapping_container_wrapper.querySelector("canvas")
+    console.log(this.mapping_container_wrapper)
+    console.log(this.mapping_container)
+
+    this.app = new PIXI.Application();
+    
+  },
+  updated() {
+    if (this.selected() != undefined){
+      //console.log(this.selected())
+    }
+    if (this.side() != undefined){
+      //console.log(this.side())
+    }
+    if (this.stripe_color() != undefined){
+      //console.log(this.stripe_color())
+    }
+  },
+  async ready() {
+    console.log("ready")
+    console.log(this.selected())
+    console.log(this.side())
+    console.log(this.stripe_color())
+
+    let stage_canvas_ready = await this.poll_mapping_container_size();
+    if(stage_canvas_ready && this.size.width > 0 && this.size.height > 0) {
+      console.log("stage canvas ready");
+
+      // if allready initialized on tabchange
+      if ( this.app.renderer == undefined) {
+          await this.app.init({
+            backgroundAlpha: 0, 
+            width: this.size.width, 
+            height: this.size.height, 
+            antialias: true,
+            canvas: this.mapping_container
+          });
+      }
+       
+      //this.app.canvas.width = this.size.width;
+      //this.app.canvas.height = this.size.height;
+
+      this.test();
+    }
+  },
+  async test() {
+  
+       // Append the application canvas to the document body
+        //document.body.appendChild(app.canvas);
+  
+        const instances = [
+            { start: [100, 100], end: [200, 100] },
+            { start: [200, 100], end: [200, 200] },
+            { start: [200, 200], end: [100, 200] },
+            { start: [100, 200], end: [100, 100] }, // forms a square
+          ];
+  
+        const graphics = new PIXI.Graphics();
+        
+        // Draw each line
+        for (const line of instances) {
+          graphics.moveTo(...line.start);
+          graphics.lineTo(...line.end);
+        }
+  
+        graphics.stroke({
+            width: 4,
+            color: this.stripe_color(),
+            alpha: 1
+          });
+  
+        this.app.stage.addChild(graphics);
+  
+    }
 }
 
 export default MappingHooks

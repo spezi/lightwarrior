@@ -1,0 +1,136 @@
+import * as PIXI from 'pixi.js'
+import { Transformer } from '@pixi-essentials/transformer';
+
+/**
+ * @type {import("phoenix_live_view").HooksOptions}
+ */
+
+let MappingHooks = {}
+
+// Create a PixiJS application.
+
+MappingHooks.Stage= {
+  async mounted() {
+      console.log("stage mounted")
+
+      // Create a new application
+      this.app = new PIXI.Application();
+      this.mapping_container_wrapper = this.el;
+      this.mapping_container = this.mapping_container_wrapper.querySelector("canvas")
+      this.catchResize = []
+      this.waitforResize = false
+
+      this.get_mapping_container_size();
+
+      console.log(this.width)
+      // Initialize the application
+      await this.app.init({ 
+        backgroundAlpha: 0,
+        width: this.width, 
+        height: this.height, 
+        antialias: true, 
+        canvas: this.mapping_container
+      });
+      this.test()
+
+      //catchResize 
+      window.addEventListener("resize", _info => this.catch_resize(_info));
+      this.handleEvent("instance-data-pixel", data => this.instances(data));
+
+  },
+  async updated() {
+    if(!this.width && !this.height) {
+      this.get_mapping_container_size();
+    }
+  },
+  async instances(data) {
+      console.log(data)
+ 
+      const graphics = new PIXI.Graphics();
+      
+      // Draw each line
+      for (const line of data.instance_data_pixel) {
+        graphics.moveTo(...line.start);
+        graphics.lineTo(...line.end);
+      }
+
+      graphics.stroke({
+          width: 4,
+          color: 0xffffff,
+          alpha: 1
+        });
+
+      this.app.stage.addChild(graphics);
+
+  },
+  catch_resize(_info) {
+    const eventTime = new Date().getTime();
+    this.catchResize.push(eventTime)
+    
+    // debounce resize requests
+    if(!this.waitforResize) {
+      this.waitforResize = true
+      let timerId = setInterval(() => {
+        const currentTime = new Date().getTime();
+        //console.log(currentTime - catchResize[(catchResize.length - 1)])
+        if((currentTime - this.catchResize[(this.catchResize.length - 1)]) > 100) {
+          clearInterval(timerId);
+          this.catchResize = []
+          this.waitforResize = false
+          this.get_mapping_container_size();
+        }
+      }, 20);
+    }
+  },
+  async test() {
+
+     // Append the application canvas to the document body
+      //document.body.appendChild(app.canvas);
+
+      const instances = [
+          { start: [100, 100], end: [200, 100] },
+          { start: [200, 100], end: [200, 200] },
+          { start: [200, 200], end: [100, 200] },
+          { start: [100, 200], end: [100, 100] }, // forms a square
+        ];
+
+      const graphics = new PIXI.Graphics();
+      
+      // Draw each line
+      for (const line of instances) {
+        graphics.moveTo(...line.start);
+        graphics.lineTo(...line.end);
+      }
+
+      graphics.stroke({
+          width: 4,
+          color: 0xffffff,
+          alpha: 1
+        });
+
+      this.app.stage.addChild(graphics);
+
+  },
+  get_mapping_container_size() {
+    console.log("get mapping size")
+    //console.log(this.mapping_container)
+    //console.log(this.mapping_container_wrapper)
+    //console.log(this.mapping_container_wrapper.getBoundingClientRect())
+    const { width, height } = this.mapping_container_wrapper.getBoundingClientRect();
+    //console.log({width, height})
+
+   
+
+    if(width && height) {
+      console.log("got mapping size width " + width)
+      this.width = width
+      this.height = height
+      this.pushEvent("phx:mapping-size", { width, height });
+    } 
+
+    //initialDistance = Math.sqrt((stripe_end.x - stripe_start.x) ** 2 + (stripe_end.y - stripe_start.y) ** 2);
+    //this.pushEvent("phx:initial-distance", { initialDistance });
+  }
+}
+
+export default MappingHooks

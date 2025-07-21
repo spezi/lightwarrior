@@ -33,14 +33,15 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
      |> assign(:state, Lightwarrior.HyperionApi.get_data())
      |> assign(:selected, nil)
      |> assign(:debug, false)
+     |> assign(:autosave, false)
      |> assign(:mapping_input, to_form(mapping_changeset_input, id: :mapping_tools_form_input, as: :mapping_tools_form))
      |> assign(:mapping_output, to_form(mapping_changeset_output, id: :mapping_tools_form_output, as: :mapping_tools_form))
      |> assign(:mapping_uniform, to_form(mapping_changeset_uniform, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
      #|> assign(form: to_form(Map.from_struct(form_data)))
      |> assign(:side, nil)
-     |> assign(:autosave, false)
      |> assign(:mapping_container_size, %{width: 0.0, height: 0.0})
      #|> stream(:hyperionconfigs, Hyperion.list_hyperionconfigs())
+     |> push_event("ready", %{})
     }
   end
 
@@ -63,6 +64,12 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     dbg(target)
     dbg(mapping_tools_form)
+
+    # to reset stage on color change
+    socket = case Enum.at(target,1) do
+      "stripes_color" -> socket |> push_event("stripe_color", %{})
+        _ -> socket
+    end
 
     mapping_changeset = MappingMenueForm.changeset(%MappingMenueForm{}, mapping_tools_form)
     #dbg(mapping_changeset)
@@ -207,6 +214,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           socket
           |> assign(:side, tab)
           |> push_event("localstorage", %{ last_open_tab: tab})
+          |> push_event("tabchange", %{ last_open_tab: tab})
           |> assign(:selected, nil)
           |> push_patch(to: ~p"/hyperion/")
       %{"last_open_tab" => tab} ->
