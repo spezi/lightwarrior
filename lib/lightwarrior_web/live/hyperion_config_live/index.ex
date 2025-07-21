@@ -51,6 +51,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     {:noreply,
       socket
       |> assign(:selected, String.to_integer(id))
+      |> push_event("select", %{instance: id})
     }
   end
 
@@ -215,8 +216,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           |> assign(:side, tab)
           |> push_event("localstorage", %{ last_open_tab: tab})
           |> push_event("tabchange", %{ last_open_tab: tab})
-          |> assign(:selected, nil)
-          |> push_patch(to: ~p"/hyperion/")
+          #|> assign(:selected, nil)
+          #|> push_patch(to: ~p"/hyperion/")
       %{"last_open_tab" => tab} ->
           dbg(tab)
           socket
@@ -258,6 +259,13 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
       |> push_event("localstorage", %{ debug: bool_value})
       #|> JS.dispatch("click", to: ".nav")
       #|> JS.dispatch("phx:localstorage_save", data: %{ debug: !socket.assigns.debug })
+    }
+  end
+
+  def handle_event("phx:select_instance", %{"value" => value} = param, socket) do
+    {:noreply,
+      socket
+      |> push_patch(to: ~p"/hyperion/#{value}/edit")
     }
   end
 
@@ -314,14 +322,14 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #dbg(mapping_container_size)
     #dbg(socket.assigns.state.stripes_with_config)
 
-    instance_data_pixel = nil
+    instances_data_pixel = nil
 
     if socket.assigns.state.stripes_with_config do
-      instance_data_pixel = Helper.leds_to_pixel!(socket.assigns.state.stripes_with_config, mapping_container_size)
+      instances_data_pixel = Helper.leds_to_pixel!(socket.assigns.state.stripes_with_config, mapping_container_size)
       #dbg(instance_data_pixel)
       {:noreply, socket
         |> assign(:mapping_container_size, mapping_container_size)
-        |> push_event("instance-data-pixel", %{instance_data_pixel: instance_data_pixel})
+        |> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_pixel})
       }
     else
       {:noreply, socket
