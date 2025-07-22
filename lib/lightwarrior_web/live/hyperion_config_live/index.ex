@@ -10,12 +10,18 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
   use Phoenix.VerifiedRoutes, endpoint: LightwarriorWeb.Endpoint, router: LightwarriorWeb.Router
 
+  # alias OSC SC because of module name collision
+  alias Lightwarrior.Hyperion.SC
+
   @impl true
   def mount(_params, _session, socket) do
 
     #if connected?(socket) do
     #  Phoenix.PubSub.subscribe(Lightwarrior.PubSub, "state")
     #end
+
+    # start osc session
+    {:ok, sc_pid} = SC.start_link()
 
     #form_data = %MappingMenueForm{}
     #mapping = %{"lockdistance"=> true, "opacity"=> 70}
@@ -27,10 +33,20 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #dbg(mapping_changeset_input)
     #dbg(mapping_changeset_output)
 
+    # Read and parse the JSON file
+    json_content = File.read!("./mappings/stripes_config_dump.json")
+    parsed_data = Jason.decode!(json_content)
+    #dbg(parsed_data)
+    stripes_with_config = Map.get(parsed_data, "stripes_with_config")
+    #dbg(stripes_with_config)
+
+    state = Map.replace(Lightwarrior.HyperionApi.get_data(), :stripes_with_config_input, stripes_with_config)
+
     {:ok,
      socket
      |> assign(:page_title, "Listing Hyperionconfigs")
-     |> assign(:state, Lightwarrior.HyperionApi.get_data())
+     #|> assign(:state, Lightwarrior.HyperionApi.get_data())
+     |> assign(:state, state)
      |> assign(:selected, nil)
      |> assign(:debug, false)
      |> assign(:autosave, false)
@@ -40,6 +56,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
      #|> assign(form: to_form(Map.from_struct(form_data)))
      |> assign(:side, nil)
      |> assign(:mapping_container_size, %{width: 0.0, height: 0.0})
+     |> assign(:instances_data_pixel_map, %{"input" => nil, "output" => nil, "uniform" => nil})
+     |> assign(:sc_pid, sc_pid)
      #|> stream(:hyperionconfigs, Hyperion.list_hyperionconfigs())
      |> push_event("ready", %{})
     }
@@ -269,6 +287,74 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
   end
 
+  def handle_event("phx:selected_change_mapping", points, socket) do
+    # Handle the size information as needed
+    #IO.puts("Div width: #{width}, height: #{height}")
+
+    dbg(points)
+    points = Helper.string_keys_to_atom_keys(points)
+
+    instances_data_pixel = Map.get(socket.assigns.instances_data_pixel_map, socket.assigns.side)
+
+    #dbg(Enum.fetch!(socket.assigns.stripes, socket.assigns.selected))
+    selected = Enum.fetch!(socket.assigns.state.stripes_with_config, socket.assigns.selected)
+    num_leds = selected.config["info"]["device"]["hardwareLedCount"]
+
+    #lightwarrior.ex ;)
+    updated = Lightwarrior.update_selected_stripe_data_pixel(
+      num_leds,
+      instances_data_pixel,
+      socket.assigns.selected,
+      points
+    )
+
+    instances_data_pixel_map = socket.assigns.instances_data_pixel_map
+                               |> Map.replace(socket.assigns.side, updated)
+
+    {:noreply,
+      socket
+      |> assign(:instances_data_pixel_map, instances_data_pixel_map)
+      |> push_event("instances-data-pixel", %{instance_data_pixel: updated})
+      |> push_event("change_mapping", %{})
+    }
+  end
+
+  @impl true
+  def handle_event("save", %{"value" => ""} = params, socket) do
+    dbg("save stripe #{socket.assigns.selected}")
+
+    instances_data_pixel = Map.get(socket.assigns.instances_data_pixel_map, socket.assigns.side)
+
+    leds = Helper.leds_to_coordinates!(
+      Enum.fetch!(instances_data_pixel, socket.assigns.selected),
+      socket.assigns.mapping_container_size
+    )
+
+    selected_config = Enum.fetch!(socket.assigns.state.stripes_with_config, socket.assigns.selected)
+    selected_config_updated = Map.replace(selected_config, "leds", leds)
+    stripes_with_config = List.update_at(socket.assigns.state.stripes_with_config, socket.assigns.selected, fn stripe -> Map.put(stripe, "config", %{"info" => selected_config_updated}) end)
+    dbg(selected_config_updated)
+
+    case socket.assigns.side do
+      "input" ->
+                        # Dump stripes_with_config to file for debugging
+                        backup = %{"stripes_with_config" => stripes_with_config}
+                        File.write!("./mappings/stripes_config_dump.json", Jason.encode!(backup, pretty: true))
+                        # update ossia via osc messages
+                        Lightwarrior.update_stripe_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
+      "output" ->
+        dbg("save output")
+      "uniform" ->
+        dbg("save uniform")
+      _ ->
+        dbg("save nothing")
+    end
+
+    {:noreply, socket
+      |> push_patch(to: ~p"/hyperion/#{socket.assigns.selected}/edit", replace: true)
+    }
+  end
+
   def handle_event("phx:get-stripes-config", _referer, socket) do
     {:noreply,
       socket
@@ -291,6 +377,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
         #dbg(mapping_changeset)
         socket
         |> assign(:mapping_input, to_form(mapping_changeset, id: :mapping_tools_form_input, as: :mapping_tools_form))
+        |> push_event("lockdistance", %{lockdistance: !socket.assigns.mapping_input.params["lockdistance"]})
       "output" ->
         params_concat = Map.merge(socket.assigns.mapping_output.source.params, %{"lockdistance" => !socket.assigns.mapping_output.params["lockdistance"]})
         mapping_changeset = MappingMenueForm.changeset(%MappingMenueForm{}, params_concat)
@@ -298,6 +385,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
         #dbg(mapping_changeset)
         socket
         |> assign(:mapping_output, to_form(mapping_changeset, id: :mapping_tools_form_output, as: :mapping_tools_form))
+        |> push_event("lockdistance", %{lockdistance: !socket.assigns.mapping_output.params["lockdistance"]})
       "uniform" ->
         params_concat = Map.merge(socket.assigns.mapping_uniform.source.params, %{"lockdistance" => !socket.assigns.mapping_uniform.params["lockdistance"]})
         mapping_changeset = MappingMenueForm.changeset(%MappingMenueForm{}, params_concat)
@@ -305,6 +393,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
         #dbg(mapping_changeset)
         socket
         |> assign(:mapping_uniform, to_form(mapping_changeset, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
+        |> push_event("lockdistance", %{lockdistance: !socket.assigns.mapping_uniform.params["lockdistance"]})
       _ ->
         socket
     end
@@ -314,6 +403,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
   end
 
+
   def handle_event("phx:mapping-size", %{"width" => width, "height" => height}, socket) do
     mapping_container_size = %{
       width: width,
@@ -322,13 +412,20 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #dbg(mapping_container_size)
     #dbg(socket.assigns.state.stripes_with_config)
 
-    instances_data_pixel = nil
-
     if socket.assigns.state.stripes_with_config do
       instances_data_pixel = Helper.leds_to_pixel!(socket.assigns.state.stripes_with_config, mapping_container_size)
-      #dbg(instance_data_pixel)
+      #dbg(instances_data_pixel)
+      dbg(socket.assigns.side)
+
+      instances_data_pixel_map = socket.assigns.instances_data_pixel_map
+      |> Map.replace(socket.assigns.side, instances_data_pixel)
+
+      #%{"input" => input, "output" => output, "uniform" => uniform} = socket.assigns.instances_data_pixel
+      #dbg(output)
+
       {:noreply, socket
         |> assign(:mapping_container_size, mapping_container_size)
+        |> assign(:instances_data_pixel_map, instances_data_pixel_map)
         |> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_pixel})
       }
     else

@@ -57,8 +57,10 @@ defmodule LightwarriorWeb.HyperionComponents do
             <!-- name of each tab group should be unique -->
             <div class="tabs tabs-lift mt-4">
                 <input type="radio" name="left_bottom_menue_tabs" class="tab" aria-label="instance config" checked="checked" />
-                <div class="tab-content bg-base-100 border-base-300 p-2">
-
+                <div class="tab-content bg-base-100 border-base-300 p-8">
+                    <button phx-click="save" class="btn btn-primary ml-auto">
+                      <.icon name="hero-arrow-trending-up-mini" class="size-5 opacity-60 group-hover:opacity-70" />
+                    </button>
                 </div>
             </div>
     """

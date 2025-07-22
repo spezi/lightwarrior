@@ -58,7 +58,9 @@ defmodule Lightwarrior.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
-      {:oscx, "~> 0.1.1"}
+      {:oscx, "~> 0.1.1"},
+      {:math, "~> 0.6.0"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 

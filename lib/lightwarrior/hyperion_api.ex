@@ -55,7 +55,8 @@ defmodule Lightwarrior.HyperionApi do
     state =  %{
       serverinfo: serverinfo,
       stripes: stripes,
-      stripes_with_config: stripes_with_config
+      stripes_with_config: stripes_with_config,
+      stripes_with_config_input: nil
     }
 
     #dbg(state)
