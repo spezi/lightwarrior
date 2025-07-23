@@ -1,49 +1,57 @@
 <Layouts.app flash={@flash} debug={@debug} autosave={@autosave}>
 
-    
-
     <div class="flex flex-row w-full gap-4">
 
         <div class="basis-1/4">
-            <.left_top_menue state={@state} selected={@selected} side={@side}/>
-    
-
-            <.left_bottom_menue :if={@selected} state={@state} selected={@selected} side={@side} />
-            
+            <Layouts.left_top_menue selected={@selected} side={@side}/>
+            <Layouts.left_bottom_menue :if={Lightwarrior.State.get(:serverinfo) && @selected } selected={@selected} side={@side} />            
         </div>
 
         <div class="basis-3/4">
-                <div class="text-right w-3/4 absolute px-4 py-3 sm:px-6 lg:px-8">
-                    <span :if={@side != "services"} class="text-xs px-4 sm:px-6 lg:px-8"><%= "#{@mapping_container_size.width}px x #{@mapping_container_size.height}px" %></span>
+                <div class="z-0 text-right w-3/4 absolute px-4 py-3 sm:px-6 lg:px-8 flex flex-row">
+                    <div class="text-xs px-4 sm:px-6 lg:px-8 flex flex-row-reverse w-full">
+                        <span :if={@side != "services"} class="text-xs pl-2 sm:pl-4 lg:pl-6"><%= "#{@mapping_container_size.width}px x #{@mapping_container_size.height}px" %></span>
+                        <div
+                            class="w-2 h-2 m-1 rounded-full bg-red-500" 
+                        >
+                        </div>
+                        <span>end</span>
+                        <div 
+                            class="w-2 h-2 m-1 rounded-full bg-blue-600" 
+                        >
+                        </div>
+                        <span>start</span>
+                    </div>
                 </div>
                 <!-- name of each tab group should be unique -->
-                <div class="tabs tabs-lift">
+                <div class="z-1 tabs tabs-lift">
                     <!--<input type="radio" name="mapping_tabs_1" class="tab" aria-label={"input mapping"} checked="checked" />-->
                     <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="input" name="mapping_tabs_1" class="tab" aria-label={"input mapping"} checked={if @side == "input" do true else false end } />
-                    <div class="tab-content bg-base-100 border-base-300 p-2">
-                        <div id="mapping_wrapper_input" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_input.params["side"]} data-stripes_color={@mapping_input.params["stripes_color"]}  >
+                    <div class="tab-content bg-base-100 border-base-300 
+                    p-2">
+                        <div id="mapping_wrapper_input" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_input.params["side"]} data-instances_color={@mapping_input.params["instances_color"]}  >
                             <div id="mapping_backdrop_input" style={"opacity: #{(@mapping_input[:opacity].value || 10) * 0.01};"} class={"bg-[url('/images/maxresdefault.jpg')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
                             <canvas id="mapping_input" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas> 
                         </div>
-                        <.mapping_tool_menue side="input" state={@state} selected={@selected} mapping_changeset={@mapping_input}/>
+                        <.mapping_tool_menue side="input" selected={@selected} mapping_changeset={@mapping_input}/>
                     </div>
 
                     <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="output" name="mapping_tabs_1" class="tab" aria-label="output mapping" checked={if @side == "output" do true else false end } />
                     <div class="tab-content bg-base-100 border-base-300 p-2">
-                        <div id="mapping_wrapper_output" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_output.params["side"]} data-stripes_color={@mapping_output.params["stripes_color"]} >
+                        <div id="mapping_wrapper_output" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_output.params["side"]} data-instances_color={@mapping_output.params["instances_color"]} >
                             <div id="mapping_backdrop_output" style={"opacity: #{(@mapping_output[:opacity].value || 10) * 0.01};"} class={"bg-[url('/images/stripes.png')] z-10 bg-cover w-full aspect-[16/9] absolute"}></div>
                             <canvas id="mapping_output" class="max-w-full z-20 w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
                         </div>
-                        <.mapping_tool_menue side="output" state={@state} selected={@selected} mapping_changeset={@mapping_output}/>
+                        <.mapping_tool_menue side="output" selected={@selected} mapping_changeset={@mapping_output}/>
                     </div>
 
                     <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="uniform" name="mapping_tabs_1" class="tab" aria-label="uniform mapping" checked={if @side == "uniform" do true else false end } />
                     <div class="tab-content bg-base-100 border-base-300 p-2">
-                        <div id="mapping_wrapper_uniform" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_uniform.params["side"]} data-stripes_color={@mapping_uniform.params["stripes_color"]} >
+                        <div id="mapping_wrapper_uniform" class={"w-full aspect-[16/9] relative"} phx-hook="Stage" data-selected={@selected} data-side={@mapping_uniform.params["side"]} data-instances_color={@mapping_uniform.params["instances_color"]} >
                             <div id="mapping_backdrop_uniform" style={"opacity: #{(@mapping_uniform[:opacity].value || 10) * 0.01};"} class={"bg-[url('/images/maxresdefault.jpg')] bg-cover w-full aspect-[16/9] absolute"}></div>
                             <canvas id="mapping_uniform" class="max-w-full w-screen aspect-[16/9] max-h-full h-auto select-none p-0 m-0 relative" phx-update="ignore"></canvas>  
                         </div>
-                        <.mapping_tool_menue side="uniform" state={@state} selected={@selected} mapping_changeset={@mapping_uniform}/>
+                        <.mapping_tool_menue side="uniform" selected={@selected} mapping_changeset={@mapping_uniform}/>
                     </div>
 
                     <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="services" name="mapping_tabs_1" class="tab" aria-label="services" checked={if @side == "services" do true else false end } />
@@ -55,7 +63,7 @@
         </div>   
 
 </Layouts.app>
-<Layouts.debug :if={@debug} state={@state} selected={@selected}>
+<Layouts.debug :if={@debug} selected={@selected} side={@side}>
 </Layouts.debug>
 <div :if={!@debug} class="min-h-128">
 </div>

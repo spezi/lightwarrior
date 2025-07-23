@@ -17,65 +17,58 @@ defmodule Lightwarrior.HyperionApi do
   ## GenServer Callbacks
 
   @impl true
-  def init(state) do
+  def init(hyperion_state) do
     # Initial API fetch in background
-    send(self(), :load_initial_data)
+    send(self(), :load_data)
 
     {:ok,
       %{
         serverinfo: nil,
-        stripes: nil,
-        stripes_with_config: nil
+        instances: nil,
       }
     }
   end
 
   @impl true
-  def handle_info(:load_initial_data, state) do
+  def handle_info(:load_data, hyperion_state) do
 
     serverinfo = case Hyperion.get_serverinfo() do
-      {:ok, serverinfo} -> serverinfo
+      {:ok, serverinfo} ->
+        Lightwarrior.State.put(:serverinfo, serverinfo)
+        serverinfo
       {:error, :econnrefused} -> nil
     end
 
-    stripes = case Hyperion.collect_stripes(serverinfo) do
-      {:ok, stripes } -> stripes
+    instances = case Hyperion.collect_instances(serverinfo) do
+      {:ok, instances } ->
+        Lightwarrior.State.put(:instances, instances)
+        instances
+        instances
       {:error, nil} -> nil
     end
 
-    stripes_with_config = case Hyperion.get_all_stripes_config(stripes) do
-      {:ok, stripes_with_config } -> stripes_with_config
-      {:error, nil} -> nil
-    end
-
-    #dbg(serverinfo)
-    #dbg(stripes)
-    #dbg(stripes_with_config)
-
-    state =  %{
+    hyperion_state =  %{
       serverinfo: serverinfo,
-      stripes: stripes,
-      stripes_with_config: stripes_with_config,
-      stripes_with_config_input: nil
+      instances: instances,
     }
 
-    #dbg(state)
-    Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "state", state)
+    #dbg(hyperion_state)
+    Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "hyperion_ready", %{ "hyperion_ready" => true })
 
-    {:noreply, state}
+    {:noreply, hyperion_state}
   end
 
   @impl true
-  def handle_call(:get_data, _from, state) do
-    {:reply, state, state}
+  def handle_call(:get_data, _from, hyperion_state) do
+    {:reply, hyperion_state, hyperion_state}
   end
 
   @impl true
-  def handle_cast(:refresh_data, state) do
+  def handle_cast(:refresh_data, hyperion_state) do
     #data = Hyperion.get_serverinfo()
-    #{:noreply, %{state | serverinfo: data}}
-    send(self(), :load_initial_data)
-    {:noreply, state}
+    #{:noreply, %{hyperion_state | serverinfo: data}}
+    send(self(), :load_data)
+    {:noreply, hyperion_state}
   end
 
 end

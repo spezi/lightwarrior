@@ -45,6 +45,93 @@ defmodule LightwarriorWeb.Layouts do
     """
   end
 
+  attr(:state, :map, required: false)
+  attr(:selected, :integer, required: true)
+  attr(:side, :string, required: false)
+
+  def left_top_menue(assigns) do
+    ~H"""
+      <!-- name of each tab group should be unique -->
+      <div id="left_top_menue" class="tabs tabs-lift">
+          <input :if={ @side != "uniform" } type="radio" name="left_top_menue_tabs" class="tab" aria-label="stripe instances" checked="checked" />
+          <div class="tab-content bg-base-100 border-base-300 p-2">
+              <div :if={Lightwarrior.State.get(:instances) != nil } class="flex flex-wrap">
+                <div :for={instance <- Lightwarrior.State.get(:instances)}>
+                  <.led_instance title={instance.friendly_name} status={instance.running} instance={instance} selected={@selected}/>
+                </div>
+              </div>
+                <p :if={Lightwarrior.State.get(:instances) == nil }  class="text-red-500">
+                  no connection to Hyperion!
+                </p>
+              <div class="p-2">
+                <button phx-click="refresh" class="btn btn-sm btn-neutral btn-square ml-auto">
+                  <.icon name="hero-arrow-path-mini" class="size-5 opacity-40 group-hover:opacity-70" />
+                </button>
+              </div>
+          </div>
+
+          <input :if={ @side == "uniform" } type="radio" name="left_top_menue_tabs" class="tab" aria-label="uniform instances" checked="checked" />
+          <div class="tab-content bg-base-100 border-base-300 p-2">
+
+
+          </div>
+
+          <input type="radio" name="left_top_menue_tabs" class="tab" aria-label="global config" />
+          <div class="tab-content bg-base-100 border-base-300 p-2">
+
+          </div>
+
+      </div>
+    """
+  end
+
+
+  attr(:state, :map, required: false)
+
+  def left_bottom_menue(assigns) do
+    ~H"""
+            <!-- name of each tab group should be unique -->
+            <div class="tabs tabs-lift mt-4">
+                <input type="radio" name="left_bottom_menue_tabs" class="tab" aria-label="instance config" checked="checked" />
+                <div class="tab-content bg-base-100 border-base-300 p-8">
+                    <button phx-click="save" class="btn btn-primary ml-auto">
+                      <.icon name="hero-arrow-trending-up-mini" class="size-5 opacity-60 group-hover:opacity-70" />
+                    </button>
+                </div>
+            </div>
+    """
+  end
+
+  @doc """
+  Renders a bouttons for LED Instances.
+
+  ## Examples
+
+      <.led_instance>
+        <:item title="Title"><%= @post.title %></:item>
+        <:item title="Views"><%= @post.views %></:item>
+      </.led_instance>
+  """
+
+  attr(:title, :string, required: false)
+  attr(:instance, :map, required: true)
+  attr(:status, :string, required: true)
+  attr(:selected, :integer, required: false)
+
+  def led_instance(assigns) do
+    ~H"""
+        <.link patch={~p"/hyperion/#{@instance.instance}/edit"}>
+          <button  class={
+                  "btn m-1 p-2 rounded-full text-xs font-semibold text-white shadow-xl
+                  #{if @status, do: "bg-green-600 ", else: "bg-zinc-600 "}
+                  #{if @selected && @selected == @instance.instance, do: "ring-2 ring-emerald-400 ", else: "" }
+                "}
+          ><%= @title %>
+          </button>
+        </.link>
+    """
+  end
+
   @doc """
   Shows the flash group with standard titles and content.
 
@@ -154,15 +241,15 @@ defmodule LightwarriorWeb.Layouts do
   end
 
   attr :selected, :integer, doc: "selected id"
+  attr :side, :string, doc: "selected side"
 
   def debug(assigns) do
     ~H"""
       <div class="px-4 py-4 sm:px-6 lg:px-8">
       <hr class="mt-10">
-      <div class="flex text-xs">
-      <div class="basis-1/4">
+      <div>
           <h2>assigns</h2>
-          <pre class="w-64">
+          <pre>
               <%=
                 #pretty_json = Jason.encode!(Map.delete(assigns, :state), pretty: true)
                 #raw(pretty_json)
@@ -171,29 +258,39 @@ defmodule LightwarriorWeb.Layouts do
             %>
           </pre>
         </div>
+      <div class="flex text-xs w-full">
         <div class="basis-1/4">
-          <h2>state.serverinfo</h2>
+          <h2>serverinfo</h2>
           <pre>
             <%=
-                pretty_json = Jason.encode!(@state.serverinfo, pretty: true)
+                pretty_json = Jason.encode!(Lightwarrior.State.get(:serverinfo), pretty: true)
                 raw(pretty_json)
             %>
           </pre>
         </div>
         <div class="basis-1/4">
-          <h2>state.stripes</h2>
+          <h2>instances</h2>
           <pre>
             <%=
-                pretty_json = Jason.encode!(@state.stripes, pretty: true)
+                pretty_json = Jason.encode!(Lightwarrior.State.get(:instances), pretty: true)
                 raw(pretty_json)
             %>
           </pre>
         </div>
         <div class="basis-1/4">
-        <h2>state.stripes_with_config</h2>
+        <h2>state.instances_with_config_input</h2>
           <pre>
             <%=
-                pretty_json = Jason.encode!(@state.stripes_with_config, pretty: true)
+                pretty_json = Jason.encode!(Lightwarrior.State.get(:instances_with_config_input), pretty: true)
+                raw(pretty_json)
+            %>
+          </pre>
+        </div>
+        <div class="basis-1/4">
+        <h2>state.instances_with_config_output</h2>
+          <pre>
+            <%=
+                pretty_json = Jason.encode!(Lightwarrior.State.get(:instances_with_config_output), pretty: true)
                 raw(pretty_json)
             %>
           </pre>

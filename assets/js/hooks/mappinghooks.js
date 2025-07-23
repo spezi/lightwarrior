@@ -39,7 +39,7 @@ function sleep(ms) {
 MappingHooks.Stage= {
   selected() { return this.el.dataset.selected },
   side() { return this.el.dataset.side },
-  stripe_color() { return this.el.dataset.stripes_color },
+  stripe_color() { return this.el.dataset.instances_color },
   async poll_mapping_container_size() {
     for (let i = 0; i < 10; i++) {
         //console.log("Loop iteration", i);
@@ -84,6 +84,9 @@ MappingHooks.Stage= {
   },
   reset_stage() {
     this.app.stage.removeChildren(0);
+    if(this.app.renderer != undefined) {
+      this.app.renderer.resize(this.mapping_container_wrapper.offsetWidth, this.mapping_container_wrapper.offsetHeight);
+    } 
     this.ready() 
     //this.app.destroy(false, { children: true, texture: true, baseTexture: true });
     //poll_mapping_container_size()
@@ -92,7 +95,6 @@ MappingHooks.Stage= {
   set_instances_data_pixel(data) {
     //console.log(data)
     this.instances_data_pixel = data.instance_data_pixel
-    //console.log(this.instances_data_pixel)
   },
   mounted() {
     console.log(this.el.dataset)
@@ -102,11 +104,12 @@ MappingHooks.Stage= {
     // wait for ready event after mount -> init app or use in ready() -> render function
     this.handleEvent("ready", data => this.ready());
     
-    // have toreset stage
+    // have to reset stage
     this.handleEvent("tabchange", data => this.reset_stage());
     this.handleEvent("select", data => this.reset_stage());
-    this.handleEvent("stripe_color", data => this.reset_stage());
+    this.handleEvent("instances_color", data => this.reset_stage());
     this.handleEvent("change_mapping", data => this.reset_stage());
+    this.handleEvent("refresh", data => this.reset_stage());
     this.handleEvent("lockdistance", data => lockDistance = data.lockdistance );
     
     window.addEventListener("resize", _info => this.catch_resize(_info));
@@ -138,10 +141,10 @@ MappingHooks.Stage= {
     }
   },
   async ready() {
-    console.log("ready")
-    console.log(this.selected())
-    console.log(this.side())
-    console.log(this.stripe_color())
+    //console.log("ready")
+    //console.log(this.selected())
+    //console.log(this.side())
+    //console.log(this.stripe_color())
 
     let stage_canvas_ready = await this.poll_mapping_container_size();
     if(stage_canvas_ready && this.size.width > 0 && this.size.height > 0) {
@@ -151,15 +154,14 @@ MappingHooks.Stage= {
       if ( this.app.renderer == undefined) {
           await this.app.init({
             backgroundAlpha: 0, 
-            width: this.size.width, 
-            height: this.size.height, 
+            width: this.mapping_container_wrapper.offsetWidth, 
+            height: this.mapping_container_wrapper.offsetHeight, 
             antialias: true,
             canvas: this.mapping_container
           });
 
           this.app.stage.interactive = true;
           this.app.stage.hitArea = this.app.screen;
-
           this.app.stage.on('pointerup', this.onDragEnd);
           this.app.stage.on('pointerupoutside', this.onDragEnd);
 
@@ -169,7 +171,10 @@ MappingHooks.Stage= {
       //this.app.canvas.height = this.size.height;
 
       // render functions
-      this.test();
+      if (localStorage.getItem("phx:debug") == "true") {
+        this.test()
+      };
+
       this.wait_for_instance_data_and_render()
     }
   },
@@ -177,7 +182,9 @@ MappingHooks.Stage= {
     for (let i = 0; i < 10; i++) {
         //console.log("Loop iteration", i);
         if ( this.instances_data_pixel.length > 0 ) {
-              console.log(this.instances_data_pixel)
+              //console.log(this.instances_data_pixel)
+              //console.log(this.mapping_container_wrapper.offsetWidth)
+              //console.log(this.app.canvas.width)
               this.render_instances();
           break
         }
@@ -208,21 +215,20 @@ MappingHooks.Stage= {
   },
   async render_selected() {
     if(this.side() != "uniform") {
-        this.instances_data_pixel.forEach(stripe => {
-          if(this.selected() == stripe.instance) {
-            console.log(stripe)
-            let leds = stripe.leds;
+        this.instances_data_pixel.forEach(instance => {
+          if(this.selected() == instance.instance) {
+            console.log(instance)
             
             selected.destroy(true)
 
             selected = new PIXI.Container();
-            selected.label = stripe.instance
+            selected.label = instance.instance
 
             selected_start = new PIXI.Graphics();
             selected_start.label = 'selected_start';
             selected_start.position.set(
-              stripe.start[0],
-              stripe.start[1]
+              instance.start[0],
+              instance.start[1]
             )
             selected_start.circle(0, 0, 6);
             selected_start.fill({color:'blue', alpha:1});
@@ -235,8 +241,8 @@ MappingHooks.Stage= {
             selected_end = new PIXI.Graphics();
             selected_end.label = 'selected_end';
             selected_end.position.set(
-              stripe.end[0],
-              stripe.end[1]
+              instance.end[0],
+              instance.end[1]
             )
             selected_end.circle(0, 0, 6);
             selected_end.fill({color:'red', alpha:1});
@@ -278,7 +284,6 @@ MappingHooks.Stage= {
 
 
             this.app.stage.addChild(selected);
-
             this.app.stage.on('pointermove', this.onDragMove);
             this.update_selected_length()
 

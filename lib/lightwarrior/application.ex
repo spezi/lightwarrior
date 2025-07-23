@@ -12,6 +12,7 @@ defmodule Lightwarrior.Application do
       {DNSCluster, query: Application.get_env(:lightwarrior, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Lightwarrior.PubSub},
       Lightwarrior.HyperionApi,
+      Lightwarrior.State,
       # Start a worker by calling: Lightwarrior.Worker.start_link(arg)
       # {Lightwarrior.Worker, arg},
       # Start to serve requests, typically the last entry

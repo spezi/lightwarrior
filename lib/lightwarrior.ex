@@ -11,6 +11,32 @@ defmodule Lightwarrior do
 
   require Math
 
+  def init_state() do
+    case Lightwarrior.HyperionApi.get_data() do
+      %{
+        serverinfo: serverinfo,
+        instances: instances,
+      } ->
+        %{
+          serverinfo: serverinfo,
+          instances: instances,
+          instances_with_config_input: nil,
+          instances_leds_pixel_input: nil,
+          instances_with_config_output: nil,
+          instances_leds_pixel_output: nil
+        }
+      _ ->
+        %{
+          serverinfo: nil,
+          instances: nil,
+          instances_with_config_input: nil,
+          instances_leds_pixel_input: nil,
+          instances_with_config_output: nil,
+          instances_leds_pixel_output: nil
+        }
+    end
+  end
+
   def get_led_size(stripe_data, mapping_container_size) do
     #dbg(stripe_data)
     firstLed = Enum.fetch!(Map.get(stripe_data, "leds"), 0)

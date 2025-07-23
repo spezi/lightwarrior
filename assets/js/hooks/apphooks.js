@@ -14,9 +14,9 @@ AppHooks.LocalStorage= {
     this.pushEvent("phx:init-output_opacity", localStorage.getItem("phx:output_opacity"));
     this.pushEvent("phx:init-uniform_opacity", localStorage.getItem("phx:uniform_opacity"));
 
-    this.pushEvent("phx:init-input_stripes_color", localStorage.getItem("phx:input_stripes_color"));
-    this.pushEvent("phx:init-output_stripes_color", localStorage.getItem("phx:output_stripes_color"));
-    this.pushEvent("phx:init-uniform_stripes_color", localStorage.getItem("phx:uniform_stripes_color"));
+    this.pushEvent("phx:init-input_instances_color", localStorage.getItem("phx:input_instances_color"));
+    this.pushEvent("phx:init-output_instances_color", localStorage.getItem("phx:output_instances_color"));
+    this.pushEvent("phx:init-uniform_instances_color", localStorage.getItem("phx:uniform_instances_color"));
 
     this.pushEvent("phx:last_open_tab", { last_open_tab: localStorage.getItem("phx:last_open_tab")});
 
@@ -52,18 +52,18 @@ AppHooks.LocalStorage= {
       localStorage.setItem("phx:uniform_opacity", data.uniform_opacity);
     }
 
-     // stripes color
-    if( data.input_stripes_color != undefined ) {
-      //console.log("input_stripes_color " + data.input_stripes_color)
-      localStorage.setItem("phx:input_stripes_color", data.input_stripes_color);
+     // instances color
+    if( data.input_instances_color != undefined ) {
+      //console.log("input_instances_color " + data.input_instances_color)
+      localStorage.setItem("phx:input_instances_color", data.input_instances_color);
     }
-    if( data.output_stripes_color != undefined ) {
-      //console.log("output_stripes_color " + data.output_stripes_color)
-      localStorage.setItem("phx:output_stripes_color", data.output_stripes_color);
+    if( data.output_instances_color != undefined ) {
+      //console.log("output_instances_color " + data.output_instances_color)
+      localStorage.setItem("phx:output_instances_color", data.output_instances_color);
     }
-    if( data.uniform_stripes_color!= undefined ) {
-      //console.log("uniform_stripes_color: " + data.uniform_stripes_color)
-      localStorage.setItem("phx:uniform_stripes_color", data.uniform_stripes_color);
+    if( data.uniform_instances_color!= undefined ) {
+      //console.log("uniform_instances_color: " + data.uniform_instances_color)
+      localStorage.setItem("phx:uniform_instances_color", data.uniform_instances_color);
     }
     
   }

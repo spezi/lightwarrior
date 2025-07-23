@@ -5,95 +5,7 @@ defmodule LightwarriorWeb.HyperionComponents do
   import LightwarriorWeb.CoreComponents
   use Phoenix.VerifiedRoutes, endpoint: LightwarriorWeb.Endpoint, router: LightwarriorWeb.Router
 
-  alias Phoenix.LiveView.JS
-
-  attr(:state, :map, required: false)
-
-  def left_top_menue(assigns) do
-    ~H"""
-            <!-- name of each tab group should be unique -->
-            <div class="tabs tabs-lift">
-                <input :if={ @side != "uniform" } type="radio" name="left_top_menue_tabs" class="tab" aria-label="stripe instances" checked="checked" />
-                <div class="tab-content bg-base-100 border-base-300 p-2">
-                    <div :if={@state.stripes != nil } class="flex flex-wrap">
-                      <div :for={instance <- @state.stripes}>
-                        <.led_instance title={instance.friendly_name} status={instance.running} instance={instance} selected={@selected}/>
-                      </div>
-                      <div class="p-2">
-
-                        <button phx-click="refresh" class="btn btn-sm btn-neutral btn-square ml-auto">
-                          <.icon name="hero-arrow-path-mini" class="size-5 opacity-40 group-hover:opacity-70" />
-                        </button>
-
-                      </div>
-                    </div>
-                    <div :if={@state.stripes == nil } class="flex flex-wrap">
-                      <p class="text-red-500">
-                        there seems to be no connection to Hyperion!
-                      </p>
-                    </div>
-
-                </div>
-
-                <input :if={ @side == "uniform" } type="radio" name="left_top_menue_tabs" class="tab" aria-label="uniform instances" checked="checked" />
-                <div class="tab-content bg-base-100 border-base-300 p-2">
-
-
-                </div>
-
-                <input type="radio" name="left_top_menue_tabs" class="tab" aria-label="global config" />
-                <div class="tab-content bg-base-100 border-base-300 p-2">
-
-                </div>
-
-            </div>
-    """
-  end
-
-  attr(:state, :map, required: false)
-
-  def left_bottom_menue(assigns) do
-    ~H"""
-            <!-- name of each tab group should be unique -->
-            <div class="tabs tabs-lift mt-4">
-                <input type="radio" name="left_bottom_menue_tabs" class="tab" aria-label="instance config" checked="checked" />
-                <div class="tab-content bg-base-100 border-base-300 p-8">
-                    <button phx-click="save" class="btn btn-primary ml-auto">
-                      <.icon name="hero-arrow-trending-up-mini" class="size-5 opacity-60 group-hover:opacity-70" />
-                    </button>
-                </div>
-            </div>
-    """
-  end
-
-  @doc """
-  Renders a bouttons for LED Instances.
-
-  ## Examples
-
-      <.led_instance>
-        <:item title="Title"><%= @post.title %></:item>
-        <:item title="Views"><%= @post.views %></:item>
-      </.led_instance>
-  """
-
-  attr(:title, :string, required: false)
-  attr(:instance, :map, required: true)
-  attr(:selected, :integer, required: false)
-
-  def led_instance(assigns) do
-    ~H"""
-        <.link patch={~p"/hyperion/#{@instance.instance}/edit"}>
-          <button  class={
-                  "btn m-1 p-2 rounded-full text-xs font-semibold text-white shadow-xl
-                  #{if @status, do: "bg-green-600 ", else: "bg-zinc-600 "}
-                  #{if @selected && @selected == @instance.instance, do: "ring-2 ring-emerald-400 ", else: "" }
-                "}
-          ><%= @title %>
-          </button>
-        </.link>
-    """
-  end
+  #alias Phoenix.LiveView.JS
 
   def mapping_tool_menue(assigns) do
     #dbg(assigns.mapping_changeset)
@@ -113,10 +25,10 @@ defmodule LightwarriorWeb.HyperionComponents do
         </div>
         <!-- stripe length -->
         <div class="w-26">
-            <.input type="text" field={@mapping_changeset[:stripe_length]}  placeholder="Stripe length" />
+            <.input type="text" field={@mapping_changeset[:instance_length]}  placeholder="Stripe length" />
         </div>
         <div>
-          <div class="flex flex-row w-fit p-1">
+          <div :if={Lightwarrior.State.get(:instances)} class="flex flex-row w-fit p-1">
             <select type="select" class="select select-sm">
             <!--
               <option selected></option>
@@ -124,8 +36,8 @@ defmodule LightwarriorWeb.HyperionComponents do
               <option>Amber</option>
               <option>Velvet</option>-->
               <option disabled selected>copy from</option>
-                <%= for stripe <- @state.stripes do %>
-                  <option value={stripe.instance}><%= stripe.friendly_name %></option>
+                <%= for instance <- Lightwarrior.State.get(:instances) do %>
+                  <option value={instance.instance}><%= instance.friendly_name %></option>
                 <% end %>
             </select>
           </div>
@@ -171,10 +83,10 @@ defmodule LightwarriorWeb.HyperionComponents do
         <div class="w-24">
           <.input
             type="color"
-            label="stripes color"
-            field={@mapping_changeset[:stripes_color]}
+            label="instances color"
+            field={@mapping_changeset[:instances_color]}
           />
-          <!-- <%= Kernel.inspect(@mapping_changeset[:stripes_color].value)%> -->
+          <!-- <%= Kernel.inspect(@mapping_changeset[:instances_color].value)%> -->
         </div>
 
         <!-- opacity -->

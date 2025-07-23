@@ -33,7 +33,7 @@ defmodule Lightwarrior.Hyperion do
       %HyperionConfig{}
 
   """
-  def get_hyperion_config!(id), do: raise "TODO"
+  def get_hyperion_config!(_id), do: raise "TODO"
 
   @doc """
   Creates a hyperion_config.
@@ -47,7 +47,7 @@ defmodule Lightwarrior.Hyperion do
       {:error, ...}
 
   """
-  def create_hyperion_config(attrs) do
+  def create_hyperion_config(_attrs) do
     raise "TODO"
   end
 
@@ -91,10 +91,11 @@ defmodule Lightwarrior.Hyperion do
       iex> change_hyperion_config(hyperion_config)
       %Todo{...}
 
-  """
+
   #def change_hyperion_config(%HyperionConfig{} = hyperion_config, _attrs \\ %{}) do
   #  raise "TODO"
   #end
+  """
 
   @doc """
   Get initial Hyperion Server Info
@@ -172,9 +173,9 @@ defmodule Lightwarrior.Hyperion do
   @doc """
   Get config of any stripe
   """
-  def get_all_stripes_config(stripes) do
-    if stripes != nil do
-      stripes = Enum.map_every(stripes, 1, fn stripe ->
+  def get_all_instances_config(instances) do
+    if instances != nil do
+      instances = Enum.map_every(instances, 1, fn stripe ->
         config = case switch_instance(stripe) do
           {:ok, switch} -> get_current_config()
           {:error, error} -> error
@@ -188,8 +189,8 @@ defmodule Lightwarrior.Hyperion do
         Map.put(stripe, :config, config)
       end)
 
-      #dbg(stripes)
-      {:ok, stripes}
+      #dbg(instances)
+      {:ok, instances}
     else
       {:error, nil}
     end
@@ -204,14 +205,15 @@ defmodule Lightwarrior.Hyperion do
       [%HyperionLEDMapping{}, ...]
 
   """
-  def collect_stripes(serverinfo) do
+  def collect_instances(serverinfo) do
     if serverinfo do
-      Logger.info("collect stripes")
+      Logger.info("collect instances")
       %{"info" => info} = serverinfo
-      %{"instance" => stripes } = info
-      stripes = Enum.map_every(stripes, 1, fn stripe -> Helper.string_keys_to_atom_keys(stripe) end)
+      %{"instance" => instances } = info
+      instances = Enum.map_every(instances, 1, fn stripe -> Helper.string_keys_to_atom_keys(stripe) end)
       #raise "TODO"
-      {:ok, stripes}
+      #dbg(instances)
+      {:ok, instances}
     else
       {:error, nil}
     end
