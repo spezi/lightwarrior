@@ -4,7 +4,7 @@
 
         <div class="basis-1/4">
             <Layouts.left_top_menue selected={@selected} side={@side}/>
-            <Layouts.left_bottom_menue :if={Lightwarrior.State.get(:serverinfo) && @selected } selected={@selected} side={@side} />            
+            <Layouts.left_bottom_menue :if={ @selected } selected={@selected} side={@side} />            
         </div>
 
         <div class="basis-3/4">

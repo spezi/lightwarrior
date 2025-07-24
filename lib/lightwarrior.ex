@@ -8,6 +8,7 @@ defmodule Lightwarrior do
   """
 
   alias Lightwarrior.Helper
+  alias Lightwarrior.Hyperion
 
   require Math
 
@@ -62,7 +63,8 @@ defmodule Lightwarrior do
     #dbg(selected)
     #dbg(bounds)
     selected_instance_data_pixel = Enum.fetch!(leds_pixel, selected)
-
+    dbg(points)
+    dbg(num_leds)
     List.replace_at(leds_pixel,
       selected,
       selected_instance_data_pixel
@@ -97,6 +99,51 @@ defmodule Lightwarrior do
     for i <- 0..(num_leds - 1) do
       %{"vmin" => points.start.y + i * step_y, "hmin" => points.start.x + i * step_x, "vmax" => points.start.y + i * step_y + mapping_container_size, "hmax" => points.start.x + i * step_x + mapping_container_size }
     end
+
+  end
+
+  def save_input() do
+      dbg("save input")
+      if Lightwarrior.State.get(:instances_with_config_input) do
+        #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_input), socket.assigns.selected)
+        # dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
+        dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
+        #dbg(Lightwarrior.InputConfigsFileStore.persist())
+        #dbg(Lightwarrior.InputConfigsFileStore.reload())
+        case Lightwarrior.InputConfigsFileStore.persist() do
+          :ok ->
+            dbg(Lightwarrior.InputConfigsFileStore.reload())
+            dbg(Map.keys(Lightwarrior.State.all()))
+            %{"success" => true }
+          :error -> %{"success" => false, "error" => "failed to write file" }
+        end
+      else
+        %{"success" => false, "error" => "have no Data to save" }
+      end
+  end
+
+  def save_output(selected) do
+      dbg("save output")
+      if Lightwarrior.State.get(:instances_with_config_output) do
+        { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), selected)
+        to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
+        case Hyperion.save_current_config(to_save_payload) do
+            %{
+              "success" => true,
+            } ->
+              %{"success" => true}
+            %{
+              "success" => false,
+              "error" => error
+            } ->
+              %{"success" => false, "error" => error }
+        end
+      else
+        %{"success" => false, "error" => "have no Data to save" }
+      end
+  end
+
+  def save_uniform() do
 
   end
 

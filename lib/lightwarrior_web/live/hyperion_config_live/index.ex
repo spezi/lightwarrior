@@ -17,7 +17,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   def mount(_params, _session, socket) do
 
     if connected?(socket) do
-      Phoenix.PubSub.subscribe(Lightwarrior.PubSub, "hyperion_ready")
+      Phoenix.PubSub.subscribe(Lightwarrior.PubSub, "hyperion")
     end
 
     # start osc session
@@ -66,6 +66,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     socket = case params do
       %{"id" => id} ->
         dbg("selected: " <> id)
+        dbg(Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id))))
         socket
         |> assign(:selected, String.to_integer(id))
         |> push_event("select", %{instance: id})
@@ -101,9 +102,6 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
       else
       socket
     end
-
-
-
 
     # Extract the path from the full URI
     path = URI.parse(uri).path
@@ -167,18 +165,26 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #dbg(socket.assigns.current_path)
     {:noreply,
       socket
+      |> put_flash(:info, "Hyperion connected !!")
       |> push_navigate(to: socket.assigns.current_path, replace: true)
+    }
+  end
+
+  def handle_info(%{ "hyperion_ready" => false } = _data, socket) do
+    #send_update(LightwarriorWeb.HyperionComponents, id: "left_top_menue", refresh: true)
+    #dbg(socket.assigns.current_path)
+    {:noreply,
+      socket
+      |> put_flash(:error, "Hyperion not connected !!")
     }
   end
 
   def handle_event("refresh", %{"value" => ""} = _referer, socket) do
 
-    Lightwarrior.HyperionApi.refresh_data()
+    dbg(Lightwarrior.HyperionApi.refresh_data())
 
     {:noreply,
       socket
-      |> assign(:selected, nil)
-      #|> push_patch(to: ~p"/hyperion/")
       |> push_event("refresh", %{})
     }
   end
@@ -320,6 +326,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   end
 
   def handle_event("phx:select_instance", %{"value" => value} = _param, socket) do
+    dbg("select: #{value}")
+    #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), value))
     {:noreply,
       socket
       |> push_patch(to: ~p"/hyperion/#{value}/edit")
@@ -332,8 +340,6 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     dbg(points)
     points = Helper.string_keys_to_atom_keys(points)
-
-
 
     dbg(socket.assigns.side)
     #dbg(Lightwarrior.State.all())
@@ -349,48 +355,56 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     instances_data_pixel = Lightwarrior.Helper.leds_to_pixel!(instances_data_config, socket.assigns.mapping_container_size)
     instance_data_config =  Enum.fetch!(instances_data_config, socket.assigns.selected)
+    #dbg(instance_data_config)
     num_leds = instance_data_config["config"]["info"]["device"]["hardwareLedCount"]
 
-    #lightwarrior.ex ;)
-    instances_data_pixel_new = Lightwarrior.update_selected_instance_data_pixel(
-      num_leds,
-      instances_data_pixel,
-      socket.assigns.selected,
-      points
-    )
 
-    ### update data
+    if num_leds > 1 do
+          #lightwarrior.ex ;)
+          instances_data_pixel_new = Lightwarrior.update_selected_instance_data_pixel(
+            num_leds,
+            instances_data_pixel,
+            socket.assigns.selected,
+            points
+          )
 
-    leds = Helper.leds_to_coordinates!(
-      Enum.fetch!(instances_data_pixel_new, socket.assigns.selected),
-      socket.assigns.mapping_container_size
-    )
+          ### update data
 
-    dbg(instance_data_config)
-    #instance_data_config_new = Map.replace(instance_data_config, "leds", %{"penis" => true})
-    instance_data_config_new = put_in(instance_data_config,["config", "info", "leds"], leds)
+          leds = Helper.leds_to_coordinates!(
+            Enum.fetch!(instances_data_pixel_new, socket.assigns.selected),
+            socket.assigns.mapping_container_size
+          )
 
-
-    dbg(instance_data_config_new)
-    instances_data_config_new = List.replace_at(instances_data_config, socket.assigns.selected, instance_data_config_new)
+          #dbg(instance_data_config)
+          #instance_data_config_new = Map.replace(instance_data_config, "leds", %{"penis" => true})
+          instance_data_config_new = put_in(instance_data_config,["config", "info", "leds"], leds)
 
 
+          #dbg(instance_data_config_new)
+          instances_data_config_new = List.replace_at(instances_data_config, socket.assigns.selected, instance_data_config_new)
 
-    case socket.assigns.side do
-      "input" ->
-          dbg(instances_data_config_new == Lightwarrior.State.get(:instances_with_config_input))
-          dbg(Lightwarrior.State.put(:instances_with_config_input, instances_data_config_new))
-      "output" ->
-          dbg(Lightwarrior.State.put(:instances_with_config_output, instances_data_config_new))
-        _ -> []
+          dbg(socket.assigns.autosave)
+
+          case socket.assigns.side do
+            "input" ->
+                dbg(Lightwarrior.State.put(:instances_with_config_input, instances_data_config_new))
+                if socket.assigns.autosave, do: Lightwarrior.save_input()
+            "output" ->
+                dbg(Lightwarrior.State.put(:instances_with_config_output, instances_data_config_new))
+              _ -> []
+          end
+
+
+          {:noreply,
+            socket
+            |> push_event("instances-data-pixel", %{instances_data_pixel: instances_data_pixel_new})
+            |> push_event("change_mapping", %{})
+          }
+    else
+          {:noreply,
+            put_flash(socket, :error, "Device LED count is #{num_leds}, no interpolation possible")
+          }
     end
-
-
-    {:noreply,
-      socket
-      |> push_event("instances-data-pixel", %{instances_data_pixel: instances_data_pixel_new})
-      |> push_event("change_mapping", %{})
-    }
   end
 
   @impl true
@@ -410,36 +424,12 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     save = case socket.assigns.side do
       "input" ->
-            dbg("save input")
-            if Lightwarrior.State.get(:instances_with_config_input) do
-              #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_input), socket.assigns.selected)
-             # dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
-              dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
-              #dbg(Lightwarrior.InputConfigsFileStore.persist())
-              #dbg(Lightwarrior.InputConfigsFileStore.reload())
-              case Lightwarrior.InputConfigsFileStore.persist() do
-                :ok ->
-                  dbg(Lightwarrior.InputConfigsFileStore.reload())
-                  dbg(Map.keys(Lightwarrior.State.all()))
-                  %{"success" => true }
-                :error -> %{"success" => false, "error" => "failed to write file" }
-              end
-            else
-              %{"success" => false, "error" => "have no Data to save" }
-            end
-
+            Lightwarrior.save_input()
             # update ossia via osc messages
             #Lightwarrior.update_stripe_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
 
       "output" ->
-            dbg("save output")
-            if Lightwarrior.State.get(:instances_with_config_output) do
-              { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), socket.assigns.selected)
-              to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
-              dbg(Hyperion.save_current_config(to_save_payload))
-            else
-              %{"success" => false, "error" => "have no Data to save" }
-            end
+            Lightwarrior.save_output(socket.assigns.selected)
       "uniform" ->
             dbg("save uniform")
             { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), socket.assigns.selected)
@@ -451,7 +441,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     end
 
     socket = case save do
-      %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
+      %{"success" => true } -> put_flash(socket, :info, "Instance updated on #{socket.assigns.side} mapping")
       %{"success" => false, "error" => error } -> put_flash(socket, :error, "Failed to update Stripe: " <> error)
       {:error, :econnrefused} -> put_flash(socket, :error, "Failure to save Instance, Hyperion is not reachable")
     end
@@ -528,7 +518,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
         instances_data_with_config_pixel = Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, mapping_container_size)
         #dbg(instances_data_with_config_pixel)
         socket
-        |> push_event("instances-data-pixel", %{instances_data_pixel: instances_data_with_config_pixel })
+        |> push_event("instances-data-pixel", %{instances_data_pixel: instances_data_with_config_pixel})
     else
       socket
     end

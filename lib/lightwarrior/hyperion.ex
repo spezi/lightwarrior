@@ -115,13 +115,13 @@ defmodule Lightwarrior.Hyperion do
   @doc """
   Get config of any stripe
   """
-  def switch_instance(stripe) do
+  def switch_instance(instance) do
 
     #dbg("switch instance #{stripe.instance}" )
 
-    instance = case Map.has_key?(stripe, :instance) do
-      true -> Map.get(stripe, :instance)
-      false -> Map.get(stripe, "instance")
+    instance = case Map.has_key?(instance, :instance) do
+      true -> Map.get(instance, :instance)
+      false -> Map.get(instance, "instance")
     end
 
     payload = %{
@@ -129,7 +129,7 @@ defmodule Lightwarrior.Hyperion do
       "subcommand" => "switchTo",
       "instance" => instance
     }
-    post_json(payload)
+    dbg(post_json(payload))
 
   end
 

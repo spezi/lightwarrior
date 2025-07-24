@@ -36,33 +36,39 @@ defmodule Lightwarrior.HyperionApi do
       {:ok, serverinfo} ->
         Lightwarrior.State.put(:serverinfo, serverinfo)
         serverinfo
-      {:error, :econnrefused} -> nil
+      {:error, :econnrefused} -> {:error, :econnrefused}
     end
 
-    instances = case Hyperion.collect_instances(serverinfo) do
-      {:ok, instances } ->
-        Lightwarrior.State.put(:instances, instances)
-        instances
-      {:error, nil} -> nil
+    if serverinfo != {:error, :econnrefused} do
+
+        instances = case Hyperion.collect_instances(serverinfo) do
+          {:ok, instances } ->
+            Lightwarrior.State.put(:instances, instances)
+            instances
+          {:error, nil} -> nil
+        end
+
+        instances_with_config_output = case Hyperion.get_all_instances_config(instances) do
+          {:ok, instances_with_config_output } ->
+            Lightwarrior.State.put(:instances_with_config_output , instances_with_config_output)
+            instances_with_config_output
+          {:error, nil} -> nil
+        end
+
+        #hyperion_state =  %{
+        #  serverinfo: serverinfo,
+        #  instances: instances,
+        #  instances_with_config_output: instances_with_config_output,
+        #}
+
+        #dbg(hyperion_state)
+        Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "hyperion", %{ "hyperion_ready" => true })
+
+        {:noreply, hyperion_state}
+    else
+      Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "hyperion", %{ "hyperion_ready" => false })
+      {:noreply, {:error, :econnrefused}}
     end
-
-    instances_with_config_output = case Hyperion.get_all_instances_config(instances) do
-      {:ok, instances_with_config_output } ->
-        Lightwarrior.State.put(:instances_with_config_output , instances_with_config_output)
-        instances_with_config_output
-      {:error, nil} -> nil
-    end
-
-    #hyperion_state =  %{
-    #  serverinfo: serverinfo,
-    #  instances: instances,
-    #  instances_with_config_output: instances_with_config_output,
-    #}
-
-    #dbg(hyperion_state)
-    Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "hyperion_ready", %{ "hyperion_ready" => true })
-
-    {:noreply, hyperion_state}
   end
 
   @impl true
@@ -74,7 +80,7 @@ defmodule Lightwarrior.HyperionApi do
   def handle_cast(:refresh_data, hyperion_state) do
     #data = Hyperion.get_serverinfo()
     #{:noreply, %{hyperion_state | serverinfo: data}}
-    send(self(), :load_data)
+    dbg(send(self(), :load_data))
     {:noreply, hyperion_state}
   end
 

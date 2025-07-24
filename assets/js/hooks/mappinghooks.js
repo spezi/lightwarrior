@@ -39,7 +39,7 @@ function sleep(ms) {
 MappingHooks.Stage= {
   selected() { return this.el.dataset.selected },
   side() { return this.el.dataset.side },
-  stripe_color() { return this.el.dataset.instances_color },
+  instance_color() { return this.el.dataset.instances_color },
   async poll_mapping_container_size() {
     for (let i = 0; i < 10; i++) {
         //console.log("Loop iteration", i);
@@ -90,7 +90,7 @@ MappingHooks.Stage= {
     this.ready() 
     //this.app.destroy(false, { children: true, texture: true, baseTexture: true });
     //poll_mapping_container_size()
-    //this.test();
+    //this.debug();
   },
   set_instances_data_pixel(data) {
     console.log(data)
@@ -138,15 +138,15 @@ MappingHooks.Stage= {
     if (this.side() != undefined){
       //console.log(this.side())
     }
-    if (this.stripe_color() != undefined){
-      //console.log(this.stripe_color())
+    if (this.instance_color() != undefined){
+      //console.log(this.instance_color())
     }
   },
   async ready() {
     //console.log("ready")
     //console.log(this.selected())
     //console.log(this.side())
-    //console.log(this.stripe_color())
+    //console.log(this.instance_color())
 
     let stage_canvas_ready = await this.poll_mapping_container_size();
     if(stage_canvas_ready && this.size.width > 0 && this.size.height > 0) {
@@ -174,7 +174,7 @@ MappingHooks.Stage= {
 
       // render functions
       if (localStorage.getItem("phx:debug") == "true") {
-        this.test()
+        this.debug()
       };
 
       this.wait_for_instance_data_and_render()
@@ -196,17 +196,17 @@ MappingHooks.Stage= {
   },
   async render_instances() {
     if(this.side() != "uniform") {
-        this.instances_data_pixel.forEach(stripe => {
-        //console.log(stripe)
-        let leds = stripe.leds;
+        this.instances_data_pixel.forEach(instance => {
+        //console.log(instance)
+        let leds = instance.leds;
         let lines = new PIXI.Graphics();
-        lines.label = stripe.instance;
+        lines.label = instance.instance;
         lines.zIndex = 0;
         //console.log(leds[0].hmin, leds[0].vmin)
         lines.moveTo(leds[0].hmin, leds[0].vmin)
         lines.lineTo(leds[(leds.length - 1)].hmin, leds[(leds.length - 1)].vmin)
-        lines.stroke({ width: 4, color: this.stripe_color(), alpha: 1});
-        if(this.selected() == stripe.instance) lines.alpha = 0.4;
+        lines.stroke({ width: 4, color: this.instance_color(), alpha: 1});
+        if(this.selected() == instance.instance) lines.alpha = 0.4;
         lines.cursor = 'pointer';
         lines.eventMode = 'static';
         lines.on('pointerdown', this.onSelectInstance, lines); 
@@ -476,14 +476,14 @@ MappingHooks.Stage= {
     liveview.pushEvent("phx:selected_change_mapping", points);
   },
   update_selected_length(){
-    //this.update_stripe_length()
+    //this.update_instance_length()
     initialDistance = Math.sqrt((selected_end.x - selected_start.x) ** 2 + (selected_end.y - selected_start.y) ** 2);
     //liveview.pushEvent("phx:initial-distance", { initialDistance });
   },
   onSelectInstance(event) {
       liveview.pushEvent("phx:select_instance", {"value": this.label});
   },
-  async test() {
+  async debug() {
   
        // Append the application canvas to the document body
         //document.body.appendChild(app.canvas);
@@ -505,11 +505,26 @@ MappingHooks.Stage= {
   
         graphics.stroke({
             width: 4,
-            color: this.stripe_color(),
+            color: this.instance_color(),
             alpha: 1
           });
   
         this.app.stage.addChild(graphics);
+
+        const debugText = new PIXI.Text({
+            text: 'DEBUG!',
+            style: {
+              fill: '#ffffff',
+              fontSize: 20,
+              fontFamily: 'MyFont',
+            },
+            anchor: 0.5
+        });
+
+        debugText.x = 150;
+        debugText.y = 150;
+
+        this.app.stage.addChild(debugText);
   
     }
 }
