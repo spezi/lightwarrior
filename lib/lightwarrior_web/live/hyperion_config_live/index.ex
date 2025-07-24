@@ -453,6 +453,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     socket = case save do
       %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
       %{"success" => false, "error" => error } -> put_flash(socket, :error, "Failed to update Stripe: " <> error)
+      {:error, :econnrefused} -> put_flash(socket, :error, "Failure to save Instance, Hyperion is not reachable")
     end
 
     {:noreply, socket
