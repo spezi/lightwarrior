@@ -33,17 +33,11 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #dbg(mapping_changeset_input)
     #dbg(mapping_changeset_output)
 
-    # Read and parse the JSON file
-    instances_with_config_input = case File.read("./mappings/stripes_config_dump.json") do
-      {:ok, json_content} ->
-        json_content |> Jason.decode!() |> Map.get("instances_with_config")
-      {:error, :enoent} -> nil
-      _ -> nil
-    end
-
     # state in own datastore by genserver in state.ex
     # TODO cleanup lightwarrior.ex not needed functions
     dbg(Map.keys(Lightwarrior.State.all()))
+    dbg(Map.keys(Lightwarrior.InputConfigsFileStore.all()))
+    dbg(Lightwarrior.State.put(:instances_with_config_input, Lightwarrior.InputConfigsFileStore.get("instances_with_config_input")))
 
     {:ok,
      socket
@@ -68,6 +62,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   @impl true
   def handle_params(params, uri, socket) do
 
+    # set selected
     socket = case params do
       %{"id" => id} ->
         dbg("selected: " <> id)
@@ -76,6 +71,39 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
         |> push_event("select", %{instance: id})
       _ -> socket
     end
+
+    # check for data
+
+    socket = if Lightwarrior.State.get(:instances_with_config_output) != nil && length(Lightwarrior.State.get(:instances_with_config_output)) > 0 do
+        #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0))
+        #dbg(Map.get(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), :config) )
+        case Map.get(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), :config) do
+          %{
+            "command" => "config",
+            "error" => error,
+            "instance" => 0,
+            "success" => success,
+            "tan" => 1
+          } ->
+            put_flash(socket, :error, "Hyperion error getting Instances configuration: " <> error)
+          _ ->
+              socket = if length(Map.keys(Lightwarrior.InputConfigsFileStore.all())) == 0 do
+                dbg(Lightwarrior.InputConfigsFileStore.put(:instances_with_config_input, Lightwarrior.State.get(:instances_with_config_output)))
+                dbg(Lightwarrior.InputConfigsFileStore.persist())
+                dbg(Lightwarrior.InputConfigsFileStore.reload())
+                put_flash(socket, :info, "No input configs available. create new from current output mapping ..")
+                |> push_navigate(to: ~p"/hyperion/", replace: true)
+              else
+                socket
+              end
+            socket
+        end
+      else
+      socket
+    end
+
+
+
 
     # Extract the path from the full URI
     path = URI.parse(uri).path
@@ -301,32 +329,32 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     # Handle the size information as needed
     #IO.puts("Div width: #{width}, height: #{height}")
 
-    dbg(points)
-    points = Helper.string_keys_to_atom_keys(points)
+    #dbg(points)
+    #points = Helper.string_keys_to_atom_keys(points)
 
-    instances_data_pixel = Map.get(socket.assigns.instances_data_pixel_map, socket.assigns.side)
+    #instances_data_pixel = Map.get(socket.assigns.instances_data_pixel_map, socket.assigns.side)
 
     #dbg(Enum.fetch!(socket.assigns.instances, socket.assigns.selected))
     # outout as master for led count so no need to sync with input
-    selected = Enum.fetch!(socket.assigns.state.instances_with_config_output, socket.assigns.selected)
-    num_leds = selected.config["info"]["device"]["hardwareLedCount"]
+    #selected = Enum.fetch!(socket.assigns.state.instances_with_config_output, socket.assigns.selected)
+    #num_leds = selected.config["info"]["device"]["hardwareLedCount"]
 
     #lightwarrior.ex ;)
-    updated = Lightwarrior.update_selected_stripe_data_pixel(
-      num_leds,
-      instances_data_pixel,
-      socket.assigns.selected,
-      points
-    )
+    #updated = Lightwarrior.update_selected_stripe_data_pixel(
+    #  num_leds,
+    #  instances_data_pixel,
+    #  socket.assigns.selected,
+    #  points
+    #)
 
-    instances_data_pixel_map = socket.assigns.instances_data_pixel_map
-                               |> Map.replace(socket.assigns.side, updated)
+    #instances_data_pixel_map = socket.assigns.instances_data_pixel_map
+    #                           |> Map.replace(socket.assigns.side, updated)
 
     {:noreply,
       socket
-      |> assign(:instances_data_pixel_map, instances_data_pixel_map)
-      |> push_event("instances-data-pixel", %{instance_data_pixel: updated})
-      |> push_event("change_mapping", %{})
+      #|> assign(:instances_data_pixel_map, instances_data_pixel_map)
+      #|> push_event("instances-data-pixel", %{instance_data_pixel: updated})
+      #|> push_event("change_mapping", %{})
     }
   end
 
@@ -334,39 +362,57 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   def handle_event("save", %{"value" => ""} = _params, socket) do
     dbg("save stripe #{socket.assigns.selected}")
 
-    instances_data_pixel = Map.get(socket.assigns.instances_data_pixel_map, socket.assigns.side)
+    #dbg(Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), socket.assigns.selected))
 
-    leds = Helper.leds_to_coordinates!(
-      Enum.fetch!(instances_data_pixel, socket.assigns.selected),
-      socket.assigns.mapping_container_size
-    )
+    #instances_data_pixel = Map.get(socket.assigns.instances_data_pixel_map, socket.assigns.side)
+
+    #leds = Helper.leds_to_coordinates!(
+    #  Enum.fetch!(instances_data_pixel, socket.assigns.selected),
+    #  socket.assigns.mapping_container_size
+    #)
 
     #dbg(selected_config_updated)
 
-    case socket.assigns.side do
+    save = case socket.assigns.side do
       "input" ->
-            selected_config = Enum.fetch!(socket.assigns.state.instances_with_config_input, socket.assigns.selected)
-            selected_config_updated = Map.replace(selected_config, "leds", leds)
-            instances_with_config = List.update_at(socket.assigns.state.instances_with_config_input, socket.assigns.selected, fn stripe -> Map.put(stripe, "config", %{"info" => selected_config_updated}) end)
-            # Dump instances_with_config to file for debugging
-            backup = %{"instances_with_config" => instances_with_config}
-            File.write!("./mappings/instances_config_dump.json", Jason.encode!(backup, pretty: true))
+            dbg("save input")
+            if Lightwarrior.State.get(:instances_with_config_input) do
+              #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_input), socket.assigns.selected)
+              dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
+              case Lightwarrior.InputConfigsFileStore.persist() do
+                :ok ->
+                  dbg(Lightwarrior.InputConfigsFileStore.reload())
+                  %{"success" => true }
+                :error -> %{"success" => false, "error" => "failed to write file" }
+              end
+            else
+              %{"success" => false, "error" => "have no Data to save" }
+            end
+
             # update ossia via osc messages
-            Lightwarrior.update_stripe_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
+            #Lightwarrior.update_stripe_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
+
       "output" ->
-            selected_config = Enum.fetch!(socket.assigns.state.instances_with_config_output, socket.assigns.selected)
-            selected_config_updated = Map.replace(selected_config, "leds", leds)
-            dbg(Map.keys(selected_config_updated))
-            save = Hyperion.save_current_config(selected_config_updated)
-            dbg(save)
-            #socket = case save do
-            #  %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
-            #  %{"success" => false } -> put_flash(socket, :error, "Failed to update Stripe")
-            #end
+            dbg("save output")
+            if Lightwarrior.State.get(:instances_with_config_output) do
+              { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), socket.assigns.selected)
+              Hyperion.save_current_config(selected_config)
+            else
+              %{"success" => false, "error" => "have no Data to save" }
+            end
       "uniform" ->
-        dbg("save uniform")
+            dbg("save uniform")
+            { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), socket.assigns.selected)
+            #dbg(selected_config)
+            save = %{"success" => true }
       _ ->
         dbg("save nothing")
+        %{"success" => false }
+    end
+
+    socket = case save do
+      %{"success" => true } -> put_flash(socket, :info, "Stripe updated")
+      %{"success" => false, "error" => error } -> put_flash(socket, :error, "Failed to update Stripe: " <> error)
     end
 
     {:noreply, socket
@@ -430,19 +476,35 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
     #dbg(mapping_container_size)
 
-    #that_instances_with_config = case socket.assigns.side do
-    #  "input" -> socket.assigns.state.instances_with_config_input
-    #  "output" -> socket.assigns.state.instances_with_config_output
-    #  _ -> nil
-    #end
+    instances_data_with_config = case socket.assigns.side do
+      "input" -> Lightwarrior.State.get(:instances_with_config_input)
+      "output" -> Lightwarrior.State.get(:instances_with_config_output)
+      _ -> nil
+    end
+
+    socket = if instances_data_with_config != nil && length(instances_data_with_config) > 0 do
+        #dbg(Enum.fetch(instances_data_with_config, 0))
+        instances_data_with_config_pixel = Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, mapping_container_size)
+        #dbg(instances_data_with_config_pixel)
+        socket
+        |> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
+    else
+      socket
+    end
+
+
+
+
 
     if true do
       {:noreply, socket
         |> assign(:mapping_container_size, mapping_container_size)
+        #|> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
       }
     else
       {:noreply, socket
         |> assign(:mapping_container_size, mapping_container_size)
+        #|> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
       }
     end
   end

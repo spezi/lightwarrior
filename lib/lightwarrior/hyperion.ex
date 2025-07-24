@@ -175,8 +175,8 @@ defmodule Lightwarrior.Hyperion do
   """
   def get_all_instances_config(instances) do
     if instances != nil do
-      instances = Enum.map_every(instances, 1, fn stripe ->
-        config = case switch_instance(stripe) do
+      instances = Enum.map_every(instances, 1, fn instance ->
+        config = case switch_instance(instance) do
           {:ok, switch} -> get_current_config()
           {:error, error} -> error
         end
@@ -186,7 +186,7 @@ defmodule Lightwarrior.Hyperion do
           {:error, error} -> error
         end
 
-        Map.put(stripe, :config, config)
+        Map.put(instance, "config", config)
       end)
 
       #dbg(instances)
@@ -210,7 +210,7 @@ defmodule Lightwarrior.Hyperion do
       Logger.info("collect instances")
       %{"info" => info} = serverinfo
       %{"instance" => instances } = info
-      instances = Enum.map_every(instances, 1, fn stripe -> Helper.string_keys_to_atom_keys(stripe) end)
+      #instances = Enum.map_every(instances, 1, fn instance -> Helper.string_keys_to_atom_keys(instance) end)
       #raise "TODO"
       #dbg(instances)
       {:ok, instances}
@@ -229,10 +229,14 @@ defmodule Lightwarrior.Hyperion do
   end
 
   defp post_json(payload) do
-    url = "http://127.0.0.1:8090/json-rpc"
+    #url = "http://127.0.0.1:8090/json-rpc"
+    url = Application.get_env(:lightwarrior, :hyperion)[:hyperion_jsonrpc_api_url]
+    #dbg(url)
+      #{"Authorization", "token d894c547-5ca8-449d-8c27-a646102cdeec"}
+      #{"Authorization", "token cbe57e29-b42c-490e-81c9-4b9510aa767a"}
     headers = [
       {"Content-Type", "application/json"},
-      {"Authorization", "token d894c547-5ca8-449d-8c27-a646102cdeec"}
+      {"Authorization", "token " <> Application.get_env(:lightwarrior, :hyperion)[:hyperion_jsonrpc_api_token]}
     ]
     body = Jason.encode!(payload)
     #dbg(headers)

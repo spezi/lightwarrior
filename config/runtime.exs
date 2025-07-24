@@ -1,4 +1,26 @@
 import Config
+import Dotenvy
+
+#env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand("./envs")
+#dbg(env_dir_prefix)
+#source!([
+#  Path.absname(".env", env_dir_prefix),
+#  Path.absname("#{config_env()}.env", env_dir_prefix),
+#  System.get_env()
+#  ])
+
+source!([
+  Path.absname(".env"),
+  System.get_env()
+  ])
+
+#dbg(env!("HYPERION_JSONRPC_API_URL", :string!))
+
+# Hyperion configs
+config :lightwarrior, :hyperion,
+  hyperion_jsonrpc_api_url: env!("HYPERION_JSONRPC_API_URL", :string!),
+  hyperion_jsonrpc_api_token: env!("HYPERION_JSONRPC_API_TOKEN", :string!)
+  #Application.get_env(:lightwarrior, :hyperion)[:hyperion_jsonrpc_api_url]
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the

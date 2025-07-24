@@ -1,8 +1,8 @@
-defmodule Lightwarrior.InputMappingFileStore do
+defmodule Lightwarrior.InputConfigsFileStore do
   use GenServer
 
   @name __MODULE__
-  @file_path "data/global_store.json"
+  @file_path "hyperion/input_configs.json"
 
   ## Public API
 
@@ -33,8 +33,10 @@ defmodule Lightwarrior.InputMappingFileStore do
   ## Server Callbacks
 
   def init(_state) do
-    state = load_from_file()
-    {:ok, state}
+    instances = load_from_file()
+    #instances = Enum.map_every(instances, 1, fn instance-> Helper.string_keys_to_atom_keys(instance) end)
+    #Lightwarrior.State.put(:instances_with_config_input, instances)
+    {:ok, instances}
   end
 
   def handle_call({:get, key}, _from, state), do: {:reply, Map.get(state, key), state}

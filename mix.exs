@@ -60,6 +60,7 @@ defmodule Lightwarrior.MixProject do
       {:bandit, "~> 1.5"},
       {:oscx, "~> 0.1.1"},
       {:math, "~> 0.6.0"},
+      {:dotenvy, "~> 1.0.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

@@ -37,7 +37,7 @@ defmodule LightwarriorWeb.HyperionComponents do
               <option>Velvet</option>-->
               <option disabled selected>copy from</option>
                 <%= for instance <- Lightwarrior.State.get(:instances) do %>
-                  <option value={instance.instance}><%= instance.friendly_name %></option>
+                  <option value={instance["instance"]}><%= instance["friendly_name"] %></option>
                 <% end %>
             </select>
           </div>

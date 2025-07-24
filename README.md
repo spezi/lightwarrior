@@ -38,6 +38,15 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 * Forum: https://elixirforum.com/c/phoenix-forum
 * Source: https://github.com/phoenixframework/phoenix
 
+## Hyperion 
+* Network Services
+    * set API Authentication
+    * Local API Authentication
+
+    * generate token 
+
+-> cp .env.template .env and set env variables
+
 ### Code Navigator
 
 #### for restore on init localstorage

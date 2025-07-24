@@ -2,7 +2,7 @@ defmodule Lightwarrior.Helper do
   @moduledoc """
   litle helper functions
   """
-  #alias Phoenix.LiveView.AsyncResult
+  alias Phoenix.LiveView.AsyncResult
 
   @doc """
   convert map string keys to atoms
@@ -33,6 +33,7 @@ defmodule Lightwarrior.Helper do
   def leds_to_pixel!(fetched_all_stripes_config, mapping_container_size) do
     dbg(mapping_container_size)
     #dbg(Enum.at(fetched_all_stripes_config, 0))
+    #dbg(fetched_all_stripes_config)
     configs = case is_list(fetched_all_stripes_config) do
       true -> fetched_all_stripes_config
       false -> []
@@ -40,12 +41,14 @@ defmodule Lightwarrior.Helper do
 
 
     dbg(length(configs))
+    #dbg(Enum.fetch!(configs, 0))
     #dbg(Enum.each(configs, fn x -> IO.puts(x.config) end))
     #leds = Map.get(config, "leds")
     #dbg(leds)
     result = Enum.map_every(configs, 1, fn config ->
-      leds = Map.get(config.config, "info")
-             |> Map.get("leds")
+      leds = Map.get(config, "config")
+              |> Map.get("info")
+              |> Map.get("leds")
 
       leds_pixel = Enum.map_every(leds, 1, fn led ->
               %{
@@ -58,8 +61,8 @@ defmodule Lightwarrior.Helper do
 
       #dbg(config)
       %{
-        instance: config.instance,
-        friendly_name: config.friendly_name,
+        instance: config["instance"],
+        friendly_name: config["friendly_name"],
         leds: leds_pixel,
         start: get_stripe_start_pixipoint!(leds_pixel),
         end: get_stripe_end_pixipoint!(leds_pixel),

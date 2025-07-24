@@ -43,14 +43,21 @@ defmodule Lightwarrior.HyperionApi do
       {:ok, instances } ->
         Lightwarrior.State.put(:instances, instances)
         instances
-        instances
       {:error, nil} -> nil
     end
 
-    hyperion_state =  %{
-      serverinfo: serverinfo,
-      instances: instances,
-    }
+    instances_with_config_output = case Hyperion.get_all_instances_config(instances) do
+      {:ok, instances_with_config_output } ->
+        Lightwarrior.State.put(:instances_with_config_output , instances_with_config_output)
+        instances_with_config_output
+      {:error, nil} -> nil
+    end
+
+    #hyperion_state =  %{
+    #  serverinfo: serverinfo,
+    #  instances: instances,
+    #  instances_with_config_output: instances_with_config_output,
+    #}
 
     #dbg(hyperion_state)
     Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "hyperion_ready", %{ "hyperion_ready" => true })
