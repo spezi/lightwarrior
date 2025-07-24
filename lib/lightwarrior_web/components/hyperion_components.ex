@@ -17,10 +17,10 @@ defmodule LightwarriorWeb.HyperionComponents do
 
         <div class="w-fit p-1">
           <button :if={!@mapping_changeset[:lockdistance].value} title="lock distance" type="button" phx-click="phx:toggle-distance-lock" phx-value-side={@side} class="btn btn-sm btn-neutral btn-square">
-            <.icon name="hero-lock-closed-mini" class="size-5 opacity-40 group-hover:opacity-70" />
+            <.icon name="hero-lock-open-mini" class="size-5 opacity-40 group-hover:opacity-70" />
           </button>
           <button :if={@mapping_changeset[:lockdistance].value} title="unlock distance" type="button" phx-click="phx:toggle-distance-lock" phx-value-side={@side} class="btn btn-sm btn-neutral btn-square">
-            <.icon name="hero-lock-open-mini" class="size-5 opacity-40 group-hover:opacity-70" />
+            <.icon name="hero-lock-closed-mini" class="size-5 opacity-40 group-hover:opacity-70" />
           </button>
         </div>
         <!-- stripe length -->

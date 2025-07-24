@@ -93,8 +93,8 @@ MappingHooks.Stage= {
     //this.test();
   },
   set_instances_data_pixel(data) {
-    //console.log(data)
-    this.instances_data_pixel = data.instance_data_pixel
+    console.log(data)
+    this.instances_data_pixel = data.instances_data_pixel
   },
   mounted() {
     console.log(this.el.dataset)
@@ -105,7 +105,9 @@ MappingHooks.Stage= {
     this.handleEvent("ready", data => this.ready());
     
     // have to reset stage
-    this.handleEvent("tabchange", data => this.reset_stage());
+    this.handleEvent("tabchange", data => {
+      this.reset_stage();
+    });
     this.handleEvent("select", data => this.reset_stage());
     this.handleEvent("instances_color", data => this.reset_stage());
     this.handleEvent("change_mapping", data => this.reset_stage());

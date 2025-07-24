@@ -72,12 +72,12 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
       _ -> socket
     end
 
-    # check for data
+    # check for data and copy from output mapping if none
 
     socket = if Lightwarrior.State.get(:instances_with_config_output) != nil && length(Lightwarrior.State.get(:instances_with_config_output)) > 0 do
         #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0))
         #dbg(Map.get(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), :config) )
-        case Map.get(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), :config) do
+        case Map.get(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), "config") do
           %{
             "command" => "config",
             "error" => error,
@@ -88,7 +88,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
             put_flash(socket, :error, "Hyperion error getting Instances configuration: " <> error)
           _ ->
               socket = if length(Map.keys(Lightwarrior.InputConfigsFileStore.all())) == 0 do
-                dbg(Lightwarrior.InputConfigsFileStore.put(:instances_with_config_input, Lightwarrior.State.get(:instances_with_config_output)))
+                dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_output)))
                 dbg(Lightwarrior.InputConfigsFileStore.persist())
                 dbg(Lightwarrior.InputConfigsFileStore.reload())
                 put_flash(socket, :info, "No input configs available. create new from current output mapping ..")
@@ -270,6 +270,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           #dbg(tab)
           socket
           |> assign(:side, tab)
+          |> push_event("instances-data-pixel", %{instances_data_pixel: []})
           |> push_event("localstorage", %{ last_open_tab: tab})
           |> push_event("tabchange", %{ last_open_tab: tab})
           #|> assign(:selected, nil)
@@ -329,32 +330,66 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     # Handle the size information as needed
     #IO.puts("Div width: #{width}, height: #{height}")
 
-    #dbg(points)
-    #points = Helper.string_keys_to_atom_keys(points)
+    dbg(points)
+    points = Helper.string_keys_to_atom_keys(points)
 
-    #instances_data_pixel = Map.get(socket.assigns.instances_data_pixel_map, socket.assigns.side)
 
-    #dbg(Enum.fetch!(socket.assigns.instances, socket.assigns.selected))
-    # outout as master for led count so no need to sync with input
-    #selected = Enum.fetch!(socket.assigns.state.instances_with_config_output, socket.assigns.selected)
-    #num_leds = selected.config["info"]["device"]["hardwareLedCount"]
+
+    dbg(socket.assigns.side)
+    #dbg(Lightwarrior.State.all())
+
+    instances_data_config = case socket.assigns.side do
+      "input" ->
+          Lightwarrior.State.get(:instances_with_config_input)
+      "output" ->
+        Lightwarrior.State.get(:instances_with_config_output)
+        _ -> []
+    end
+
+
+    instances_data_pixel = Lightwarrior.Helper.leds_to_pixel!(instances_data_config, socket.assigns.mapping_container_size)
+    instance_data_config =  Enum.fetch!(instances_data_config, socket.assigns.selected)
+    num_leds = instance_data_config["config"]["info"]["device"]["hardwareLedCount"]
 
     #lightwarrior.ex ;)
-    #updated = Lightwarrior.update_selected_stripe_data_pixel(
-    #  num_leds,
-    #  instances_data_pixel,
-    #  socket.assigns.selected,
-    #  points
-    #)
+    instances_data_pixel_new = Lightwarrior.update_selected_instance_data_pixel(
+      num_leds,
+      instances_data_pixel,
+      socket.assigns.selected,
+      points
+    )
 
-    #instances_data_pixel_map = socket.assigns.instances_data_pixel_map
-    #                           |> Map.replace(socket.assigns.side, updated)
+    ### update data
+
+    leds = Helper.leds_to_coordinates!(
+      Enum.fetch!(instances_data_pixel_new, socket.assigns.selected),
+      socket.assigns.mapping_container_size
+    )
+
+    dbg(instance_data_config)
+    #instance_data_config_new = Map.replace(instance_data_config, "leds", %{"penis" => true})
+    instance_data_config_new = put_in(instance_data_config,["config", "info", "leds"], leds)
+
+
+    dbg(instance_data_config_new)
+    instances_data_config_new = List.replace_at(instances_data_config, socket.assigns.selected, instance_data_config_new)
+
+
+
+    case socket.assigns.side do
+      "input" ->
+          dbg(instances_data_config_new == Lightwarrior.State.get(:instances_with_config_input))
+          dbg(Lightwarrior.State.put(:instances_with_config_input, instances_data_config_new))
+      "output" ->
+          dbg(Lightwarrior.State.put(:instances_with_config_output, instances_data_config_new))
+        _ -> []
+    end
+
 
     {:noreply,
       socket
-      #|> assign(:instances_data_pixel_map, instances_data_pixel_map)
-      #|> push_event("instances-data-pixel", %{instance_data_pixel: updated})
-      #|> push_event("change_mapping", %{})
+      |> push_event("instances-data-pixel", %{instances_data_pixel: instances_data_pixel_new})
+      |> push_event("change_mapping", %{})
     }
   end
 
@@ -378,10 +413,14 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
             dbg("save input")
             if Lightwarrior.State.get(:instances_with_config_input) do
               #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_input), socket.assigns.selected)
+             # dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
               dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
+              #dbg(Lightwarrior.InputConfigsFileStore.persist())
+              #dbg(Lightwarrior.InputConfigsFileStore.reload())
               case Lightwarrior.InputConfigsFileStore.persist() do
                 :ok ->
                   dbg(Lightwarrior.InputConfigsFileStore.reload())
+                  dbg(Map.keys(Lightwarrior.State.all()))
                   %{"success" => true }
                 :error -> %{"success" => false, "error" => "failed to write file" }
               end
@@ -396,7 +435,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
             dbg("save output")
             if Lightwarrior.State.get(:instances_with_config_output) do
               { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), socket.assigns.selected)
-              Hyperion.save_current_config(selected_config)
+              to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
+              dbg(Hyperion.save_current_config(to_save_payload))
             else
               %{"success" => false, "error" => "have no Data to save" }
             end
@@ -487,7 +527,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
         instances_data_with_config_pixel = Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, mapping_container_size)
         #dbg(instances_data_with_config_pixel)
         socket
-        |> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
+        |> push_event("instances-data-pixel", %{instances_data_pixel: instances_data_with_config_pixel })
     else
       socket
     end

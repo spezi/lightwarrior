@@ -37,9 +37,9 @@ defmodule Lightwarrior do
     end
   end
 
-  def get_led_size(stripe_data, mapping_container_size) do
-    #dbg(stripe_data)
-    firstLed = Enum.fetch!(Map.get(stripe_data, "leds"), 0)
+  def get_led_size(instance_data, mapping_container_size) do
+    #dbg(instance_data)
+    firstLed = Enum.fetch!(Map.get(instance_data, "leds"), 0)
     #dbg(firstLed)
     point = {
       (firstLed["hmax"] - firstLed["hmin"]),
@@ -58,14 +58,14 @@ defmodule Lightwarrior do
     }
   end
 
-  def update_selected_stripe_data_pixel(num_leds, leds_pixel, selected, points) do
+  def update_selected_instance_data_pixel(num_leds, leds_pixel, selected, points) do
     #dbg(selected)
     #dbg(bounds)
-    selected_stripe_data_pixel = Enum.fetch!(leds_pixel, selected)
+    selected_instance_data_pixel = Enum.fetch!(leds_pixel, selected)
 
     List.replace_at(leds_pixel,
       selected,
-      selected_stripe_data_pixel
+      selected_instance_data_pixel
       |> Map.replace(:leds, interpolate_coords(points, num_leds))
       |> Map.replace(:start, [points.start.x, points.start.y])
       |> Map.replace(:end, [points.end.x, points.end.y])
@@ -103,7 +103,7 @@ defmodule Lightwarrior do
   @doc """
   Save config of current active stripe
   """
-  def update_stripe_ossia(leds, selected, sc_pid) do
+  def update_instance_ossia(leds, selected, sc_pid) do
 
     #dbg(leds)
     start = calculate_center(Enum.at(leds, 0))
