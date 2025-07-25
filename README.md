@@ -21,6 +21,12 @@ pacman -S \
 
 ## Setup
 
+
+```
+cp .env.template .env
+```
+-> and set Hyperion URL and API Key 
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies
@@ -58,5 +64,5 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 * set default on mount in lib/lightwarrior_web/live/hyperion_config_live/index.ex
 * push_event if wants to save in local storage :
     * |> push_event("localstorage", %{ input_opacity: mapping_tools_form["opacity"] })
-    * abfangen des events im js hook und in local storage speichern
+    * catch event in js hooks and push data to localstorage 
 
