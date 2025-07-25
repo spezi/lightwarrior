@@ -17,7 +17,7 @@ defmodule Lightwarrior.HyperionApi do
   ## GenServer Callbacks
 
   @impl true
-  def init(hyperion_state) do
+  def init(_hyperion_state) do
     # Initial API fetch in background
     send(self(), :load_data)
 
@@ -48,7 +48,7 @@ defmodule Lightwarrior.HyperionApi do
           {:error, nil} -> nil
         end
 
-        instances_with_config_output = case Hyperion.get_all_instances_config(instances) do
+        case Hyperion.get_all_instances_config(instances) do
           {:ok, instances_with_config_output } ->
             Lightwarrior.State.put(:instances_with_config_output , instances_with_config_output)
             instances_with_config_output

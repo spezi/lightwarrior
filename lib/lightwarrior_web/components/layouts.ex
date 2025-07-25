@@ -132,6 +132,59 @@ defmodule LightwarriorWeb.Layouts do
     """
   end
 
+  def services(assigns) do
+    ~H"""
+    <div class="collapse collapse-arrow bg-base-100 border border-base-300 z-0">
+      <input type="radio" name="my-accordion-2" checked="checked" />
+      <div class="collapse-title font-semibold">
+        <h3>
+        hyperion
+        </h3>
+      </div>
+      <div class="absolute right-0 mr-12 p-2 z-1 btn-accent flex gap-2">
+         <a href="#" phx-click="phx:hyperion-start" >
+          <button class="btn btn-circle shadow-xl">
+            <.icon name="hero-play-solid" class="" />
+          </button>
+        </a>
+        <a href="#" phx-click="phx:hyperion-stop" >
+        <button class="btn btn-circle shadow-xl">
+          <.icon name="hero-stop-solid" class="size-6 shrink-0" />
+        </button>
+        </a>
+      </div>
+      <div class="collapse-content text-sm">start service and get stderr and stdout via pubsub in this container</div>
+    </div>
+    <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+      <input type="radio" name="my-accordion-2" />
+      <div class="collapse-title font-semibold">midimonster</div>
+      <div class="collapse-content text-sm">Click the "Sign Up" button in the top right corner and follow the registration process.</div>
+    </div>
+    <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+      <input type="radio" name="my-accordion-2" />
+      <div class="collapse-title font-semibold">Ossia Score</div>
+      <div>
+         <a href="#" phx-click="phx:ossia-score-start" >
+          <button class="btn btn-circle shadow-xl">
+            <.icon name="hero-play-solid" class="" />
+          </button>
+        </a>
+        <a href="#" phx-click="phx:ossia-score-stop" >
+        <button class="btn btn-circle shadow-xl">
+          <.icon name="hero-stop-solid" class="size-6 shrink-0" />
+        </button>
+        </a>
+      </div>
+      <div class="collapse-content text-sm">Click on "Forgot Password" on the login page and follow the instructions sent to your email.</div>
+    </div>
+    <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+      <input type="radio" name="my-accordion-2" />
+      <div class="collapse-title font-semibold">shm2hyperion</div>
+      <div class="collapse-content text-sm">Go to "My Account" settings and select "Edit Profile" to make changes.</div>
+    </div>
+    """
+  end
+
   @doc """
   Shows the flash group with standard titles and content.
 
@@ -204,7 +257,7 @@ defmodule LightwarriorWeb.Layouts do
   Provides debug toggle switch.
   """
 
-  attr :debug, :boolean, doc: "the checked flag for checkbox inputs"
+  attr :autosave, :boolean, doc: "the checked flag for checkbox inputs"
 
   def autosave_toggle(assigns) do
     ~H"""

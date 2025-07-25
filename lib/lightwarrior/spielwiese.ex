@@ -4,9 +4,9 @@ defmodule Lightwarrior.Spielwiese do
   """
 
   #import Ecto.Query, warn: false
-  alias Lightwarrior.Repo
+  #alias Lightwarrior.Repo
 
-  alias Lightwarrior.Spielwiese.Test
+  #alias Lightwarrior.Spielwiese.Test
 
   @doc """
   Returns the list of tests.
@@ -32,7 +32,7 @@ defmodule Lightwarrior.Spielwiese do
       %Test{}
 
   """
-  def get_test!(id), do: raise "TODO"
+  def get_test!(_id), do: raise "TODO"
 
   @doc """
   Creates a test.
@@ -46,7 +46,7 @@ defmodule Lightwarrior.Spielwiese do
       {:error, ...}
 
   """
-  def create_test(attrs) do
+  def create_test(_attrs) do
     raise "TODO"
   end
 
@@ -62,9 +62,9 @@ defmodule Lightwarrior.Spielwiese do
       {:error, ...}
 
   """
-  #def update_test(%Test{} = test, attrs) do
-  #  raise "TODO"
-  #end
+  def update_test(%{} = _test, _attrs) do
+    raise "TODO"
+  end
 
   @doc """
   Deletes a Test.
@@ -78,9 +78,9 @@ defmodule Lightwarrior.Spielwiese do
       {:error, ...}
 
   """
-  #def delete_test(%Test{} = test) do
-  #  raise "TODO"
-  #end
+  def delete_test(%{} = _test) do
+    raise "TODO"
+  end
 
   @doc """
   Returns a data structure for tracking test changes.
@@ -91,7 +91,7 @@ defmodule Lightwarrior.Spielwiese do
       %Todo{...}
 
   """
-  #def change_test(%Test{} = test, _attrs \\ %{}) do
-  #  raise "TODO"
-  #end
+  def change_test(%{} = _test, _attrs \\ %{}) do
+    raise "TODO"
+  end
 end

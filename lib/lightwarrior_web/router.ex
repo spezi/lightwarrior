@@ -24,10 +24,10 @@ defmodule LightwarriorWeb.Router do
     #live "/hyperion/:id", HyperionConfigLive.Show, :show
     live "/hyperion/:id/edit", HyperionConfigLive.Index, :edit
 
-    live "/tests", TestLive.Index, :index
-    live "/tests/new", TestLive.Form, :new
-    live "/tests/:id", TestLive.Show, :show
-    live "/tests/:id/edit", TestLive.Form, :edit
+    #live "/tests", TestLive.Index, :index
+    #live "/tests/new", TestLive.Form, :new
+    #live "/tests/:id", TestLive.Show, :show
+    #live "/tests/:id/edit", TestLive.Form, :edit
 
   end
 

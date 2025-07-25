@@ -4,9 +4,9 @@ defmodule Lightwarrior.Hyperion do
   """
 
   #import Ecto.Query, warn: false
-  alias Lightwarrior.Repo
-  alias Lightwarrior.Hyperion.HyperionConfig
-  alias Lightwarrior.Helper
+  #alias Lightwarrior.Repo
+  #alias Lightwarrior.Hyperion.HyperionConfig
+  #alias Lightwarrior.Helper
   require Logger
 
   @doc """
@@ -63,9 +63,9 @@ defmodule Lightwarrior.Hyperion do
       {:error, ...}
 
   """
-  #def update_hyperion_config(%HyperionConfig{} = hyperion_config, attrs) do
-  #  raise "TODO"
-  #end
+  def update_hyperion_config(%{} = _hyperion_config, _attrs) do
+    raise "TODO"
+  end
 
   @doc """
   Deletes a HyperionConfig.
@@ -79,9 +79,9 @@ defmodule Lightwarrior.Hyperion do
       {:error, ...}
 
   """
-  #def delete_hyperion_config(%HyperionConfig{} = hyperion_config) do
-  #  raise "TODO"
-  #end
+  def delete_hyperion_config(%{} = _hyperion_config) do
+    raise "TODO"
+  end
 
   @doc """
   Returns a data structure for tracking hyperion_config changes.
@@ -91,11 +91,11 @@ defmodule Lightwarrior.Hyperion do
       iex> change_hyperion_config(hyperion_config)
       %Todo{...}
 
-
-  #def change_hyperion_config(%HyperionConfig{} = hyperion_config, _attrs \\ %{}) do
-  #  raise "TODO"
-  #end
   """
+  def change_hyperion_config(%{} = _hyperion_config, _attrs \\ %{}) do
+    raise "TODO"
+  end
+
 
   @doc """
   Get initial Hyperion Server Info
@@ -177,7 +177,7 @@ defmodule Lightwarrior.Hyperion do
     if instances != nil do
       instances = Enum.map_every(instances, 1, fn instance ->
         config = case switch_instance(instance) do
-          {:ok, switch} -> get_current_config()
+          {:ok, _switch} -> get_current_config()
           {:error, error} -> error
         end
 

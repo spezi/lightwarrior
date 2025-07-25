@@ -60,6 +60,13 @@
 
                     <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="services" name="mapping_tabs_1" class="tab" aria-label="services" checked={if @side == "services" do true else false end } />
                     <div class="tab-content bg-base-100 border-base-300 p-2">
+                        <Layouts.services />
+                    </div>
+
+                    <input type="radio" phx-click="phx:last_open_tab" phx-value-tab="services" name="mapping_tabs_1" class="tab" aria-label="toolz" checked={if @side == "services" do true else false end } />
+                    <div class="tab-content bg-base-100 border-base-300 p-2">
+                            <p>ping insance</p>
+                            <p>ping insances</p>
                     </div>
 
                 </div>

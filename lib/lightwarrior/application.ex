@@ -15,6 +15,7 @@ defmodule Lightwarrior.Application do
       Lightwarrior.HyperionApi,
       Lightwarrior.State,
       Lightwarrior.InputConfigsFileStore,
+      Lightwarrior.Services,
       # Start a worker by calling: Lightwarrior.Worker.start_link(arg)
       # {Lightwarrior.Worker, arg},
       # Start to serve requests, typically the last entry

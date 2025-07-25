@@ -83,7 +83,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
             "command" => "config",
             "error" => error,
             "instance" => 0,
-            "success" => success,
+            "success" => _success,
             "tan" => 1
           } ->
             put_flash(socket, :error, "Hyperion error getting Instances configuration: " <> error)
@@ -160,6 +160,41 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
   end
 
+  def handle_event("phx:hyperion-start", %{} = _params, socket) do
+    dbg("start hyperion")
+    dbg(Lightwarrior.Services.start_process("/Applications/Hyperion.app/Contents/MacOS/Hyperion"))
+    dbg(Lightwarrior.Services.get_state())
+    {:noreply,
+      socket
+    }
+  end
+
+  def handle_event("phx:hyperion-stop", %{} = _params, socket) do
+    dbg("stop hyperion")
+    dbg(Lightwarrior.Services.stop_process())
+    {:noreply,
+      socket
+    }
+  end
+
+  def handle_event("phx:ossia-score-start", %{} = _params, socket) do
+    dbg("start hyperion")
+    dbg(Lightwarrior.Services.start_process("/Applications/ossia score.app/Contents/MacOS//ossia\ score"))
+    dbg(Lightwarrior.Services.get_state())
+    {:noreply,
+      socket
+    }
+  end
+
+  def handle_event("phx:ossia-score-stop", %{} = _params, socket) do
+    dbg("stop hyperion")
+    dbg(Lightwarrior.Services.stop_process())
+    {:noreply,
+      socket
+    }
+  end
+
+  @impl true
   def handle_info(%{ "hyperion_ready" => true } = _data, socket) do
     #send_update(LightwarriorWeb.HyperionComponents, id: "left_top_menue", refresh: true)
     #dbg(socket.assigns.current_path)
@@ -170,6 +205,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
   end
 
+  @impl true
   def handle_info(%{ "hyperion_ready" => false } = _data, socket) do
     #send_update(LightwarriorWeb.HyperionComponents, id: "left_top_menue", refresh: true)
     #dbg(socket.assigns.current_path)
@@ -432,12 +468,12 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
             Lightwarrior.save_output(socket.assigns.selected)
       "uniform" ->
             dbg("save uniform")
-            { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), socket.assigns.selected)
+            { :ok, _selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), socket.assigns.selected)
             #dbg(selected_config)
-            save = %{"success" => true }
+            %{"success" => true }
       _ ->
         dbg("save nothing")
-        %{"success" => false }
+        {:error, :econnrefused}
     end
 
     socket = case save do
@@ -509,7 +545,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     instances_data_with_config = case socket.assigns.side do
       "input" -> Lightwarrior.State.get(:instances_with_config_input)
-      "output" -> Lightwarrior.State.get(:instances_with_config_output)
+      "output" -> Lightwarrior.OutputMapping.automap_instances_pixi(mapping_container_size)
+      #"output" -> Lightwarrior.State.get(:instances_with_config_output)
       _ -> nil
     end
 

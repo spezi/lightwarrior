@@ -12,32 +12,6 @@ defmodule Lightwarrior do
 
   require Math
 
-  def init_state() do
-    case Lightwarrior.HyperionApi.get_data() do
-      %{
-        serverinfo: serverinfo,
-        instances: instances,
-      } ->
-        %{
-          serverinfo: serverinfo,
-          instances: instances,
-          instances_with_config_input: nil,
-          instances_leds_pixel_input: nil,
-          instances_with_config_output: nil,
-          instances_leds_pixel_output: nil
-        }
-      _ ->
-        %{
-          serverinfo: nil,
-          instances: nil,
-          instances_with_config_input: nil,
-          instances_leds_pixel_input: nil,
-          instances_with_config_output: nil,
-          instances_leds_pixel_output: nil
-        }
-    end
-  end
-
   def get_led_size(instance_data, mapping_container_size) do
     #dbg(instance_data)
     firstLed = Enum.fetch!(Map.get(instance_data, "leds"), 0)
@@ -115,7 +89,7 @@ defmodule Lightwarrior do
             dbg(Lightwarrior.InputConfigsFileStore.reload())
             dbg(Map.keys(Lightwarrior.State.all()))
             %{"success" => true }
-          :error -> %{"success" => false, "error" => "failed to write file" }
+          #:error -> %{"success" => false, "error" => "failed to write file" }
         end
       else
         %{"success" => false, "error" => "have no Data to save" }

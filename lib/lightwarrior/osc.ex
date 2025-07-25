@@ -23,7 +23,7 @@ defmodule Lightwarrior.Hyperion.SC do
     case msg do
       {:udp, _process_port, _ip_addr, _port_num, res} ->
         IO.inspect(res, label: "Binary message received")
-        IO.inspect(Message.decode(res), label: "\nDecoded message")
+        IO.inspect(OSCx.Message.decode(res), label: "\nDecoded message")
         state
 
       _ ->

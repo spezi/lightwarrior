@@ -2,7 +2,7 @@ defmodule Lightwarrior.Helper do
   @moduledoc """
   litle helper functions
   """
-  alias Phoenix.LiveView.AsyncResult
+  #alias Phoenix.LiveView.AsyncResult
 
   @doc """
   convert map string keys to atoms
