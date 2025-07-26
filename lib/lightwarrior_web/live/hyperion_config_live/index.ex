@@ -66,6 +66,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     socket = case params do
       %{"id" => id} ->
         dbg("selected: " <> id)
+        dbg(Lightwarrior.State.get(:instances_with_config_output))
         dbg(Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id))))
         socket
         |> assign(:selected, String.to_integer(id))

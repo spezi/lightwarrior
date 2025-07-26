@@ -1,8 +1,13 @@
 defmodule Lightwarrior.OutputMapping do
 
     def automap_instances_pixi(%{width: width, height: height} = mapping_container_size) do
-
-        first_led = Enum.fetch!(get_in(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), ["config", "info", "leds"]), 0)
+        #dbg(Lightwarrior.State.get(:instances_with_config_output))
+        first_instance = Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0)
+        dbg(first_instance)
+        first_instance_leds = get_in(first_instance, ["config", "info", "leds"])
+        dbg(first_instance_leds)
+        first_led = Enum.fetch!(first_instance_leds, 0)
+        #first_led = Enum.fetch!(get_in(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), ["config", "info", "leds"]), 0)
         dbg(first_led)
         count = length(Lightwarrior.State.get(:instances_with_config_output))
         dbg(get_led_size(first_led))
