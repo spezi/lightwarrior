@@ -206,17 +206,20 @@ defmodule Lightwarrior.Hyperion do
 
   """
   def collect_instances(serverinfo) do
-    if serverinfo do
-      Logger.info("collect instances")
-      %{"info" => info} = serverinfo
-      %{"instance" => instances } = info
-      #instances = Enum.map_every(instances, 1, fn instance -> Helper.string_keys_to_atom_keys(instance) end)
-      #raise "TODO"
-      #dbg(instances)
-      {:ok, instances}
-    else
-      {:error, nil}
-    end
+     Logger.info("collect instances")
+      case serverinfo do
+        %{"info" => info} ->
+          info
+          #%{"info" => info} = serverinfo
+          %{"instance" => instances } = info
+          #instances = Enum.map_every(instances, 1, fn instance -> Helper.string_keys_to_atom_keys(instance) end)
+          #raise "TODO"
+          #dbg(instances)
+          {:ok, instances}
+        %{"command" => "serverinfo", "error" => error, "success" => false, "tan" => 1} ->
+          {:error, error}
+        _ -> {:error, nil}
+      end
   end
 
   def get_instance_leds(current_config) do

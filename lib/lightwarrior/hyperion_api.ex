@@ -17,7 +17,7 @@ defmodule Lightwarrior.HyperionApi do
   ## GenServer Callbacks
 
   @impl true
-  def init(_hyperion_state) do
+  def init(hyperion_state) do
     # Initial API fetch in background
     send(self(), :load_data)
 
@@ -44,16 +44,17 @@ defmodule Lightwarrior.HyperionApi do
         instances = case Hyperion.collect_instances(serverinfo) do
           {:ok, instances } ->
             Lightwarrior.State.put(:instances, instances)
-            instances
+            instances_with_config_output = case Hyperion.get_all_instances_config(instances) do
+              {:ok, instances_with_config_output } ->
+                Lightwarrior.State.put(:instances_with_config_output , instances_with_config_output)
+                instances_with_config_output
+              {:error, nil} -> nil
+            end
+          {:error, error} -> {:error, error}
           {:error, nil} -> nil
         end
 
-        case Hyperion.get_all_instances_config(instances) do
-          {:ok, instances_with_config_output } ->
-            Lightwarrior.State.put(:instances_with_config_output , instances_with_config_output)
-            instances_with_config_output
-          {:error, nil} -> nil
-        end
+
 
         #hyperion_state =  %{
         #  serverinfo: serverinfo,
@@ -67,7 +68,7 @@ defmodule Lightwarrior.HyperionApi do
         {:noreply, hyperion_state}
     else
       Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "hyperion", %{ "hyperion_ready" => false })
-      {:noreply, {:error, :econnrefused}}
+      %{ {:error, :econnrefused}}
     end
   end
 
