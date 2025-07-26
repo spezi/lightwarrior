@@ -41,15 +41,26 @@ defmodule Lightwarrior.HyperionApi do
 
     if serverinfo != {:error, :econnrefused} do
 
-        instances = case Hyperion.collect_instances(serverinfo) do
+        case Hyperion.collect_instances(serverinfo) do
           {:ok, instances } ->
             Lightwarrior.State.put(:instances, instances)
-            instances_with_config_output = case Hyperion.get_all_instances_config(instances) do
-              {:ok, instances_with_config_output } ->
-                Lightwarrior.State.put(:instances_with_config_output , instances_with_config_output)
-                instances_with_config_output
-              {:error, nil} -> nil
+            dbg(instances)
+            #instances_with_config_output = case Hyperion.get_all_instances_config(instances) do
+            #  {:ok, instances_with_config_output } ->
+            #    Lightwarrior.State.put(:instances_with_config_output , instances_with_config_output)
+            #    instances_with_config_output
+            #  {:error, nil} -> nil
+            #end
+            {:ok, current_config} = Lightwarrior.Hyperion.get_current_config()
+            #dbg(Map.keys(current_config))
+            #dbg(current_config["success"])
+            #dbg(length(current_config["info"]["instances"]))
+
+            case current_config["success"] do
+              true -> Lightwarrior.State.put(:instances_with_config_output, current_config["info"]["instances"])
+              false -> {:error, "no instance configs found"}
             end
+
           {:error, error} -> {:error, error}
           {:error, nil} -> nil
         end
@@ -81,7 +92,7 @@ defmodule Lightwarrior.HyperionApi do
   def handle_cast(:refresh_data, hyperion_state) do
     #data = Hyperion.get_serverinfo()
     #{:noreply, %{hyperion_state | serverinfo: data}}
-    dbg(send(self(), :load_data))
+    send(self(), :load_data)
     {:noreply, hyperion_state}
   end
 

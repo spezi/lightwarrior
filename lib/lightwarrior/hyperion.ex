@@ -117,19 +117,23 @@ defmodule Lightwarrior.Hyperion do
   """
   def switch_instance(instance) do
 
-    #dbg("switch instance #{stripe.instance}" )
+    #dbg(instance)
 
-    instance = case Map.has_key?(instance, :instance) do
-      true -> Map.get(instance, :instance)
-      false -> Map.get(instance, "instance")
+    instance = case Map.has_key?(instance, "id") do
+      true ->
+        dbg("switch instance #{instance["id"]}" )
+        instance["id"]
+      false -> nil
     end
 
-    payload = %{
-      "command" => "instance",
-      "subcommand" => "switchTo",
-      "instance" => instance
-    }
-    dbg(post_json(payload))
+    if instance do
+      payload = %{
+        "command" => "instance",
+        "subcommand" => "switchTo",
+        "instance" => instance
+      }
+      dbg(post_json(payload))
+    end
 
   end
 

@@ -200,13 +200,13 @@ MappingHooks.Stage= {
         //console.log(instance)
         let leds = instance.leds;
         let lines = new PIXI.Graphics();
-        lines.label = instance.instance;
+        lines.label = instance.id;
         lines.zIndex = 0;
         //console.log(leds[0].hmin, leds[0].vmin)
         lines.moveTo(leds[0].hmin, leds[0].vmin)
         lines.lineTo(leds[(leds.length - 1)].hmin, leds[(leds.length - 1)].vmin)
         lines.stroke({ width: 4, color: this.instance_color(), alpha: 1});
-        if(this.selected() == instance.instance) lines.alpha = 0.4;
+        if(this.selected() == instance.id) lines.alpha = 0.4;
         lines.cursor = 'pointer';
         lines.eventMode = 'static';
         lines.on('pointerdown', this.onSelectInstance, lines); 
@@ -218,13 +218,13 @@ MappingHooks.Stage= {
   async render_selected() {
     if(this.side() != "uniform") {
         this.instances_data_pixel.forEach(instance => {
-          if(this.selected() == instance.instance) {
+          if(this.selected() == instance.id) {
             console.log(instance)
             
             selected.destroy(true)
 
             selected = new PIXI.Container();
-            selected.label = instance.instance
+            selected.label = instance.id
 
             selected_start = new PIXI.Graphics();
             selected_start.label = 'selected_start';
