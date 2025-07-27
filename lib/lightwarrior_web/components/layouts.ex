@@ -78,7 +78,11 @@ defmodule LightwarriorWeb.Layouts do
 
           <input type="radio" name="left_top_menue_tabs" class="tab" aria-label="global config" />
           <div class="tab-content bg-base-100 border-base-300 p-2">
-
+              <div class="p-2">
+                <button phx-click="build-score" class="btn btn-sm btn-primary ml-auto">
+                  Build Ossia Score File <.icon name="hero-beaker-mini" class="size-5 opacity-40 group-hover:opacity-70" />
+                </button>
+              </div>
           </div>
 
       </div>

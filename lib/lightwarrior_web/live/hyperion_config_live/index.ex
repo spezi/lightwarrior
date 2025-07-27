@@ -499,7 +499,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
             "input" ->
                 dbg(Lightwarrior.State.put(:instances_with_config_input, instances_data_config_new))
                 if socket.assigns.autosave do
-                  case Lightwarrior.save_input() do
+                  case Lightwarrior.save_input(socket) do
                       %{
                         "success" => true,
                       } -> socket
@@ -559,7 +559,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     save = case socket.assigns.side do
       "input" ->
-            Lightwarrior.save_input()
+            Lightwarrior.save_input(socket)
             # update ossia via osc messages
             #Lightwarrior.update_stripe_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
 
@@ -700,5 +700,15 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
       }
     end
   end
+
+  def handle_event("build-score", %{"value" => _value}, socket) do
+
+
+    output_isf_shader = Lightwarrior.OutputShader.build()
+    dbg(Lightwarrior.OutputShader.patch_scorefile(output_isf_shader))
+
+    {:noreply, socket}
+  end
+
 
 end

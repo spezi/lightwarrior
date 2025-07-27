@@ -267,7 +267,7 @@ defmodule Lightwarrior.Hyperion do
   def fetch_num_leds(index) do
     instances_num_leds = Lightwarrior.State.get(:instances_num_leds)
     {:ok, %{num_leds: num_leds}} = Enum.fetch(instances_num_leds, index)
-    dbg(num_leds)
+    num_leds
   end
 
   defp post_json(payload) do

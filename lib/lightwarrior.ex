@@ -76,9 +76,19 @@ defmodule Lightwarrior do
 
   end
 
-  def save_input() do
+  def save_input(socket) do
       dbg("save input")
       if Lightwarrior.State.get(:instances_with_config_input) do
+
+        # update ossia via osc messages
+        #Lightwarrior.update_instance_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
+
+        # update ossia via osc messages
+        Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
+          #dbg(get_in(instance, ["settings", "leds"]))
+          Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
+        end)
+
         #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_input), socket.assigns.selected)
         # dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
         dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
