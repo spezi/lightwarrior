@@ -164,7 +164,7 @@ defmodule Lightwarrior.Hyperion do
       "tan" => 1
     }
 
-    case post_json(payload) do
+    case dbg(post_json(payload)) do
       {:ok, response} ->
         response
       {:error, reason} ->
@@ -172,6 +172,22 @@ defmodule Lightwarrior.Hyperion do
         {:error, reason}
     end
 
+  end
+
+  @doc """
+  Save config of current active stripe
+  """
+  def prepare_for_saving_hyperion(instances_with_config_output) do
+      instances_with_config_output
+      |> Enum.map(fn device ->
+        %{
+          "id" => Map.get(device, "id"),
+          "settings" => %{
+             "leds" => get_in(device, ["settings", "leds"])
+             #Map.get(device, "settings")
+          }
+        }
+      end)
   end
 
   @doc """
@@ -233,6 +249,25 @@ defmodule Lightwarrior.Hyperion do
         Map.get(info, "leds", [])
       false -> []
       end
+  end
+
+  def get_num_leds() do
+    num_leds =
+      Lightwarrior.State.get(:instances_with_config_output)
+      |> Enum.map(fn device ->
+        case get_in(device, ["settings", "device", "hardwareLedCount"]) do
+          count when is_integer(count) -> %{num_leds: count}
+          _ -> nil
+        end
+      end)
+      |> Enum.filter(& &1)  # remove nils if any
+      Lightwarrior.State.put(:instances_num_leds, num_leds)
+  end
+
+  def fetch_num_leds(index) do
+    instances_num_leds = Lightwarrior.State.get(:instances_num_leds)
+    {:ok, %{num_leds: num_leds}} = Enum.fetch(instances_num_leds, index)
+    dbg(num_leds)
   end
 
   defp post_json(payload) do

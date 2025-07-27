@@ -43,7 +43,7 @@ defmodule Lightwarrior.HyperionApi do
 
         case Hyperion.collect_instances(serverinfo) do
           {:ok, instances } ->
-            Lightwarrior.State.put(:instances, instances)
+            #Lightwarrior.State.put(:instances, instances)
             dbg(instances)
             #instances_with_config_output = case Hyperion.get_all_instances_config(instances) do
             #  {:ok, instances_with_config_output } ->
@@ -58,6 +58,15 @@ defmodule Lightwarrior.HyperionApi do
 
             case current_config["success"] do
               true -> Lightwarrior.State.put(:instances_with_config_output, current_config["info"]["instances"])
+
+                      Lightwarrior.Hyperion.get_num_leds()
+
+
+
+                      instances = Enum.with_index(instances)
+                                  |> Enum.map(fn {map, index} -> Map.put(map, :num_leds, Lightwarrior.Hyperion.fetch_num_leds(index) ) end)
+
+                      Lightwarrior.State.put(:instances, instances)
               false -> {:error, "no instance configs found"}
             end
 

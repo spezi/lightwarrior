@@ -80,6 +80,8 @@ defmodule LightwarriorWeb.HyperionComponents do
           </button>
         </div>
 
+        <.input type="toggle" label="automap" field={@mapping_changeset[:automap]} disabled={@mapping_changeset[:side].value == "input" && "disabled"}/>
+
         <div class="w-24">
           <.input
             type="color"
@@ -95,4 +97,5 @@ defmodule LightwarriorWeb.HyperionComponents do
     </.form>
     """
   end
+
 end

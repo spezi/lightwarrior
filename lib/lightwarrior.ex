@@ -98,10 +98,18 @@ defmodule Lightwarrior do
 
   def save_output(selected) do
       dbg("save output")
+      #https://api.hyperion-project.org/updateconfiguration-17021074e0
+
       if Lightwarrior.State.get(:instances_with_config_output) do
         { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), selected)
-        to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
-        case Hyperion.save_current_config(to_save_payload) do
+
+        #dbg(selected_config)
+
+        to_save_payload  = %{"instances": [
+          selected_config
+        ]}
+        #to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
+        case dbg(Hyperion.save_current_config(to_save_payload)) do
             %{
               "success" => true,
             } ->
@@ -112,6 +120,25 @@ defmodule Lightwarrior do
             } ->
               %{"success" => false, "error" => error }
         end
+      else
+        %{"success" => false, "error" => "have no Data to save" }
+      end
+  end
+
+  def save_output_global() do
+      dbg("save output")
+      #https://api.hyperion-project.org/updateconfiguration-17021074e0
+
+      if Lightwarrior.State.get(:instances_with_config_output) do
+        #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), selected)
+
+        #dbg(selected_config)
+
+        to_save_payload  = %{"instances" =>
+          Hyperion.prepare_for_saving_hyperion(Lightwarrior.State.get(:instances_with_config_output))
+        }
+        #to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
+        Hyperion.save_current_config(to_save_payload)
       else
         %{"success" => false, "error" => "have no Data to save" }
       end

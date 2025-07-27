@@ -14,6 +14,10 @@ AppHooks.LocalStorage= {
     this.pushEvent("phx:init-output_opacity", localStorage.getItem("phx:output_opacity"));
     this.pushEvent("phx:init-uniform_opacity", localStorage.getItem("phx:uniform_opacity"));
 
+    this.pushEvent("phx:init-input_automap", localStorage.getItem("phx:input_automap"));
+    this.pushEvent("phx:init-output_automap", localStorage.getItem("phx:output_automap"));
+    this.pushEvent("phx:init-uniform_automap", localStorage.getItem("phx:uniform_automap"));
+
     this.pushEvent("phx:init-input_instances_color", localStorage.getItem("phx:input_instances_color"));
     this.pushEvent("phx:init-output_instances_color", localStorage.getItem("phx:output_instances_color"));
     this.pushEvent("phx:init-uniform_instances_color", localStorage.getItem("phx:uniform_instances_color"));
@@ -61,9 +65,23 @@ AppHooks.LocalStorage= {
       //console.log("output_instances_color " + data.output_instances_color)
       localStorage.setItem("phx:output_instances_color", data.output_instances_color);
     }
-    if( data.uniform_instances_color!= undefined ) {
+    if( data.uniform_instances_color != undefined ) {
       //console.log("uniform_instances_color: " + data.uniform_instances_color)
       localStorage.setItem("phx:uniform_instances_color", data.uniform_instances_color);
+    }
+
+    // automap side
+    if( data.input_automap != undefined ) {
+      //console.log("input_instances_color " + data.input_instances_color)
+      localStorage.setItem("phx:input_automap", data.input_automap);
+    }
+    if( data.output_automap != undefined ) {
+      //console.log("output_instances_color " + data.output_instances_color)
+      localStorage.setItem("phx:output_automap", data.output_automap);
+    }
+    if( data.uniform_automap != undefined ) {
+      //console.log("uniform_instances_color: " + data.uniform_instances_color)
+      localStorage.setItem("phx:uniform_automap", data.uniform_automap);
     }
     
   }
