@@ -7,6 +7,13 @@ defmodule Lightwarrior do
   if it comes from the database, an external API or others.
   """
 
+  @processes_patched "ossia_score/processes_patched.json"
+
+  @file_path "ossia_score/lightwarrior.score"
+
+  @scorefile_patched "ossia_score/lightwarrior_patched.score"
+
+
   alias Lightwarrior.Helper
   alias Lightwarrior.Hyperion
 
@@ -206,6 +213,55 @@ defmodule Lightwarrior do
     # Close the port
     #:gen_udp.close(port)
 
+  end
+
+  @doc """
+  Save config of current active stripe
+  """
+  def set_ossia_score_osc_adresses(socket) do
+
+      score_file = load_score_file()
+
+      processes = get_in(score_file, ["Document", "BaseScenario", "Constraint", "Processes"])
+      updated_processes =
+        Enum.map(processes, fn process ->
+          updated_inlets =
+            Enum.map(process["Inlets"] || [], fn inlet ->
+              custom = inlet["Custom"]
+
+              if custom && (String.starts_with?(custom, "start") || String.starts_with?(custom, "end")) do
+                Map.put(inlet, "Address", "lightwarrior:/#{custom}")
+              else
+                inlet
+              end
+            end)
+
+          Map.put(process, "Inlets", updated_inlets)
+        end)
+
+        # for ossia score Address learning
+        Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
+          dbg(Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid))
+        end)
+
+
+        #dbg(updated_processes)
+        File.write!(@processes_patched, updated_processes|> Jason.encode!(pretty: true))
+
+        patched_scorefile = put_in(score_file, ["Document", "BaseScenario", "Constraint", "Processes"], updated_processes)
+        File.write!(@scorefile_patched, patched_scorefile |> Jason.encode!(pretty: true))
+  end
+
+  defp load_score_file do
+    case File.read(@file_path) do
+      {:ok, content} ->
+        case Jason.decode(content) do
+          {:ok, data} when is_map(data) -> data
+          _ -> %{}
+        end
+
+      _ -> %{}
+    end
   end
 
 end

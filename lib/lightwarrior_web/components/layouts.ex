@@ -83,6 +83,11 @@ defmodule LightwarriorWeb.Layouts do
                   Build Ossia Score File <.icon name="hero-beaker-mini" class="size-5 opacity-40 group-hover:opacity-70" />
                 </button>
               </div>
+              <div class="p-2">
+                <button phx-click="patch-score" class="btn btn-sm btn-primary ml-auto">
+                  Patch score Adresses <.icon name="hero-beaker-mini" class="size-5 opacity-40 group-hover:opacity-70" />
+                </button>
+              </div>
           </div>
 
       </div>

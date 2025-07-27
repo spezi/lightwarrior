@@ -705,7 +705,15 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
 
     output_isf_shader = Lightwarrior.OutputShader.build()
+    # TODO: Not working at the moment, ossia have to compile the isf shader
     dbg(Lightwarrior.OutputShader.patch_scorefile(output_isf_shader))
+
+    {:noreply, socket}
+  end
+
+  def handle_event("patch-score", %{"value" => _value}, socket) do
+
+    dbg(Lightwarrior.set_ossia_score_osc_adresses(socket))
 
     {:noreply, socket}
   end

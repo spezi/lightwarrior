@@ -14,6 +14,7 @@
         "uuid": "5ac86198-2d03-4830-9e41-a6d529922d29"
       },
       {
+        "Address": "lightwarrior:/start0",
         "Custom": "start0",
         "Domain": {
           "Vec2f": {
@@ -50,6 +51,7 @@
         "uuid": "0adbbdda-fda4-451e-91cc-1da731bde9d5"
       },
       {
+        "Address": "lightwarrior:/end0",
         "Custom": "end0",
         "Domain": {
           "Vec2f": {
