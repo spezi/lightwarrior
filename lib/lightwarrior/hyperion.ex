@@ -286,6 +286,27 @@ defmodule Lightwarrior.Hyperion do
     end
   end
 
+   def get_num_leds() do
+    if Lightwarrior.State.get(:instances_with_config_input) != nil do
+        num_leds = Lightwarrior.State.get(:instances_with_config_input)
+        |> Enum.map(fn device ->
+          case get_in(device, ["settings", "device", "hardwareLedCount"]) do
+            count when is_integer(count) -> %{num_leds: count}
+            _ -> nil
+          end
+        end)
+        |> Enum.filter(& &1)  # remove nils if any
+
+      if num_leds != nil do
+        Lightwarrior.State.put(:instances_num_leds, num_leds)
+      end
+
+      num_leds
+    else
+      nil
+    end
+  end
+
   def fetch_num_leds(index) do
     instances_num_leds = Lightwarrior.State.get(:instances_num_leds)
     if instances_num_leds != nil do

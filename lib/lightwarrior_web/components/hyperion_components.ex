@@ -49,7 +49,7 @@ defmodule LightwarriorWeb.HyperionComponents do
             title="set even y"
             type="button"
             phx-click="phx:set-even"
-            phx-value-direction="y"
+            value="y"
             class="btn btn-sm btn-neutral btn-square"
             >
             <svg class="size-5 opacity-40 group-hover:opacity-70"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="4" y1="12" x2="9" y2="12" />  <line x1="15" y1="12" x2="20" y2="12" />  <rect x="9" y="6" width="6" height="12" rx="2" /></svg>
@@ -58,7 +58,7 @@ defmodule LightwarriorWeb.HyperionComponents do
             title="set even x"
             type="button"
             phx-click="phx:set-even"
-            phx-value-direction="x"
+            value="x"
             class="btn btn-sm btn-neutral btn-square"
             >
             <svg class="size-5 opacity-40 group-hover:opacity-70"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="12" y1="4" x2="12" y2="9" />  <line x1="12" y1="15" x2="12" y2="20" />  <rect x="6" y="9" width="12" height="6" rx="2" /></svg>

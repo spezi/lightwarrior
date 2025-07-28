@@ -608,7 +608,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
   end
 
-  def handle_event("phx:set-even", %{"value" => _value} = _param, socket) do
+  def handle_event("phx:set-even", %{"value" => direction} = _param, socket) do
+    dbg(direction)
     {:noreply,
       socket
     }
