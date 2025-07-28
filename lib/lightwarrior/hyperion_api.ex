@@ -37,6 +37,8 @@ defmodule Lightwarrior.HyperionApi do
         Lightwarrior.State.put(:serverinfo, serverinfo)
         serverinfo
       {:error, :econnrefused} -> {:error, :econnrefused}
+      {:error, :enetunreach} -> {:error, :enetunreach}
+      {:error, :eintr} -> {:error, :eintr}
     end
 
     if serverinfo != {:error, :econnrefused} do
@@ -60,8 +62,6 @@ defmodule Lightwarrior.HyperionApi do
               true -> Lightwarrior.State.put(:instances_with_config_output, current_config["info"]["instances"])
 
                       Lightwarrior.Hyperion.get_num_leds()
-
-
 
                       instances = Enum.with_index(instances)
                                   |> Enum.map(fn {map, index} -> Map.put(map, :num_leds, Lightwarrior.Hyperion.fetch_num_leds(index) ) end)
@@ -88,7 +88,7 @@ defmodule Lightwarrior.HyperionApi do
         {:noreply, hyperion_state}
     else
       Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "hyperion", %{ "hyperion_ready" => false })
-      %{ {:error, :econnrefused}}
+      {:error, :econnrefused}
     end
   end
 

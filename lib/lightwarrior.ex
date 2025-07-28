@@ -46,13 +46,16 @@ defmodule Lightwarrior do
     selected_instance_data_pixel = Enum.fetch!(leds_pixel, selected)
     dbg(points)
     dbg(num_leds)
-    List.replace_at(leds_pixel,
-      selected,
-      selected_instance_data_pixel
-      |> Map.replace(:leds, interpolate_coords(points, num_leds))
-      |> Map.replace(:start, [points.start.x, points.start.y])
-      |> Map.replace(:end, [points.end.x, points.end.y])
-    )
+    if num_leds do
+        List.replace_at(leds_pixel,
+        selected,
+        selected_instance_data_pixel
+        |> Map.replace(:leds, interpolate_coords(points, num_leds))
+        |> Map.replace(:start, [points.start.x, points.start.y])
+        |> Map.replace(:end, [points.end.x, points.end.y])
+      )
+    end
+
 
   end
 

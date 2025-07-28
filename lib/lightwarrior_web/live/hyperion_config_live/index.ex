@@ -68,7 +68,13 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           dbg("selected: " <> id)
           #dbg(Lightwarrior.State.get(:instances_with_config_output))
           #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
-          Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
+          if Lightwarrior.State.get(:instances_with_config_output) != nil do
+            Hyperion.switch_instance(Enum.fetch!,Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id))
+            socket
+          end
+
+
+
           socket
           |> assign(:selected, String.to_integer(id))
           |> push_event("select", %{instance: id})
@@ -132,11 +138,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     socket = case mapping_tools_form["side"] do
       "input" ->
-          instances_data_with_config = if mapping_tools_form["automap"] == "true" do
-            Lightwarrior.OutputMapping.automap_instances_pixi(socket.assigns.mapping_container_size)
-          else
-            Lightwarrior.State.get(:instances_with_config_input)
-          end
+          instances_data_with_config = Lightwarrior.State.get(:instances_with_config_input)
         socket
         |> push_event("instances-data-pixel", %{instances_data_pixel: Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, socket.assigns.mapping_container_size)})
         |> assign(:mapping_input, to_form(mapping_changeset, id: :mapping_tools_form_input, as: :mapping_tools_form))
@@ -459,6 +461,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           Lightwarrior.State.get(:instances_with_config_input)
       "output" ->
         Lightwarrior.State.get(:instances_with_config_output)
+      "uniform" ->
+        Lightwarrior.State.get(:instances_with_config_uniform)
         _ -> []
     end
 
@@ -468,8 +472,20 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #dbg(instance_data_config)
     num_leds = Lightwarrior.Hyperion.fetch_num_leds(socket.assigns.selected)
 
+    dbg(num_leds)
+    #dbg(Lightwarrior.State.get(:instances_num_leds))
+    #dbg(Lightwarrior.Hyperion.get_num_leds(socket))
 
-    if num_leds > 1 do
+    num_leds = if num_leds == nil do
+      %{num_leds: num_leds} = Enum.fetch!(Lightwarrior.Hyperion.get_num_leds(socket), socket.assigns.selected)
+      dbg(num_leds)
+    else
+      num_leds
+    end
+
+    dbg(num_leds)
+
+    if num_leds != nil do
           #lightwarrior.ex ;)
           instances_data_pixel_new = Lightwarrior.update_selected_instance_data_pixel(
             num_leds,
@@ -478,8 +494,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
             points
           )
 
-          ### update data
 
+          ### update data
           leds = Helper.leds_to_coordinates!(
             Enum.fetch!(instances_data_pixel_new, socket.assigns.selected),
             socket.assigns.mapping_container_size
