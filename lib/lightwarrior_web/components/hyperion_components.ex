@@ -65,7 +65,7 @@ defmodule LightwarriorWeb.HyperionComponents do
           </button>
 
           <span class="py-1">move: </span>
-          <input type="text" placeholder="steps" class="input input-sm w-16" />
+          <!--<input type="text" placeholder="steps" class="input input-sm w-16" />-->
           <button title="move left" type="button" phx-click="phx:move-stripe" phx-value-direction="left" class="btn btn-sm btn-neutral btn-square">
             <.icon name="hero-arrow-long-left-mini" class="size-5 opacity-40 group-hover:opacity-70" />
           </button>

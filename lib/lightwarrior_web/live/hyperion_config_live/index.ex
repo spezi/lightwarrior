@@ -196,6 +196,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     dbg(direction)
     {:noreply,
       socket
+      |> push_event("move-stripe", %{side: socket.assigns.side, direction: direction})
     }
   end
 
@@ -625,12 +626,12 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
       "x" ->
         {:noreply,
           socket
-          |> push_event("set-even-x", %{direction: direction})
+          |> push_event("set-even-x", %{direction: direction, side: socket.assigns.side})
         }
       "y" ->
          {:noreply,
           socket
-          |> push_event("set-even-y", %{direction: direction})
+          |> push_event("set-even-y", %{direction: direction, side: socket.assigns.side})
         }
     end
   end
@@ -722,20 +723,39 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     end
 
 
+    socket = if instances_data_with_config != nil && length(instances_data_with_config) > 0 do
 
+      instances_data_with_config_pixel = Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, mapping_container_size)
+      selected = Enum.fetch!(instances_data_with_config_pixel, 0)
+      #dbg(selected)
+      #dbg(get_in(selected, [:leds]))
 
+      first_led = if selected do
+        Enum.fetch!(get_in(selected, [:leds]), 0)
+      else
+        nil
+      end
 
-    if true do
-      {:noreply, socket
-        |> assign(:mapping_container_size, mapping_container_size)
-        #|> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
-      }
+      dbg(first_led)
+
+      socket = if first_led do
+        step_h = first_led["hmax"] - first_led["hmin"]
+        step_v = first_led["vmax"] - first_led["vmin"]
+
+        socket
+            |> push_event("set_step", %{direction: "h", step: step_h})
+            |> push_event("set_step", %{direction: "v", step: step_v})
+      else
+        socket
+      end
     else
-      {:noreply, socket
-        |> assign(:mapping_container_size, mapping_container_size)
-        #|> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
-      }
+      socket
     end
+
+    {:noreply, socket
+      |> assign(:mapping_container_size, mapping_container_size)
+      #|> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
+    }
   end
 
   def handle_event("build-score", %{"value" => _value}, socket) do
