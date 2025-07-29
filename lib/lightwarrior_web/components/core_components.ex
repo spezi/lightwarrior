@@ -145,7 +145,7 @@ defmodule LightwarriorWeb.CoreComponents do
   attr :type, :string,
     default: "text",
     values: ~w(checkbox color date datetime-local email file month number password
-               range search select tel text textarea time url week hidden)
+               range search select tel text textarea time url week hidden toggle)
 
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
@@ -195,6 +195,44 @@ defmodule LightwarriorWeb.CoreComponents do
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </fieldset>
+    """
+  end
+
+  def input(%{type: "toggle"} = assigns) do
+
+    assigns =
+      assign_new(assigns, :checked, fn ->
+        #dbg(assigns)
+        Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
+      end)
+
+      #dbg(assigns)
+
+    ~H"""
+    <!--
+    <fieldset class="fieldset mb-2">
+      <label>
+        <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
+        <span class="fieldset-label">
+          <input
+            type="checkbox"
+            id={@id}
+            name={@name}
+            value="true"
+            checked={@checked}
+            class="checkbox checkbox-sm"
+            {@rest}
+          />{@label}
+        </span>
+      </label>
+      <.error :for={msg <- @errors}>{msg}</.error>
+    </fieldset>-->
+    <div class="relative flex flex-row gap-2 items-center rounded-full" >
+        <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
+        <span>{@label}</span><input id={@id}
+        type="checkbox" class="toggle" name={@name} value="true" checked={@checked} {@rest}/>
+
+    </div>
     """
   end
 

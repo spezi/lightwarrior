@@ -9,12 +9,13 @@ defmodule Lightwarrior.MappingMenueForm do
     field :instance_length, :float
     field :opacity, :integer
     field :lockdistance, :boolean
+    field :automap, :boolean
   end
 
 
   def changeset(menue_mapping_form, params \\ %{}) do
     menue_mapping_form
-    |> cast(params, [:side, :instance_length, :instance_color, :opacity, :lockdistance])
+    |> cast(params, [:side, :instance_length, :instance_color, :automap, :opacity, :lockdistance])
     |> validate_required([:side])
     #|> validate_format(:email, ~r/@/)
     #|> validate_inclusion(:age, 18..100)

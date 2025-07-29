@@ -27,6 +27,8 @@ cp .env.template .env
 ```
 -> and set Hyperion URL and API Key 
 
+Ossia score osc adress 127.0.0.1 port 9997
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies

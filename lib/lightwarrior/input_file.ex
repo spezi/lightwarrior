@@ -1,8 +1,19 @@
 defmodule Lightwarrior.InputConfigsFileStore do
   use GenServer
 
+  import Dotenvy
+
   @name __MODULE__
-  @file_path "hyperion/input_configs.json"
+
+  source!([
+    Path.absname(".env"),
+    System.get_env()
+  ])
+
+  uri = URI.parse(env!("HYPERION_JSONRPC_API_URL", :string!))
+  @file_path "hyperion/#{uri.host}_input_configs.json"
+
+
 
   ## Public API
 

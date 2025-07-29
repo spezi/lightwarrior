@@ -7,6 +7,13 @@ defmodule Lightwarrior do
   if it comes from the database, an external API or others.
   """
 
+  @processes_patched "ossia_score/processes_patched.json"
+
+  @file_path "ossia_score/lightwarrior.score"
+
+  @scorefile_patched "ossia_score/lightwarrior_patched.score"
+
+
   alias Lightwarrior.Helper
   alias Lightwarrior.Hyperion
 
@@ -39,13 +46,16 @@ defmodule Lightwarrior do
     selected_instance_data_pixel = Enum.fetch!(leds_pixel, selected)
     dbg(points)
     dbg(num_leds)
-    List.replace_at(leds_pixel,
-      selected,
-      selected_instance_data_pixel
-      |> Map.replace(:leds, interpolate_coords(points, num_leds))
-      |> Map.replace(:start, [points.start.x, points.start.y])
-      |> Map.replace(:end, [points.end.x, points.end.y])
-    )
+    if num_leds do
+        List.replace_at(leds_pixel,
+        selected,
+        selected_instance_data_pixel
+        |> Map.replace(:leds, interpolate_coords(points, num_leds))
+        |> Map.replace(:start, [points.start.x, points.start.y])
+        |> Map.replace(:end, [points.end.x, points.end.y])
+      )
+    end
+
 
   end
 
@@ -76,9 +86,19 @@ defmodule Lightwarrior do
 
   end
 
-  def save_input() do
+  def save_input(socket) do
       dbg("save input")
       if Lightwarrior.State.get(:instances_with_config_input) do
+
+        # update ossia via osc messages
+        #Lightwarrior.update_instance_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
+
+        # update ossia via osc messages
+        Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
+          #dbg(get_in(instance, ["settings", "leds"]))
+          Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
+        end)
+
         #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_input), socket.assigns.selected)
         # dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
         dbg(Lightwarrior.InputConfigsFileStore.put("instances_with_config_input", Lightwarrior.State.get(:instances_with_config_input)))
@@ -98,10 +118,18 @@ defmodule Lightwarrior do
 
   def save_output(selected) do
       dbg("save output")
+      #https://api.hyperion-project.org/updateconfiguration-17021074e0
+
       if Lightwarrior.State.get(:instances_with_config_output) do
         { :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), selected)
-        to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
-        case Hyperion.save_current_config(to_save_payload) do
+
+        #dbg(selected_config)
+
+        to_save_payload  = %{"instances": [
+          selected_config
+        ]}
+        #to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
+        case dbg(Hyperion.save_current_config(to_save_payload)) do
             %{
               "success" => true,
             } ->
@@ -112,6 +140,25 @@ defmodule Lightwarrior do
             } ->
               %{"success" => false, "error" => error }
         end
+      else
+        %{"success" => false, "error" => "have no Data to save" }
+      end
+  end
+
+  def save_output_global() do
+      dbg("save output")
+      #https://api.hyperion-project.org/updateconfiguration-17021074e0
+
+      if Lightwarrior.State.get(:instances_with_config_output) do
+        #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_output), selected)
+
+        #dbg(selected_config)
+
+        to_save_payload  = %{"instances" =>
+          Hyperion.prepare_for_saving_hyperion(Lightwarrior.State.get(:instances_with_config_output))
+        }
+        #to_save_payload = selected_config |> Map.get("config") |> Map.get("info")
+        Hyperion.save_current_config(to_save_payload)
       else
         %{"success" => false, "error" => "have no Data to save" }
       end
@@ -169,6 +216,55 @@ defmodule Lightwarrior do
     # Close the port
     #:gen_udp.close(port)
 
+  end
+
+  @doc """
+  Save config of current active stripe
+  """
+  def set_ossia_score_osc_adresses(socket) do
+
+      score_file = load_score_file()
+
+      processes = get_in(score_file, ["Document", "BaseScenario", "Constraint", "Processes"])
+      updated_processes =
+        Enum.map(processes, fn process ->
+          updated_inlets =
+            Enum.map(process["Inlets"] || [], fn inlet ->
+              custom = inlet["Custom"]
+
+              if custom && (String.starts_with?(custom, "start") || String.starts_with?(custom, "end")) do
+                Map.put(inlet, "Address", "lightwarrior:/#{custom}")
+              else
+                inlet
+              end
+            end)
+
+          Map.put(process, "Inlets", updated_inlets)
+        end)
+
+        # for ossia score Address learning
+        Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
+          dbg(Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid))
+        end)
+
+
+        #dbg(updated_processes)
+        File.write!(@processes_patched, updated_processes|> Jason.encode!(pretty: true))
+
+        patched_scorefile = put_in(score_file, ["Document", "BaseScenario", "Constraint", "Processes"], updated_processes)
+        File.write!(@scorefile_patched, patched_scorefile |> Jason.encode!(pretty: true))
+  end
+
+  defp load_score_file do
+    case File.read(@file_path) do
+      {:ok, content} ->
+        case Jason.decode(content) do
+          {:ok, data} when is_map(data) -> data
+          _ -> %{}
+        end
+
+      _ -> %{}
+    end
   end
 
 end

@@ -117,19 +117,23 @@ defmodule Lightwarrior.Hyperion do
   """
   def switch_instance(instance) do
 
-    #dbg("switch instance #{stripe.instance}" )
+    #dbg(instance)
 
-    instance = case Map.has_key?(instance, :instance) do
-      true -> Map.get(instance, :instance)
-      false -> Map.get(instance, "instance")
+    instance = case Map.has_key?(instance, "id") do
+      true ->
+        dbg("switch instance #{instance["id"]}" )
+        instance["id"]
+      false -> nil
     end
 
-    payload = %{
-      "command" => "instance",
-      "subcommand" => "switchTo",
-      "instance" => instance
-    }
-    dbg(post_json(payload))
+    if instance do
+      payload = %{
+        "command" => "instance",
+        "subcommand" => "switchTo",
+        "instance" => instance
+      }
+      dbg(post_json(payload))
+    end
 
   end
 
@@ -160,7 +164,7 @@ defmodule Lightwarrior.Hyperion do
       "tan" => 1
     }
 
-    case post_json(payload) do
+    case dbg(post_json(payload)) do
       {:ok, response} ->
         response
       {:error, reason} ->
@@ -168,6 +172,22 @@ defmodule Lightwarrior.Hyperion do
         {:error, reason}
     end
 
+  end
+
+  @doc """
+  Save config of current active stripe
+  """
+  def prepare_for_saving_hyperion(instances_with_config_output) do
+      instances_with_config_output
+      |> Enum.map(fn device ->
+        %{
+          "id" => Map.get(device, "id"),
+          "settings" => %{
+             "leds" => get_in(device, ["settings", "leds"])
+             #Map.get(device, "settings")
+          }
+        }
+      end)
   end
 
   @doc """
@@ -206,17 +226,20 @@ defmodule Lightwarrior.Hyperion do
 
   """
   def collect_instances(serverinfo) do
-    if serverinfo do
-      Logger.info("collect instances")
-      %{"info" => info} = serverinfo
-      %{"instance" => instances } = info
-      #instances = Enum.map_every(instances, 1, fn instance -> Helper.string_keys_to_atom_keys(instance) end)
-      #raise "TODO"
-      #dbg(instances)
-      {:ok, instances}
-    else
-      {:error, nil}
-    end
+     Logger.info("collect instances")
+      case serverinfo do
+        %{"info" => info} ->
+          info
+          #%{"info" => info} = serverinfo
+          %{"instance" => instances } = info
+          #instances = Enum.map_every(instances, 1, fn instance -> Helper.string_keys_to_atom_keys(instance) end)
+          #raise "TODO"
+          #dbg(instances)
+          {:ok, instances}
+        %{"command" => "serverinfo", "error" => error, "success" => false, "tan" => 1} ->
+          {:error, error}
+        _ -> {:error, nil}
+      end
   end
 
   def get_instance_leds(current_config) do
@@ -226,6 +249,72 @@ defmodule Lightwarrior.Hyperion do
         Map.get(info, "leds", [])
       false -> []
       end
+  end
+
+  def get_num_leds(socket) do
+    case socket.assigns.side do
+      "input" ->
+            num_leds = Lightwarrior.State.get(:instances_with_config_input)
+              |> Enum.map(fn device ->
+                case get_in(device, ["settings", "device", "hardwareLedCount"]) do
+                  count when is_integer(count) -> %{num_leds: count}
+                  _ -> nil
+                end
+              end)
+              |> Enum.filter(& &1)  # remove nils if any
+
+              if num_leds != nil do
+                Lightwarrior.State.put(:instances_num_leds, num_leds)
+              end
+
+              num_leds
+      "output" ->
+            num_leds = Lightwarrior.State.get(:instances_with_config_output)
+            |> Enum.map(fn device ->
+              case get_in(device, ["settings", "device", "hardwareLedCount"]) do
+                count when is_integer(count) -> %{num_leds: count}
+                _ -> nil
+              end
+            end)
+            |> Enum.filter(& &1)  # remove nils if any
+
+            if num_leds != nil do
+              Lightwarrior.State.put(:instances_num_leds, num_leds)
+            end
+
+            num_leds
+    end
+  end
+
+   def get_num_leds() do
+    if Lightwarrior.State.get(:instances_with_config_input) != nil do
+        num_leds = Lightwarrior.State.get(:instances_with_config_input)
+        |> Enum.map(fn device ->
+          case get_in(device, ["settings", "device", "hardwareLedCount"]) do
+            count when is_integer(count) -> %{num_leds: count}
+            _ -> nil
+          end
+        end)
+        |> Enum.filter(& &1)  # remove nils if any
+
+      if num_leds != nil do
+        Lightwarrior.State.put(:instances_num_leds, num_leds)
+      end
+
+      num_leds
+    else
+      nil
+    end
+  end
+
+  def fetch_num_leds(index) do
+    instances_num_leds = Lightwarrior.State.get(:instances_num_leds)
+    if instances_num_leds != nil do
+      {:ok, %{num_leds: num_leds}} = Enum.fetch(instances_num_leds, index)
+       num_leds
+    else
+      instances_num_leds
+    end
   end
 
   defp post_json(payload) do

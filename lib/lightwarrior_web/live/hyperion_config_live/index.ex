@@ -26,9 +26,9 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #form_data = %MappingMenueForm{}
     #mapping = %{"lockdistance"=> true, "opacity"=> 70}
 
-    mapping_changeset_input  = MappingMenueForm.changeset(%MappingMenueForm{}, %{side: "input", lockdistance: "true", instances_color: "#4adf72", opacity: 70})
-    mapping_changeset_output  = MappingMenueForm.changeset(%MappingMenueForm{}, %{side: "output", lockdistance: "true", instances_color: "#4adf72",opacity: 70})
-    mapping_changeset_uniform  = MappingMenueForm.changeset(%MappingMenueForm{}, %{side: "uniform", lockdistance: "true", instances_color: "#4adf72", opacity: 70})
+    mapping_changeset_input  = MappingMenueForm.changeset(%MappingMenueForm{}, %{side: "input", lockdistance: "true", automap: "false", instances_color: "#4adf72", opacity: 70})
+    mapping_changeset_output  = MappingMenueForm.changeset(%MappingMenueForm{}, %{side: "output", lockdistance: "true", automap: "true", instances_color: "#4adf72",opacity: 70})
+    mapping_changeset_uniform  = MappingMenueForm.changeset(%MappingMenueForm{}, %{side: "uniform", lockdistance: "true", automap: "false", instances_color: "#4adf72", opacity: 70})
 
     #dbg(mapping_changeset_input)
     #dbg(mapping_changeset_output)
@@ -39,6 +39,10 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     dbg(Map.keys(Lightwarrior.InputConfigsFileStore.all()))
     dbg(Lightwarrior.State.put(:instances_with_config_input, Lightwarrior.InputConfigsFileStore.get("instances_with_config_input")))
 
+    socket = socket
+              |> assign(:mapping_input, to_form(mapping_changeset_input, id: :mapping_tools_form_input, as: :mapping_tools_form))
+              |> assign(:mapping_output, to_form(mapping_changeset_output, id: :mapping_tools_form_output, as: :mapping_tools_form))
+              |> assign(:mapping_uniform, to_form(mapping_changeset_uniform, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
     {:ok,
      socket
      |> assign(:page_title, "Hyperionconfig")
@@ -46,14 +50,20 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
      |> assign(:selected, nil)
      |> assign(:debug, false)
      |> assign(:autosave, false)
-     |> assign(:mapping_input, to_form(mapping_changeset_input, id: :mapping_tools_form_input, as: :mapping_tools_form))
-     |> assign(:mapping_output, to_form(mapping_changeset_output, id: :mapping_tools_form_output, as: :mapping_tools_form))
-     |> assign(:mapping_uniform, to_form(mapping_changeset_uniform, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
      #|> assign(form: to_form(Map.from_struct(form_data)))
      |> assign(:side, nil)
      |> assign(:mapping_container_size, %{width: 0.0, height: 0.0})
      |> assign(:instances_data_pixel_map, %{"input" => nil, "output" => nil, "uniform" => nil})
      |> assign(:sc_pid, sc_pid)
+     |> push_event("localstorage", %{ input_automap: socket.assigns.mapping_input.params["automap"] })
+     |> push_event("localstorage", %{ input_opacity: socket.assigns.mapping_input.params["opacity"] })
+     |> push_event("localstorage", %{ input_instances_color: socket.assigns.mapping_input.params["instances_color"] })
+     |> push_event("localstorage", %{ output_automap: socket.assigns.mapping_output.params["automap"] })
+     |> push_event("localstorage", %{ output_opacity: socket.assigns.mapping_output.params["opacity"] })
+     |> push_event("localstorage", %{ output_instances_color: socket.assigns.mapping_output.params["instances_color"] })
+     |> push_event("localstorage", %{ uniform_automap: socket.assigns.mapping_uniform.params["automap"] })
+     |> push_event("localstorage", %{ uniform_opacity: socket.assigns.mapping_uniform.params["opacity"] })
+     |> push_event("localstorage", %{ uniform_instances_color: socket.assigns.mapping_uniform.params["instances_color"] })
      #|> stream(:hyperionconfigs, Hyperion.list_hyperionconfigs())
      |> push_event("ready", %{})
     }
@@ -65,11 +75,20 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     # set selected
     socket = case params do
       %{"id" => id} ->
-        dbg("selected: " <> id)
-        dbg(Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id))))
-        socket
-        |> assign(:selected, String.to_integer(id))
-        |> push_event("select", %{instance: id})
+          dbg("selected: " <> id)
+          #dbg(Lightwarrior.State.get(:instances_with_config_output))
+          #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
+
+          if Lightwarrior.State.get(:instances_with_config_output) != nil do
+            Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
+            socket
+          end
+
+
+
+          socket
+          |> assign(:selected, String.to_integer(id))
+          |> push_event("select", %{instance: id})
       _ -> socket
     end
 
@@ -113,35 +132,55 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   def handle_event("validate", %{"_target" => target, "mapping_tools_form" => mapping_tools_form} = _params, socket) do
     #mapping = %{lockdistance: socket.assigns.mapping.lockdistance, opacity: String.to_integer(opacity)}
 
-    #dbg(target)
-    #dbg(mapping_tools_form)
+    dbg(target)
+    dbg(mapping_tools_form)
 
     # to reset stage on color change
     socket = case Enum.at(target,1) do
       "instances_color" -> socket |> push_event("instances_color", %{})
+      "automap" ->
+        socket |> push_event("change_mapping", %{})
         _ -> socket
     end
 
     mapping_changeset = MappingMenueForm.changeset(%MappingMenueForm{}, mapping_tools_form)
-    #dbg(mapping_changeset)
+
+    dbg(get_in(mapping_tools_form, target))
 
     socket = case mapping_tools_form["side"] do
       "input" ->
+          instances_data_with_config = Lightwarrior.State.get(:instances_with_config_input)
         socket
+        |> push_event("instances-data-pixel", %{instances_data_pixel: Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, socket.assigns.mapping_container_size)})
         |> assign(:mapping_input, to_form(mapping_changeset, id: :mapping_tools_form_input, as: :mapping_tools_form))
         |> assign(:side, "input")
+        |> push_event("localstorage", %{ input_automap: mapping_tools_form["automap"] })
         |> push_event("localstorage", %{ input_opacity: mapping_tools_form["opacity"] })
         |> push_event("localstorage", %{ input_instances_color: mapping_tools_form["instances_color"] })
       "output" ->
+          instances_data_with_config = if mapping_tools_form["automap"] == "true" do
+            Lightwarrior.OutputMapping.automap_instances_pixi(socket.assigns.mapping_container_size)
+          else
+            Lightwarrior.State.get(:instances_with_config_output)
+          end
         socket
+        |> push_event("instances-data-pixel", %{instances_data_pixel: Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, socket.assigns.mapping_container_size)})
         |> assign(:mapping_output, to_form(mapping_changeset, id: :mapping_tools_form_output, as: :mapping_tools_form))
         |> assign(:side, "output")
+        |> push_event("localstorage", %{ output_automap: mapping_tools_form["automap"] })
         |> push_event("localstorage", %{ output_opacity: mapping_tools_form["opacity"] })
         |> push_event("localstorage", %{ output_instances_color: mapping_tools_form["instances_color"] })
       "uniform" ->
+          instances_data_with_config = if mapping_tools_form["automap"] == "true" do
+            Lightwarrior.OutputMapping.automap_instances_pixi(socket.assigns.mapping_container_size)
+          else
+            Lightwarrior.State.get(:instances_with_config_uniform)
+          end
         socket
+        |> push_event("instances-data-pixel", %{instances_data_pixel: Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, socket.assigns.mapping_container_size)})
         |> assign(:mapping_uniform, to_form(mapping_changeset, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
         |> assign(:side, "uniform")
+        |> push_event("localstorage", %{ uniform_automap: mapping_tools_form["automap"] })
         |> push_event("localstorage", %{ uniform_opacity: mapping_tools_form["opacity"] })
         |> push_event("localstorage", %{ uniform_instances_color: mapping_tools_form["instances_color"] })
       _ ->
@@ -157,6 +196,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     dbg(direction)
     {:noreply,
       socket
+      |> push_event("move-stripe", %{side: socket.assigns.side, direction: direction})
     }
   end
 
@@ -233,14 +273,45 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   end
 
   def handle_event("phx:init-debug", params, socket) do
+    dbg(params)
     case params do
         "true" -> {:noreply, socket |> assign(:debug, true)}
         _ ->  {:noreply, socket}
     end
   end
 
-  def handle_event("phx:init-input_opacity", params, socket) do
+   def handle_event("phx:init-input_automap", params, socket) do
     dbg(params)
+    params_concat = Map.merge(socket.assigns.mapping_input.source.params, %{"automap" => params})
+    mapping_changeset = MappingMenueForm.changeset(%MappingMenueForm{}, params_concat)
+    {:noreply,
+      socket
+      |> assign(:mapping_input, to_form(mapping_changeset, id: :mapping_tools_form_input, as: :mapping_tools_form))
+    }
+  end
+
+  def handle_event("phx:init-output_automap", params, socket) do
+    dbg(params)
+    params_concat = Map.merge(socket.assigns.mapping_output.source.params, %{"automap" => params})
+    mapping_changeset = MappingMenueForm.changeset(%MappingMenueForm{}, params_concat)
+    {:noreply,
+      socket
+      |> assign(:mapping_output, to_form(mapping_changeset, id: :mapping_tools_form_output, as: :mapping_tools_form))
+    }
+  end
+
+  def handle_event("phx:init-uniform_automap", params, socket) do
+    #dbg(params)
+    params_concat = Map.merge(socket.assigns.mapping_uniform.source.params, %{"automap" => params})
+    mapping_changeset = MappingMenueForm.changeset(%MappingMenueForm{}, params_concat)
+    {:noreply,
+      socket
+      |> assign(:mapping_uniform, to_form(mapping_changeset, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
+    }
+  end
+
+  def handle_event("phx:init-input_opacity", params, socket) do
+    #dbg(params)
     params_concat = Map.merge(socket.assigns.mapping_input.source.params, %{"opacity" => params})
     mapping_changeset = MappingMenueForm.changeset(%MappingMenueForm{}, params_concat)
     {:noreply,
@@ -361,6 +432,23 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
   end
 
+  def handle_event("phx.toggle_automap", params, socket) do
+    #dbg(params)
+    bool_value = case params do
+      %{"value" => value} ->
+        if value == "on" do true else false end
+      %{} -> false
+    end
+
+    {:noreply,
+      socket
+      |> assign(:automap, bool_value )
+      |> push_event("localstorage", %{ automap: bool_value})
+      #|> JS.dispatch("click", to: ".nav")
+      #|> JS.dispatch("phx:localstorage_save", data: %{ debug: !socket.assigns.debug })
+    }
+  end
+
   def handle_event("phx:select_instance", %{"value" => value} = _param, socket) do
     dbg("select: #{value}")
     #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), value))
@@ -385,6 +473,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           Lightwarrior.State.get(:instances_with_config_input)
       "output" ->
         Lightwarrior.State.get(:instances_with_config_output)
+      "uniform" ->
+        Lightwarrior.State.get(:instances_with_config_uniform)
         _ -> []
     end
 
@@ -392,10 +482,22 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     instances_data_pixel = Lightwarrior.Helper.leds_to_pixel!(instances_data_config, socket.assigns.mapping_container_size)
     instance_data_config =  Enum.fetch!(instances_data_config, socket.assigns.selected)
     #dbg(instance_data_config)
-    num_leds = instance_data_config["config"]["info"]["device"]["hardwareLedCount"]
+    num_leds = Lightwarrior.Hyperion.fetch_num_leds(socket.assigns.selected)
 
+    dbg(num_leds)
+    #dbg(Lightwarrior.State.get(:instances_num_leds))
+    #dbg(Lightwarrior.Hyperion.get_num_leds(socket))
 
-    if num_leds > 1 do
+    num_leds = if num_leds == nil do
+      %{num_leds: num_leds} = Enum.fetch!(Lightwarrior.Hyperion.get_num_leds(socket), socket.assigns.selected)
+      dbg(num_leds)
+    else
+      num_leds
+    end
+
+    dbg(num_leds)
+
+    if num_leds != nil do
           #lightwarrior.ex ;)
           instances_data_pixel_new = Lightwarrior.update_selected_instance_data_pixel(
             num_leds,
@@ -404,8 +506,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
             points
           )
 
-          ### update data
 
+          ### update data
           leds = Helper.leds_to_coordinates!(
             Enum.fetch!(instances_data_pixel_new, socket.assigns.selected),
             socket.assigns.mapping_container_size
@@ -413,7 +515,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
           #dbg(instance_data_config)
           #instance_data_config_new = Map.replace(instance_data_config, "leds", %{"penis" => true})
-          instance_data_config_new = put_in(instance_data_config,["config", "info", "leds"], leds)
+          instance_data_config_new = put_in(instance_data_config,["settings", "leds"], leds)
 
 
           #dbg(instance_data_config_new)
@@ -421,13 +523,38 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
           dbg(socket.assigns.autosave)
 
-          case socket.assigns.side do
+          socket = case socket.assigns.side do
             "input" ->
                 dbg(Lightwarrior.State.put(:instances_with_config_input, instances_data_config_new))
-                if socket.assigns.autosave, do: Lightwarrior.save_input()
+                if socket.assigns.autosave do
+                  case Lightwarrior.save_input(socket) do
+                      %{
+                        "success" => true,
+                      } -> socket
+                      %{
+                        "success" => false,
+                        "error" => error
+                      } -> put_flash(socket, :error, error)
+                  end
+                else
+                  socket
+                end
             "output" ->
-                dbg(Lightwarrior.State.put(:instances_with_config_output, instances_data_config_new))
-              _ -> []
+                Lightwarrior.State.put(:instances_with_config_output, instances_data_config_new)
+                if socket.assigns.autosave do
+                  case Lightwarrior.save_output_global() do
+                    %{
+                      "success" => true,
+                    } -> socket
+                    %{
+                      "success" => false,
+                      "error" => error
+                    } -> put_flash(socket, :error, error)
+                  end
+                else
+                  socket
+                end
+              _ -> socket
           end
 
 
@@ -460,7 +587,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     save = case socket.assigns.side do
       "input" ->
-            Lightwarrior.save_input()
+            Lightwarrior.save_input(socket)
             # update ossia via osc messages
             #Lightwarrior.update_stripe_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
 
@@ -493,10 +620,20 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
   end
 
-  def handle_event("phx:set-even", %{"value" => _value} = _param, socket) do
-    {:noreply,
-      socket
-    }
+  def handle_event("phx:set-even", %{"value" => direction} = _param, socket) do
+    dbg(direction)
+    case direction do
+      "x" ->
+        {:noreply,
+          socket
+          |> push_event("set-even-x", %{direction: direction, side: socket.assigns.side})
+        }
+      "y" ->
+         {:noreply,
+          socket
+          |> push_event("set-even-y", %{direction: direction, side: socket.assigns.side})
+        }
+    end
   end
 
   def handle_event("phx:toggle-distance-lock", %{"side" => side, "value" => _value} = _param, socket) do
@@ -544,8 +681,33 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     #dbg(mapping_container_size)
 
     instances_data_with_config = case socket.assigns.side do
-      "input" -> Lightwarrior.State.get(:instances_with_config_input)
-      "output" -> Lightwarrior.OutputMapping.automap_instances_pixi(mapping_container_size)
+      "input" ->
+          automap = socket.assigns.mapping_input.params
+          |> Map.get("automap")
+
+          if automap != nil do
+            case automap do
+              "true" ->
+                  Lightwarrior.OutputMapping.automap_instances_pixi(mapping_container_size)
+              "false" -> Lightwarrior.State.get(:instances_with_config_input)
+            end
+          else
+            Lightwarrior.State.get(:instances_with_config_output)
+          end
+      "output" ->
+        automap = socket.assigns.mapping_output.params
+        |> Map.get("automap")
+
+        if automap != nil do
+          case automap do
+            "true" ->
+                Lightwarrior.OutputMapping.automap_instances_pixi(mapping_container_size)
+            "false" -> Lightwarrior.State.get(:instances_with_config_output)
+          end
+        else
+            Lightwarrior.State.get(:instances_with_config_output)
+        end
+
       #"output" -> Lightwarrior.State.get(:instances_with_config_output)
       _ -> nil
     end
@@ -561,20 +723,57 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     end
 
 
+    socket = if instances_data_with_config != nil && length(instances_data_with_config) > 0 do
 
+      instances_data_with_config_pixel = Lightwarrior.Helper.leds_to_pixel!(instances_data_with_config, mapping_container_size)
+      selected = Enum.fetch!(instances_data_with_config_pixel, 0)
+      #dbg(selected)
+      #dbg(get_in(selected, [:leds]))
 
+      first_led = if selected do
+        Enum.fetch!(get_in(selected, [:leds]), 0)
+      else
+        nil
+      end
 
-    if true do
-      {:noreply, socket
-        |> assign(:mapping_container_size, mapping_container_size)
-        #|> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
-      }
+      dbg(first_led)
+
+      socket = if first_led do
+        step_h = first_led["hmax"] - first_led["hmin"]
+        step_v = first_led["vmax"] - first_led["vmin"]
+
+        socket
+            |> push_event("set_step", %{direction: "h", step: step_h})
+            |> push_event("set_step", %{direction: "v", step: step_v})
+      else
+        socket
+      end
     else
-      {:noreply, socket
-        |> assign(:mapping_container_size, mapping_container_size)
-        #|> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
-      }
+      socket
     end
+
+    {:noreply, socket
+      |> assign(:mapping_container_size, mapping_container_size)
+      #|> push_event("instances-data-pixel", %{instance_data_pixel: instances_data_with_config_pixel })
+    }
   end
+
+  def handle_event("build-score", %{"value" => _value}, socket) do
+
+
+    output_isf_shader = Lightwarrior.OutputShader.build()
+    # TODO: Not working at the moment, ossia have to compile the isf shader
+    dbg(Lightwarrior.OutputShader.patch_scorefile(output_isf_shader))
+
+    {:noreply, socket}
+  end
+
+  def handle_event("patch-score", %{"value" => _value}, socket) do
+
+    dbg(Lightwarrior.set_ossia_score_osc_adresses(socket))
+
+    {:noreply, socket}
+  end
+
 
 end

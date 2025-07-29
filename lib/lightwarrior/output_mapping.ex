@@ -1,15 +1,23 @@
 defmodule Lightwarrior.OutputMapping do
 
     def automap_instances_pixi(%{width: width, height: height} = mapping_container_size) do
-
-        first_led = Enum.fetch!(get_in(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), ["config", "info", "leds"]), 0)
-        dbg(first_led)
-        count = length(Lightwarrior.State.get(:instances_with_config_output))
-        dbg(get_led_size(first_led))
-        new_leds_list = build_led_list(get_led_size(first_led), count)
-        #dbg(length(Lightwarrior.State.get(:instances_with_config_output)))
-        dbg(update_leds(new_leds_list))
-        #Lightwarrior.State.get(:instances_with_config_output)
+          #dbg(Lightwarrior.State.get(:instances_with_config_output))
+          if Lightwarrior.State.get(:instances_with_config_output) do
+              first_instance = Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0)
+              #dbg(first_instance)
+              if first_instance do
+                  first_instance_leds = get_in(first_instance, ["settings", "leds"])
+                  if length(first_instance_leds) > 0 do
+                    first_led = Enum.fetch!(first_instance_leds, 0)
+                    #first_led = Enum.fetch!(get_in(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), ["config", "info", "leds"]), 0)
+                    count = length(Lightwarrior.State.get(:instances_with_config_output))
+                    new_leds_list = build_led_list(get_led_size(first_led), count)
+                    #dbg(length(Lightwarrior.State.get(:instances_with_config_output)))
+                    update_leds(new_leds_list)
+                    #Lightwarrior.State.get(:instances_with_config_output)
+                  end
+              end
+        end
     end
 
     def get_led_size(led) do
@@ -65,11 +73,11 @@ defmodule Lightwarrior.OutputMapping do
       |> Enum.map(fn {config_map, new_leds} ->
         final_leds =
           case new_leds do
-            nil -> get_in(config_map, ["config", "info", "leds"])
+            nil -> get_in(config_map, ["settings", "leds"])
             _ -> new_leds
           end
 
-        put_in(config_map, ["config", "info", "leds"], final_leds)
+        put_in(config_map, ["settings", "leds"], final_leds)
       end)
     end
 

@@ -26,8 +26,8 @@ var selected_path = [
 var initialDistance = 0
 var lockDistance = true
 
-var step_h = 0
-var step_v = 0
+var step_h = 0.5
+var step_v = 0.5
 
 
 function sleep(ms) {
@@ -119,6 +119,11 @@ MappingHooks.Stage= {
     // called from backend after render or container size known and after mapping change
     this.handleEvent("instances-data-pixel", data => this.set_instances_data_pixel(data));
 
+    this.handleEvent("set-even-x", data => this.set_even_x(data))
+    this.handleEvent("set-even-y", data => this.set_even_y(data))
+    this.handleEvent("move-stripe", data => this.move_stripe(data))
+    this.handleEvent("set_step", data => this.set_step(data))
+
     this.width = 0;
     this.height = 0;
 
@@ -200,13 +205,13 @@ MappingHooks.Stage= {
         //console.log(instance)
         let leds = instance.leds;
         let lines = new PIXI.Graphics();
-        lines.label = instance.instance;
+        lines.label = instance.id;
         lines.zIndex = 0;
         //console.log(leds[0].hmin, leds[0].vmin)
         lines.moveTo(leds[0].hmin, leds[0].vmin)
         lines.lineTo(leds[(leds.length - 1)].hmin, leds[(leds.length - 1)].vmin)
         lines.stroke({ width: 4, color: this.instance_color(), alpha: 1});
-        if(this.selected() == instance.instance) lines.alpha = 0.4;
+        if(this.selected() == instance.id) lines.alpha = 0.4;
         lines.cursor = 'pointer';
         lines.eventMode = 'static';
         lines.on('pointerdown', this.onSelectInstance, lines); 
@@ -218,13 +223,15 @@ MappingHooks.Stage= {
   async render_selected() {
     if(this.side() != "uniform") {
         this.instances_data_pixel.forEach(instance => {
-          if(this.selected() == instance.instance) {
+          if(this.selected() == instance.id) {
             console.log(instance)
+            console.log(selected)
             
             selected.destroy(true)
+            
 
             selected = new PIXI.Container();
-            selected.label = instance.instance
+            selected.label = instance.id
 
             selected_start = new PIXI.Graphics();
             selected_start.label = 'selected_start';
@@ -454,6 +461,105 @@ MappingHooks.Stage= {
           //console.log(dragTarget)
           //console.log(app.stage)
       }
+  },
+  set_even_x(data) {
+    if ( data.side == this.side() ) {
+      console.log("set_even_x")
+      console.log(data)
+      console.log(selected_start)
+
+      if (selected_start.y != selected_end.y) {
+        selected_end.x = selected_start.x;
+      
+        selected_path = [
+          selected_start.x, 
+          selected_start.y, 
+          selected_end.x, 
+          selected_end.y
+        ];
+
+        selected_line.clear()
+        selected_line.poly(selected_path);
+        selected_line.stroke({ width: 4, color: 0xffd900 });
+
+
+        this.selected_change_mapping();
+      }
+    }
+  },
+  set_even_y(data) {
+    if ( data.side == this.side() ) {
+      console.log("set_even_y")
+      console.log(data)
+
+      if (selected_start.x != selected_end.x) {
+        selected_end.y = selected_start.y;
+      
+        selected_path = [
+          selected_start.x, 
+          selected_start.y, 
+          selected_end.x, 
+          selected_end.y
+        ];
+
+        selected_line.clear()
+        selected_line.poly(selected_path);
+        selected_line.stroke({ width: 4, color: 0xffd900 });
+
+
+        this.selected_change_mapping();
+      }
+    } 
+  },
+  set_step(data) {
+    console.log("set step " + data.step)
+    console.log(data.direction)
+    if (data.direction == "h") {
+      step_h = data.step
+    }
+    if (data.direction == "v") {
+      step_v = data.step
+    }
+  },
+  move_stripe(data) {
+    if ( data.side == this.side() ) {
+      console.log("move " + data.direction)
+      console.log(data)
+      if( data.direction == "up") {
+        console.log("step_v " + step_v)
+        selected_start.y = selected_start.y - step_v
+        selected_end.y = selected_end.y - step_v
+      }
+      else if (data.direction == "down") {
+        console.log("step_v " + step_v)
+        selected_start.y = selected_start.y + step_v
+        selected_end.y = selected_end.y + step_v
+      }
+      else if (data.direction == "left") {
+        console.log("step_h " + step_h)
+        selected_start.x = selected_start.x - step_h
+        selected_end.x = selected_end.x - step_h
+      }
+      else if (data.direction == "right") {
+        console.log("step_h " + step_h)
+        selected_start.x = selected_start.x + step_h
+        selected_end.x = selected_end.x + step_h
+      }
+
+      selected_path = [
+          selected_start.x, 
+          selected_start.y, 
+          selected_end.x, 
+          selected_end.y
+        ];
+
+      selected_line.clear()
+      selected_line.poly(selected_path);
+      selected_line.stroke({ width: 4, color: 0xffd900 });
+
+
+      this.selected_change_mapping();
+    }
   },
   selected_change_mapping() {
     //console.log(line.getBounds())

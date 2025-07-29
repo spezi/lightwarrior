@@ -1,6 +1,13 @@
 defmodule Lightwarrior.Hyperion.SC do
   use GenServer
 
+  import Dotenvy
+
+  source!([
+    Path.absname("/.env"),
+    System.get_env()
+  ])
+
   @impl true
   def init(_state) do
     # Open a port and add the UDP socket to the state
@@ -12,6 +19,7 @@ defmodule Lightwarrior.Hyperion.SC do
   def handle_cast({:send, osc_bin_msg}, state) do
     # This could be changed to named address, like 'localhost'
     ip_address = ~c"localhost"
+    #sc_port_num = env!("OSSIA_SCORE_OSC_PORT", :integer!)
     sc_port_num = 9997
     :gen_udp.send(state, ip_address, sc_port_num, osc_bin_msg)
 
