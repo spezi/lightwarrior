@@ -88,7 +88,7 @@ defmodule Lightwarrior.HyperionApi do
         {:noreply, hyperion_state}
     else
       Phoenix.PubSub.broadcast(Lightwarrior.PubSub, "hyperion", %{ "hyperion_ready" => false })
-      {:error, :econnrefused}
+      {:noreply, hyperion_state}
     end
   end
 

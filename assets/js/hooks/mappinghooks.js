@@ -119,6 +119,9 @@ MappingHooks.Stage= {
     // called from backend after render or container size known and after mapping change
     this.handleEvent("instances-data-pixel", data => this.set_instances_data_pixel(data));
 
+    this.handleEvent("set-even-x", data => this.set_even_x(data))
+    this.handleEvent("set-even-y", data => this.set_even_y(data))
+
     this.width = 0;
     this.height = 0;
 
@@ -220,8 +223,10 @@ MappingHooks.Stage= {
         this.instances_data_pixel.forEach(instance => {
           if(this.selected() == instance.id) {
             console.log(instance)
+            console.log(selected)
             
             selected.destroy(true)
+            
 
             selected = new PIXI.Container();
             selected.label = instance.id
@@ -454,6 +459,51 @@ MappingHooks.Stage= {
           //console.log(dragTarget)
           //console.log(app.stage)
       }
+  },
+  set_even_x(data) {
+    console.log("set_even_x")
+    console.log(data)
+    console.log(selected_start)
+
+    if (selected_start.y != selected_end.y) {
+      selected_end.x = selected_start.x;
+    
+      selected_path = [
+        selected_start.x, 
+        selected_start.y, 
+        selected_end.x, 
+        selected_end.y
+      ];
+
+      selected_line.clear()
+      selected_line.poly(selected_path);
+      selected_line.stroke({ width: 4, color: 0xffd900 });
+
+
+      this.selected_change_mapping();
+    }
+  },
+  set_even_y(data) {
+    console.log("set_even_y")
+    console.log(data)
+
+    if (selected_start.x != selected_end.x) {
+      selected_end.y = selected_start.y;
+    
+      selected_path = [
+        selected_start.x, 
+        selected_start.y, 
+        selected_end.x, 
+        selected_end.y
+      ];
+
+      selected_line.clear()
+      selected_line.poly(selected_path);
+      selected_line.stroke({ width: 4, color: 0xffd900 });
+
+
+      this.selected_change_mapping();
+    }
   },
   selected_change_mapping() {
     //console.log(line.getBounds())

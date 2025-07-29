@@ -621,9 +621,18 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
   def handle_event("phx:set-even", %{"value" => direction} = _param, socket) do
     dbg(direction)
-    {:noreply,
-      socket
-    }
+    case direction do
+      "x" ->
+        {:noreply,
+          socket
+          |> push_event("set-even-x", %{direction: direction})
+        }
+      "y" ->
+         {:noreply,
+          socket
+          |> push_event("set-even-y", %{direction: direction})
+        }
+    end
   end
 
   def handle_event("phx:toggle-distance-lock", %{"side" => side, "value" => _value} = _param, socket) do
