@@ -78,8 +78,9 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           dbg("selected: " <> id)
           #dbg(Lightwarrior.State.get(:instances_with_config_output))
           #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
+
           if Lightwarrior.State.get(:instances_with_config_output) != nil do
-            Hyperion.switch_instance(Enum.fetch!,Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id))
+            Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
             socket
           end
 
