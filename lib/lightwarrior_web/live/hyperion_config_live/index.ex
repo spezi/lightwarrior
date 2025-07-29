@@ -39,6 +39,10 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     dbg(Map.keys(Lightwarrior.InputConfigsFileStore.all()))
     dbg(Lightwarrior.State.put(:instances_with_config_input, Lightwarrior.InputConfigsFileStore.get("instances_with_config_input")))
 
+    socket = socket
+              |> assign(:mapping_input, to_form(mapping_changeset_input, id: :mapping_tools_form_input, as: :mapping_tools_form))
+              |> assign(:mapping_output, to_form(mapping_changeset_output, id: :mapping_tools_form_output, as: :mapping_tools_form))
+              |> assign(:mapping_uniform, to_form(mapping_changeset_uniform, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
     {:ok,
      socket
      |> assign(:page_title, "Hyperionconfig")
@@ -46,14 +50,20 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
      |> assign(:selected, nil)
      |> assign(:debug, false)
      |> assign(:autosave, false)
-     |> assign(:mapping_input, to_form(mapping_changeset_input, id: :mapping_tools_form_input, as: :mapping_tools_form))
-     |> assign(:mapping_output, to_form(mapping_changeset_output, id: :mapping_tools_form_output, as: :mapping_tools_form))
-     |> assign(:mapping_uniform, to_form(mapping_changeset_uniform, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
      #|> assign(form: to_form(Map.from_struct(form_data)))
      |> assign(:side, nil)
      |> assign(:mapping_container_size, %{width: 0.0, height: 0.0})
      |> assign(:instances_data_pixel_map, %{"input" => nil, "output" => nil, "uniform" => nil})
      |> assign(:sc_pid, sc_pid)
+     |> push_event("localstorage", %{ input_automap: mapping_tools_form["automap"] })
+     |> push_event("localstorage", %{ input_opacity: mapping_tools_form["opacity"] })
+     |> push_event("localstorage", %{ input_instances_color: mapping_tools_form["instances_color"] })
+     |> push_event("localstorage", %{ output_automap: mapping_tools_form["automap"] })
+     |> push_event("localstorage", %{ output_opacity: mapping_tools_form["opacity"] })
+     |> push_event("localstorage", %{ output_instances_color: mapping_tools_form["instances_color"] })
+     |> push_event("localstorage", %{ uniform_automap: mapping_tools_form["automap"] })
+     |> push_event("localstorage", %{ uniform_opacity: mapping_tools_form["opacity"] })
+     |> push_event("localstorage", %{ uniform_instances_color: mapping_tools_form["instances_color"] })
      #|> stream(:hyperionconfigs, Hyperion.list_hyperionconfigs())
      |> push_event("ready", %{})
     }
