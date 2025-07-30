@@ -150,48 +150,58 @@ defmodule LightwarriorWeb.Layouts do
         hyperion
         </h3>
       </div>
-      <div class="absolute right-0 mr-12 p-2 z-1 btn-accent flex gap-2">
-         <a href="#" phx-click="phx:hyperion-start" >
-          <button class="btn btn-circle shadow-xl">
-            <.icon name="hero-play-solid" class="" />
-          </button>
-        </a>
-        <a href="#" phx-click="phx:hyperion-stop" >
-        <button class="btn btn-circle shadow-xl">
-          <.icon name="hero-stop-solid" class="size-6 shrink-0" />
-        </button>
-        </a>
-      </div>
-      <div class="collapse-content text-sm">start service and get stderr and stdout via pubsub in this container</div>
+        <.service_player service="hyperion" />
+      <div class="collapse-content text-sm">penis</div>
     </div>
+
     <div class="collapse collapse-arrow bg-base-100 border border-base-300">
       <input type="radio" name="my-accordion-2" />
-      <div class="collapse-title font-semibold">midimonster</div>
-      <div class="collapse-content text-sm">Click the "Sign Up" button in the top right corner and follow the registration process.</div>
+      <div class="collapse-title font-semibold"><h3>midimonster</h3></div>
+      <.service_player service="midimonster" />
+      <div class="collapse-content text-sm">penis</div>
     </div>
+
     <div class="collapse collapse-arrow bg-base-100 border border-base-300">
       <input type="radio" name="my-accordion-2" />
-      <div class="collapse-title font-semibold">Ossia Score</div>
-      <div>
-         <a href="#" phx-click="phx:ossia-score-start" >
-          <button class="btn btn-circle shadow-xl">
-            <.icon name="hero-play-solid" class="" />
-          </button>
-        </a>
-        <a href="#" phx-click="phx:ossia-score-stop" >
-        <button class="btn btn-circle shadow-xl">
-          <.icon name="hero-stop-solid" class="size-6 shrink-0" />
-        </button>
-        </a>
-      </div>
-      <div class="collapse-content text-sm">Click on "Forgot Password" on the login page and follow the instructions sent to your email.</div>
+      <div class="collapse-title font-semibold"><h3>Ossia Score</h3></div>
+      <.service_player service="ossia-score" />
+      <div class="collapse-content text-sm">penis</div>
     </div>
+
     <div class="collapse collapse-arrow bg-base-100 border border-base-300">
       <input type="radio" name="my-accordion-2" />
-      <div class="collapse-title font-semibold">shm2hyperion</div>
-      <div class="collapse-content text-sm">Go to "My Account" settings and select "Edit Profile" to make changes.</div>
+      <div class="collapse-title font-semibold"><h3>shm2hyperion</h3></div>
+      <.service_player service="shm2hyperion" />
+      <div class="collapse-content text-sm">penis</div>
     </div>
+
     """
+  end
+
+  def service_player(assigns) do
+      ~H"""
+        <div class="absolute right-0 mr-12 p-2 z-1 btn-accent flex gap-2">
+
+          <a href="#" phx-click={"phx:#{assigns.service}-start"} >
+            <button class="btn btn-circle shadow-xl">
+              <.icon name="hero-play-solid" class="" />
+            </button>
+          </a>
+
+          <a href="#" phx-click={"phx:#{assigns.service}-stop"} >
+          <button class="btn btn-circle shadow-xl">
+            <.icon name="hero-stop-solid" class="size-6 shrink-0" />
+          </button>
+          </a>
+
+          <a :if={assigns.service == "hyperion" } href="http://localhost:8090/#dashboard" target="_blanc">
+          <button class="btn btn-circle shadow-xl">
+            <.icon name="hero-link-solid" class="size-6 shrink-0" />
+          </button>
+          </a>
+
+        </div>
+      """
   end
 
   @doc """

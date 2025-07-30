@@ -201,34 +201,68 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
   end
 
   def handle_event("phx:hyperion-start", %{} = _params, socket) do
-    dbg("start hyperion")
-    dbg(Lightwarrior.Services.start_process("/Applications/Hyperion.app/Contents/MacOS/Hyperion"))
-    dbg(Lightwarrior.Services.get_state())
+    IO.inspect("start hyperion")
+    IO.inspect(Lightwarrior.Services.start_process("/usr/bin/hyperiond"))
+    IO.inspect(Lightwarrior.Services.get_state())
     {:noreply,
       socket
     }
   end
 
   def handle_event("phx:hyperion-stop", %{} = _params, socket) do
-    dbg("stop hyperion")
-    dbg(Lightwarrior.Services.stop_process())
+    IO.inspect("stop hyperion")
+    IO.inspect(Lightwarrior.Services.stop_process())
+    {:noreply,
+      socket
+    }
+  end
+
+  def handle_event("phx:midimonster-start", %{} = _params, socket) do
+    IO.inspect("start hyperion")
+    IO.inspect(Lightwarrior.Services.start_process("/usr/bin/midimonster"))
+    IO.inspect(Lightwarrior.Services.get_state())
+    {:noreply,
+      socket
+    }
+  end
+
+  def handle_event("phx:midimonster-stop", %{} = _params, socket) do
+    IO.inspect("stop hyperion")
+    IO.inspect(Lightwarrior.Services.stop_process())
     {:noreply,
       socket
     }
   end
 
   def handle_event("phx:ossia-score-start", %{} = _params, socket) do
-    dbg("start hyperion")
-    dbg(Lightwarrior.Services.start_process("/Applications/ossia score.app/Contents/MacOS//ossia\ score"))
-    dbg(Lightwarrior.Services.get_state())
+    IO.inspect("start hyperion")
+    IO.inspect(Lightwarrior.Services.start_process("/home/lichtmaster/apps/ossia.score-3.5.2-linux-x86_64.AppImage"))
+    IO.inspect(Lightwarrior.Services.get_state())
     {:noreply,
       socket
     }
   end
 
   def handle_event("phx:ossia-score-stop", %{} = _params, socket) do
-    dbg("stop hyperion")
-    dbg(Lightwarrior.Services.stop_process())
+    IO.inspect("stop hyperion")
+    IO.inspect(Lightwarrior.Services.stop_process())
+    {:noreply,
+      socket
+    }
+  end
+
+  def handle_event("phx:shm2hyperion-start", %{} = _params, socket) do
+    IO.inspect("start hyperion")
+    IO.inspect(Lightwarrior.Services.start_process("/home/lichtmaster/git/lightwarrior_phx18/shm2hyperion"))
+    IO.inspect(Lightwarrior.Services.get_state())
+    {:noreply,
+      socket
+    }
+  end
+
+  def handle_event("phx:shm2hyperion-stop", %{} = _params, socket) do
+    IO.inspect("stop hyperion")
+    IO.inspect(Lightwarrior.Services.stop_process())
     {:noreply,
       socket
     }
