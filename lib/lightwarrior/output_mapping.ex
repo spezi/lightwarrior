@@ -14,7 +14,7 @@ defmodule Lightwarrior.OutputMapping do
                     new_leds_list = build_led_list(get_led_size(first_led), count)
                     #dbg(length(Lightwarrior.State.get(:instances_with_config_output)))
                     update_leds(new_leds_list)
-                    #Lightwarrior.State.get(:instances_with_config_output)
+                    #Lightwarrior.State.set(:instances_with_config_output, new_leds_list)
                   end
               end
         end
@@ -46,14 +46,14 @@ defmodule Lightwarrior.OutputMapping do
             %{
               "hmin" => left,
               "hmax" => right,
-              "vmin" => top,
-              "vmax" => top + v_size
+              "vmin" => bottom,
+              "vmax" => bottom + v_size
             },
             %{
               "hmin" => left,
               "hmax" => right,
-              "vmin" => bottom,
-              "vmax" => bottom + v_size
+              "vmin" => top,
+              "vmax" => top + v_size
             }
           ]
         end
@@ -69,7 +69,7 @@ defmodule Lightwarrior.OutputMapping do
     end
 
     def update_leds(new_leds_list) do
-      Enum.zip(Lightwarrior.State.get(:instances_with_config_output), new_leds_list)
+      instances_with_config_output_new = Enum.zip(Lightwarrior.State.get(:instances_with_config_output), new_leds_list)
       |> Enum.map(fn {config_map, new_leds} ->
         final_leds =
           case new_leds do
@@ -78,7 +78,14 @@ defmodule Lightwarrior.OutputMapping do
           end
 
         put_in(config_map, ["settings", "leds"], final_leds)
+
       end)
+      #dbg(instances_with_config_output_new)
+      Lightwarrior.State.put(:instances_with_config_output, instances_with_config_output_new)
+      dbg(get_in(Enum.fetch!(instances_with_config_output_new, 0), ["settings", "leds"]))
+      dbg("penis")
+      instances_with_config_output_new
     end
 
+# modul end
   end

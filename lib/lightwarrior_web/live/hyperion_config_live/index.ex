@@ -43,6 +43,11 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
               |> assign(:mapping_input, to_form(mapping_changeset_input, id: :mapping_tools_form_input, as: :mapping_tools_form))
               |> assign(:mapping_output, to_form(mapping_changeset_output, id: :mapping_tools_form_output, as: :mapping_tools_form))
               |> assign(:mapping_uniform, to_form(mapping_changeset_uniform, id: :mapping_tools_form_uniform, as: :mapping_tools_form))
+
+    timestamp = System.system_time(:millisecond)
+    #output_background = "/images/output.jpg" <> "?t=#{timestamp}"
+    output_background = "/images/output.jpg"
+
     {:ok,
      socket
      |> assign(:page_title, "Hyperionconfig")
@@ -55,6 +60,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
      |> assign(:mapping_container_size, %{width: 0.0, height: 0.0})
      |> assign(:instances_data_pixel_map, %{"input" => nil, "output" => nil, "uniform" => nil})
      |> assign(:sc_pid, sc_pid)
+     |> assign(:output_background, output_background)
      |> push_event("localstorage", %{ input_automap: socket.assigns.mapping_input.params["automap"] })
      |> push_event("localstorage", %{ input_opacity: socket.assigns.mapping_input.params["opacity"] })
      |> push_event("localstorage", %{ input_instances_color: socket.assigns.mapping_input.params["instances_color"] })
@@ -135,7 +141,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     dbg(target)
     dbg(mapping_tools_form)
 
-    # to reset stage on color change
+    # to reset stage on color change and automap
     socket = case Enum.at(target,1) do
       "instances_color" -> socket |> push_event("instances_color", %{})
       "automap" ->
@@ -480,6 +486,19 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
       |> push_event("localstorage", %{ automap: bool_value})
       #|> JS.dispatch("click", to: ".nav")
       #|> JS.dispatch("phx:localstorage_save", data: %{ debug: !socket.assigns.debug })
+    }
+  end
+
+
+
+  def handle_event("phx:refresh-output-image", _params, socket) do
+    IO.puts("refresh output image")
+
+    Lightwarrior.GStreamer.take_snapshot()
+
+    {:noreply,
+      socket
+      |> assign(:output_background, "/images/output.jpg?v=" <> Integer.to_string(System.system_time(:seconds)))
     }
   end
 

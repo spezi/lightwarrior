@@ -80,6 +80,12 @@ defmodule LightwarriorWeb.HyperionComponents do
           </button>
         </div>
 
+        <div class="p-4">
+        <button :if={@side == "output"} title="refresh_background" type="button" phx-click="phx:refresh-output-image" class="btn btn-sm btn-secondary btn-square">
+            <.icon name="hero-arrow-path-mini" class="size-5 opacity-40 group-hover:opacity-70" />
+        </button>
+        </div>
+
         <.input type="toggle" label="automap" field={@mapping_changeset[:automap]} disabled={@mapping_changeset[:side].value == "input" && "disabled"}/>
 
         <div class="w-24">

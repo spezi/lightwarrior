@@ -17,7 +17,10 @@ git config --global credential.helper cache
 git config --global credential.helper 'cache --timeout=3600'
 
 ## take a picture
-gst-launch-1.0 -e --gst-plugin-path=/usr/local/lib/gstreamer-1.0/  shmdatasrc socket-path=/tmp/score_shm_video !   decodebin !   videorate ! video/x-raw,framerate=1/1 !   imagefreeze num-buffers=1 !   videoconvert !   glimagesink
+gst-launch-1.0 -e --gst-plugin-path=/usr/local/lib/gstreamer-1.0/  shmdatasrc socket-path=/tmp/lightwarrior_score !   decodebin !   videorate ! video/x-raw,framerate=1/1 !   imagefreeze num-buffers=1 !   jpegenc ! filesink location=/tmp/test.jpg
+
+### output picture grab
+gst-launch-1.0 -e --gst-plugin-path=/usr/local/lib/gstreamer-1.0/  shmdatasrc socket-path=/tmp/lightwarrior_score !   decodebin !   videorate ! video/x-raw,framerate=1/1 !   imagefreeze num-buffers=1 ! videoconvert !  jpegenc ! filesink location=/home/lichtmaster/git/lightwarrior_phx18/priv/static/images/output.jpg
 
 ## preview output
 gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/lightwarrior_score ! decodebin ! videoconvert ! ximagesink
