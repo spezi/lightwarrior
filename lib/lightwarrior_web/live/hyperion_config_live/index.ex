@@ -350,6 +350,16 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     }
   end
 
+
+  def handle_event("phx:stripe-opacity", %{"stripes_opacity" => stripe_opacity} = _params, socket) do
+    #dbg(params)
+    IO.puts("stripe-opacity")
+    {:noreply,
+      socket
+      |> push_event("stripe-opacity", %{ stripes_opacity: stripe_opacity })
+    }
+  end
+
   def handle_event("phx:init-input_opacity", params, socket) do
     #dbg(params)
     params_concat = Map.merge(socket.assigns.mapping_input.source.params, %{"opacity" => params})

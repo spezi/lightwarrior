@@ -271,7 +271,7 @@ void main() {
 void main() {
   vec2 uv = isf_FragNormCoord;
   float bandWidth = 5.0 / float(RENDERSIZE.x);
-  float centerSpacing = 0.4 / 30.0;
+  float centerSpacing = 0.4 / #{length(Lightwarrior.State.get(:instances_with_config_output)) / 1};
   float halfWidth = bandWidth / 2.0;
   float max_height = 0.5;
 

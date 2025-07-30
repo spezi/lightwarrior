@@ -98,6 +98,9 @@ defmodule LightwarriorWeb.HyperionComponents do
         </div>
 
         <!-- opacity -->
+        <.input type="range" label="Stripes opacity" phx-change="phx:stripe-opacity" field={@mapping_changeset[:stripes_opacity]} />
+
+        <!-- opacity -->
         <.input type="range" label="Bg opacity" field={@mapping_changeset[:opacity]} />
     </div>
     </.form>
