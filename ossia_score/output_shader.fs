@@ -150,7 +150,67 @@
 
   { "NAME": "start29", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
   { "NAME": "end29", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
-  { "NAME": "height29", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }
+  { "NAME": "height29", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start30", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end30", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height30", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start31", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end31", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height31", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start32", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end32", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height32", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start33", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end33", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height33", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start34", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end34", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height34", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start35", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end35", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height35", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start36", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end36", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height36", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start37", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end37", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height37", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start38", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end38", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height38", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start39", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end39", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height39", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start40", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end40", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height40", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start41", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end41", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height41", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }
 
 ]
 }*/
@@ -164,7 +224,7 @@ float max_height = 0.5;
 
 vec4 color = vec4(0.0);
 
-for (int i = 0; i < 31; ++i) {
+for (int i = 0; i < 43; ++i) {
 float cx = (float(i) + 0.5) * centerSpacing;
 
 float left = cx - halfWidth;
@@ -264,6 +324,42 @@ vec2 end = vec2(1.0);
 
     
     else if (i == 29) { start = start29; end = end29; h = height29; }
+
+    
+    else if (i == 30) { start = start30; end = end30; h = height30; }
+
+    
+    else if (i == 31) { start = start31; end = end31; h = height31; }
+
+    
+    else if (i == 32) { start = start32; end = end32; h = height32; }
+
+    
+    else if (i == 33) { start = start33; end = end33; h = height33; }
+
+    
+    else if (i == 34) { start = start34; end = end34; h = height34; }
+
+    
+    else if (i == 35) { start = start35; end = end35; h = height35; }
+
+    
+    else if (i == 36) { start = start36; end = end36; h = height36; }
+
+    
+    else if (i == 37) { start = start37; end = end37; h = height37; }
+
+    
+    else if (i == 38) { start = start38; end = end38; h = height38; }
+
+    
+    else if (i == 39) { start = start39; end = end39; h = height39; }
+
+    
+    else if (i == 40) { start = start40; end = end40; h = height40; }
+
+    
+    else if (i == 41) { start = start41; end = end41; h = height41; }
 
   float top = 0.5 - h * max_height / 2.0;
   float bottom = 0.5 + h * max_height / 2.0;
