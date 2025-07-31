@@ -584,7 +584,7 @@ MappingHooks.Stage= {
   update_selected_length(){
     //this.update_instance_length()
     initialDistance = Math.sqrt((selected_end.x - selected_start.x) ** 2 + (selected_end.y - selected_start.y) ** 2);
-    //liveview.pushEvent("phx:initial-distance", { initialDistance });
+    liveview.pushEvent("phx:initial-distance", { initialDistance });
   },
   onSelectInstance(event) {
       liveview.pushEvent("phx:select_instance", {"value": this.label});

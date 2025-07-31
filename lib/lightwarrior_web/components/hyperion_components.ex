@@ -25,7 +25,9 @@ defmodule LightwarriorWeb.HyperionComponents do
         </div>
         <!-- stripe length -->
         <div class="w-26">
-            <.input type="text" field={@mapping_changeset[:instance_length]}  placeholder="Stripe length" />
+            <!--<.input type="text" field={@mapping_changeset[:instance_length]}  placeholder="Stripe length" />-->
+            <.input type="text" name="initialDistance" value={@initialDistance} placeholder="Stripe length" />
+
         </div>
         <div>
           <div :if={Lightwarrior.State.get(:instances)} class="flex flex-row w-fit p-1">

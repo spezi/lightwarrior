@@ -61,6 +61,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
      |> assign(:instances_data_pixel_map, %{"input" => nil, "output" => nil, "uniform" => nil})
      |> assign(:sc_pid, sc_pid)
      |> assign(:output_background, output_background)
+     |> assign(:initialDistance, 0)
      |> push_event("localstorage", %{ input_automap: socket.assigns.mapping_input.params["automap"] })
      |> push_event("localstorage", %{ input_opacity: socket.assigns.mapping_input.params["opacity"] })
      |> push_event("localstorage", %{ input_instances_color: socket.assigns.mapping_input.params["instances_color"] })
@@ -707,6 +708,18 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
         }
     end
   end
+
+
+  def handle_event("phx:initial-distance", %{"initialDistance" => initialDistance} = _param, socket) do
+    dbg(Lightwarrior.State.put(:initialdistance, initialDistance))
+    dbg(initialDistance)
+    {:noreply,
+      socket
+      |> assign(:initialDistance, initialDistance)
+    }
+  end
+
+  %{"initialDistance" => 293.7494152641023}
 
   def handle_event("phx:toggle-distance-lock", %{"side" => side, "value" => _value} = _param, socket) do
     # params_concat because of failing db
