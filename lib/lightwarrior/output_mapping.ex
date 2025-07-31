@@ -7,7 +7,7 @@ defmodule Lightwarrior.OutputMapping do
               #dbg(first_instance)
               if first_instance do
                   first_instance_leds = get_in(first_instance, ["settings", "leds"])
-                  if length(first_instance_leds) > 0 do
+                  if first_instance_leds != nil && length(first_instance_leds) > 0 do
                     first_led = Enum.fetch!(first_instance_leds, 0)
                     #first_led = Enum.fetch!(get_in(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), ["config", "info", "leds"]), 0)
                     new_leds_list = build_led_list(get_led_size(first_led))

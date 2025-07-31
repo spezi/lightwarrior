@@ -37,7 +37,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     # TODO cleanup lightwarrior.ex not needed functions
     dbg(Map.keys(Lightwarrior.State.all()))
     dbg(Map.keys(Lightwarrior.InputConfigsFileStore.all()))
-    dbg(Lightwarrior.State.put(:instances_with_config_input, Lightwarrior.InputConfigsFileStore.get("instances_with_config_input")))
+    #dbg(Lightwarrior.State.put(:instances_with_config_input, Lightwarrior.InputConfigsFileStore.get("instances_with_config_input")))
 
     socket = socket
               |> assign(:mapping_input, to_form(mapping_changeset_input, id: :mapping_tools_form_input, as: :mapping_tools_form))
@@ -110,8 +110,39 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
       _ -> socket
     end
 
-    # check for data and copy from output mapping if none
 
+    #dbg(Lightwarrior.State.get(:instances_with_config_output))
+    #dbg(Lightwarrior.State.get(:instances_in_input_file))
+    #dbg(Lightwarrior.State.get(:instances_with_config_input))
+
+    #new_input_list = []
+
+
+    # to avoid input and output differences
+    new_input_list = Enum.map_every(Lightwarrior.State.get(:instances_with_config_output), 1, fn instance ->
+        #IO.puts("#{index}")
+        #dbg(Map.get(value, "name"))
+        output_name = Map.get(instance, "name")
+        current_input = Enum.find(Lightwarrior.State.get(:instances_in_input_file), fn input_instance ->
+          if input_instance["name"] == output_name do
+            input_instance
+          else
+            nil
+          end
+        end)
+
+        if current_input != nil do
+          current_input
+        else
+          instance
+        end
+    end)
+
+    Lightwarrior.State.put(:instances_with_config_input, new_input_list)
+
+
+
+    # check for data and copy from output mapping if none
     socket = if Lightwarrior.State.get(:instances_with_config_output) != nil && length(Lightwarrior.State.get(:instances_with_config_output)) > 0 do
         #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0))
         #dbg(Map.get(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), 0), :config) )
@@ -622,6 +653,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
                 Lightwarrior.update_instance_ossia(get_in(instance_data_config_new, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
 
                 dbg(Lightwarrior.State.put(:instances_with_config_input, instances_data_config_new))
+
                 if socket.assigns.autosave do
                   case Lightwarrior.save_input(socket) do
                       %{
@@ -790,18 +822,13 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     instances_data_with_config = case socket.assigns.side do
       "input" ->
-          automap = socket.assigns.mapping_input.params
-          |> Map.get("automap")
 
-          if automap != nil do
-            case automap do
-              "true" ->
-                  Lightwarrior.OutputMapping.automap_instances_pixi(mapping_container_size)
-              "false" -> Lightwarrior.State.get(:instances_with_config_input)
-            end
-          #else
-          #  Lightwarrior.State.get(:instances_with_config_output)
+          if Lightwarrior.State.get(:instances_with_config_input) != nil do
+            Lightwarrior.State.get(:instances_with_config_input)
+          else
+            []
           end
+
       "output" ->
         automap = socket.assigns.mapping_output.params
         |> Map.get("automap")

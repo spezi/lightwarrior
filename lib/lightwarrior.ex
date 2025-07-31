@@ -44,9 +44,9 @@ defmodule Lightwarrior do
     #dbg(selected)
     #dbg(bounds)
     selected_instance_data_pixel = Enum.fetch!(leds_pixel, selected)
-    dbg(points)
-    dbg(num_leds)
-    if num_leds do
+    #dbg(points)
+    #dbg(num_leds)
+    if num_leds && num_leds > 1 do
         List.replace_at(leds_pixel,
         selected,
         selected_instance_data_pixel
@@ -69,6 +69,9 @@ defmodule Lightwarrior do
     #bounds.maxX
     #bounds.minY
     #bounds.maxY
+
+    #dbg(num_leds)
+    #dbg(points)
 
     mapping_container_size = get_distance(points)/num_leds
 

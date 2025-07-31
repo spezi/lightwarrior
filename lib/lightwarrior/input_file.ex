@@ -46,7 +46,14 @@ defmodule Lightwarrior.InputConfigsFileStore do
   def init(_state) do
     instances = load_from_file()
     #instances = Enum.map_every(instances, 1, fn instance-> Helper.string_keys_to_atom_keys(instance) end)
-    Lightwarrior.State.put(:instances_with_config_input, instances)
+    #dbg(length(Map.get(instances, "instances_with_config_input")))
+    #dbg(Map.keys(instances))
+    #dbg(Lightwarrior.State.get(:instances_with_config_output))
+    Lightwarrior.State.put(:instances_in_input_file, Map.get(instances, "instances_with_config_input"))
+    #Lightwarrior.State.put(:instances_with_config_input, Map.get(instances, "instances_with_config_input"))
+
+
+
     {:ok, instances}
   end
 

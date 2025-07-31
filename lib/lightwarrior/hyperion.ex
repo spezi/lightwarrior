@@ -332,8 +332,8 @@ defmodule Lightwarrior.Hyperion do
   def fetch_num_leds(index) do
     instances_num_leds = Lightwarrior.State.get(:instances_num_leds)
     if instances_num_leds != nil do
-      dbg(instances_num_leds)
-      dbg(index)
+      #dbg(instances_num_leds)
+      #dbg(index)
       {:ok, %{num_leds: num_leds}} = Enum.fetch(instances_num_leds, index)
        num_leds
     else
