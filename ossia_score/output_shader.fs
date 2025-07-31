@@ -235,17 +235,7 @@
 
   { "NAME": "start46", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
   { "NAME": "end46", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
-  { "NAME": "height46", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
-
-
-  { "NAME": "start47", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
-  { "NAME": "end47", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
-  { "NAME": "height47", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
-
-
-  { "NAME": "start48", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
-  { "NAME": "end48", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
-  { "NAME": "height48", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }
+  { "NAME": "height46", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }
 
 ]
 }*/
@@ -253,13 +243,13 @@
 void main() {
 vec2 uv = isf_FragNormCoord;
 float bandWidth = 5.0 / float(RENDERSIZE.x);
-float centerSpacing = 0.4 / 49.0;
+float centerSpacing = 0.4 / 47.0;
 float halfWidth = bandWidth / 2.0;
 float max_height = 0.5;
 
 vec4 color = vec4(0.0);
 
-for (int i = 0; i < 50; ++i) {
+for (int i = 0; i < 48; ++i) {
 float cx = (float(i) + 0.5) * centerSpacing;
 
 float left = cx - halfWidth;
@@ -410,12 +400,6 @@ vec2 end = vec2(1.0);
 
     
     else if (i == 46) { start = start46; end = end46; h = height46; }
-
-    
-    else if (i == 47) { start = start47; end = end47; h = height47; }
-
-    
-    else if (i == 48) { start = start48; end = end48; h = height48; }
 
   float top = 0.5 - h * max_height / 2.0;
   float bottom = 0.5 + h * max_height / 2.0;

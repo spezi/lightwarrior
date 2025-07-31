@@ -43,7 +43,7 @@
         "ObjectName": "Inlet",
         "Value": {
           "Vec2f": [
-            0.25,
+            0.22027601301670074,
             0.0
           ]
         },
@@ -4555,8 +4555,8 @@
         "ObjectName": "Inlet",
         "Value": {
           "Vec2f": [
-            0.25,
-            0.0
+            1.0,
+            0.3906581699848175
           ]
         },
         "id": 145,
@@ -4593,7 +4593,7 @@
         "Value": {
           "Vec2f": [
             0.75,
-            1.0
+            0.3418259024620056
           ]
         },
         "id": 146,
@@ -4640,8 +4640,8 @@
       }
     ],
     "Pos": [
-      472.76602920117807,
-      -9.861819392862458
+      450.76602920117807,
+      31.138180607137546
     ],
     "Size": [
       125.125,
@@ -7832,7 +7832,7 @@
         },
         "ObjectName": "Inlet",
         "Value": {
-          "Float": 0.0
+          "Float": 1.0
         },
         "id": 8,
         "uuid": "af2b4fc3-aecb-4c15-a5aa-1c573a239925"
@@ -7892,7 +7892,7 @@
         },
         "ObjectName": "Inlet",
         "Value": {
-          "Float": 1.0
+          "Float": 0.0
         },
         "id": 11,
         "uuid": "af2b4fc3-aecb-4c15-a5aa-1c573a239925"
@@ -7912,7 +7912,7 @@
         },
         "ObjectName": "Inlet",
         "Value": {
-          "Float": 1.0
+          "Float": 0.0
         },
         "id": 12,
         "uuid": "af2b4fc3-aecb-4c15-a5aa-1c573a239925"
@@ -7972,7 +7972,7 @@
         },
         "ObjectName": "Inlet",
         "Value": {
-          "Float": 1.0
+          "Float": 0.0
         },
         "id": 15,
         "uuid": "af2b4fc3-aecb-4c15-a5aa-1c573a239925"
@@ -9369,7 +9369,6 @@
     "ObjectName": "gfxProcess",
     "Outlets": [
       {
-        "Address": "Window:/",
         "Hidden": false,
         "ObjectName": "Outlet",
         "id": 1,
@@ -10670,6 +10669,82 @@
     "StartOffset": 0,
     "Vertex": "void main() {\n\tisf_vertShaderInit();\n}",
     "id": 47,
+    "uuid": "74ca45ff-92c9-44a0-8f1a-754dea05ee1b"
+  },
+  {
+    "Duration": 10584000000,
+    "Fragment": "/*\n{\n  \"INPUTS\" : [\n    {\n      \"TYPE\" : \"image\",\n      \"NAME\" : \"startImage\"\n    },\n    {\n      \"NAME\" : \"endImage\",\n      \"TYPE\" : \"image\"\n    },\n    {\n      \"MAX\" : 1,\n      \"TYPE\" : \"float\",\n      \"MIN\" : 0,\n      \"NAME\" : \"progress\",\n      \"DEFAULT\" : 0\n    }\n  ],\n  \"CREDIT\": \"Automatically converted from https://www.github.com/gl-transitions/gl-transitions/tree/master/fade.glsl\",\n  \"DESCRIPTION\": \"\",\n  \"CATEGORIES\" : [\n    \"Dissolve\"\n  ],\n  \"ISFVSN\" : \"2\"\n}\n*/\n\n\n\nvec4 getFromColor(vec2 inUV)\t{\n\treturn IMG_NORM_PIXEL(startImage, inUV);\n}\nvec4 getToColor(vec2 inUV)\t{\n\treturn IMG_NORM_PIXEL(endImage, inUV);\n}\n\n\n\n// author: gre\n// license: MIT\n\nvec4 transition (vec2 uv) {\n  return mix(\n    getFromColor(uv),\n    getToColor(uv),\n    progress\n  );\n}\n\n\n\nvoid main()\t{\n\tgl_FragColor = transition(isf_FragNormCoord.xy);\n}",
+    "Height": 300.0,
+    "Inlets": [
+      {
+        "AddressMode": 1,
+        "Filter": 2,
+        "Format": 0,
+        "Hidden": false,
+        "ObjectName": "Inlet",
+        "id": 0,
+        "uuid": "5ac86198-2d03-4830-9e41-a6d529922d29"
+      },
+      {
+        "AddressMode": 1,
+        "Filter": 2,
+        "Format": 0,
+        "Hidden": false,
+        "ObjectName": "Inlet",
+        "id": 1,
+        "uuid": "5ac86198-2d03-4830-9e41-a6d529922d29"
+      },
+      {
+        "Custom": "progress",
+        "Domain": {
+          "Float": {
+            "Max": 1.0,
+            "Min": 0.0
+          }
+        },
+        "Exposed": "progress",
+        "Hidden": true,
+        "Init": {
+          "Float": 0.0
+        },
+        "ObjectName": "Inlet",
+        "Value": {
+          "Float": 1.0
+        },
+        "id": 2,
+        "uuid": "af2b4fc3-aecb-4c15-a5aa-1c573a239925"
+      }
+    ],
+    "LoopDuration": 10584000000,
+    "Loops": false,
+    "Metadata": {
+      "Color": "Transparent1",
+      "Comment": "",
+      "Label": "",
+      "ScriptingName": "Fade.1",
+      "Touched": true
+    },
+    "ObjectName": "gfxProcess",
+    "Outlets": [
+      {
+        "Address": "Window:/",
+        "Hidden": false,
+        "ObjectName": "Outlet",
+        "id": 1,
+        "uuid": "f1c71046-b754-49a5-8e66-d01374773dfc"
+      }
+    ],
+    "Pos": [
+      707.6825105307613,
+      -18.47228966993339
+    ],
+    "Size": [
+      75.0,
+      22.0
+    ],
+    "StartOffset": 0,
+    "Vertex": "",
+    "id": 48,
     "uuid": "74ca45ff-92c9-44a0-8f1a-754dea05ee1b"
   }
 ]

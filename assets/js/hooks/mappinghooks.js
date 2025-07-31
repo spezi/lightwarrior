@@ -512,8 +512,8 @@ MappingHooks.Stage= {
     } 
   },
   set_step(data) {
-    console.log("set step " + data.step)
-    console.log(data.direction)
+    //console.log("set step " + data.step)
+    //console.log(data.direction)
     if (data.direction == "h") {
       step_h = data.step
     }

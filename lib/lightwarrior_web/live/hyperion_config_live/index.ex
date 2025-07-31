@@ -87,8 +87,6 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
 
           dbg(socket.assigns.side)
-          dbg(length(Lightwarrior.State.get(:instances_with_config_input)))
-          dbg(length(Lightwarrior.State.get(:instances_with_config_output)))
           dbg(id)
           cond do
             socket.assigns.side == "input" ->

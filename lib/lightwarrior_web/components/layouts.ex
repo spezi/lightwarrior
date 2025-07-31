@@ -53,7 +53,7 @@ defmodule LightwarriorWeb.Layouts do
     ~H"""
       <!-- name of each tab group should be unique -->
       <div id="left_top_menue" class="tabs tabs-lift">
-          <input :if={ @side != "uniform" } type="radio" name="left_top_menue_tabs" class="tab" aria-label={"stripe instances (#{length(Lightwarrior.State.get(:instances_with_config_output))})"} checked="checked" />
+          <input :if={ @side != "uniform" } type="radio" name="left_top_menue_tabs" class="tab" aria-label={"stripe instances (#{Lightwarrior.State.get(:instances_with_config_output) != nil && length(Lightwarrior.State.get(:instances_with_config_output))})"} checked="checked" />
           <div class="tab-content bg-base-100 border-base-300 p-2">
               <div :if={Lightwarrior.State.get(:instances) != nil } class="flex flex-wrap">
                 <div :for={{instance, index} <- Enum.with_index(Lightwarrior.State.get(:instances))}>
