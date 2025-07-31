@@ -166,6 +166,13 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
       "output" ->
           instances_data_with_config = if mapping_tools_form["automap"] == "true" do
             Lightwarrior.OutputMapping.automap_instances_pixi(socket.assigns.mapping_container_size)
+            # save any stripe
+            Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
+              #dbg(get_in(instance, ["settings", "leds"]))
+              #dbg(instance)
+              selected = Map.get(instance, "id")
+              Lightwarrior.save_output(selected)
+            end)
           else
             Lightwarrior.State.get(:instances_with_config_output)
           end

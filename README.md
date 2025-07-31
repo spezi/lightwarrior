@@ -68,3 +68,8 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
     * |> push_event("localstorage", %{ input_opacity: mapping_tools_form["opacity"] })
     * catch event in js hooks and push data to localstorage 
 
+#### stripes update ->
+
+
+"global config" -> "Build Ossia Score File" (build processes json and outputshader.fs) -> manual copy shader code to score ->
+"Patch score Addresses" -> set osc addresses and generate lightwarrior_patched.score 

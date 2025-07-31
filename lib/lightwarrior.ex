@@ -59,11 +59,11 @@ defmodule Lightwarrior do
 
   end
 
-  defp get_distance(points) do
+  def get_distance(points) do
     Math.sqrt(Math.pow((points.end.x - points.start.x), 2) + Math.pow((points.end.y - points.start.y), 2));
   end
 
-  defp interpolate_coords(points, num_leds) do
+  def interpolate_coords(points, num_leds) do
     dbg(num_leds)
     #bounds.minX
     #bounds.maxX
