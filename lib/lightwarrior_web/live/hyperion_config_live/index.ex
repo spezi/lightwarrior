@@ -767,18 +767,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
     instances_data_with_config = case socket.assigns.side do
       "input" ->
-          automap = socket.assigns.mapping_input.params
-          |> Map.get("automap")
-
-          if automap != nil do
-            case automap do
-              "true" ->
-                  Lightwarrior.OutputMapping.automap_instances_pixi(mapping_container_size)
-              "false" -> Lightwarrior.State.get(:instances_with_config_input)
-            end
-          else
-            Lightwarrior.State.get(:instances_with_config_output)
-          end
+          dbg(Lightwarrior.State.get(:instances_with_config_input))
       "output" ->
         automap = socket.assigns.mapping_output.params
         |> Map.get("automap")
