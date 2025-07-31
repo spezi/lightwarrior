@@ -620,6 +620,9 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
           socket = case socket.assigns.side do
             "input" ->
+
+                Lightwarrior.update_instance_ossia(get_in(instance_data_config_new, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
+
                 dbg(Lightwarrior.State.put(:instances_with_config_input, instances_data_config_new))
                 if socket.assigns.autosave do
                   case Lightwarrior.save_input(socket) do

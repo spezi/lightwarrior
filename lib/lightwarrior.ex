@@ -97,7 +97,8 @@ defmodule Lightwarrior do
         Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
           #dbg(get_in(instance, ["settings", "leds"]))
           if get_in(instance, ["settings", "leds"]) != nil and socket.assigns.selected != nil do
-              Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
+              dbg(get_in(instance, ["name"]))
+              #Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
           end
         end)
 
@@ -247,7 +248,7 @@ defmodule Lightwarrior do
         # for ossia score Address learning
         Enum.each(Lightwarrior.State.get(:instances_with_config_output), fn instance ->
           if socket.assigns.selected do
-            dbg(Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid))
+            #dbg(Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid))
           end
         end)
 
