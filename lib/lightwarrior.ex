@@ -64,7 +64,7 @@ defmodule Lightwarrior do
   end
 
   def interpolate_coords(points, num_leds) do
-    dbg(num_leds)
+    #dbg(num_leds)
     #bounds.minX
     #bounds.maxX
     #bounds.minY
@@ -96,7 +96,9 @@ defmodule Lightwarrior do
         # update ossia via osc messages
         Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
           #dbg(get_in(instance, ["settings", "leds"]))
-          Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
+          if get_in(instance, ["settings", "leds"]) != nil and socket.assigns.selected != nil do
+              Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
+          end
         end)
 
         #{ :ok, selected_config } = Enum.fetch(Lightwarrior.State.get(:instances_with_config_input), socket.assigns.selected)
@@ -243,8 +245,10 @@ defmodule Lightwarrior do
         end)
 
         # for ossia score Address learning
-        Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
-          dbg(Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid))
+        Enum.each(Lightwarrior.State.get(:instances_with_config_output), fn instance ->
+          if socket.assigns.selected do
+            dbg(Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid))
+          end
         end)
 
 

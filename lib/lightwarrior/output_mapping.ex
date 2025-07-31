@@ -51,10 +51,10 @@ defmodule Lightwarrior.OutputMapping do
           instance = Enum.fetch!(instances, i)
 
           if instance do
-            dbg(get_in(instance, ["settings", "device", "hardwareLedCount"]))
+            #dbg(get_in(instance, ["settings", "device", "hardwareLedCount"]))
             num_leds = get_in(instance, ["settings", "device", "hardwareLedCount"])
             points = %{ start: %{x: left, y: bottom}, end: %{x: left, y: top} }
-            dbg(get_in(instance, ["name"]))
+            #dbg(get_in(instance, ["name"]))
             new_leds = Lightwarrior.interpolate_coords(points, num_leds)
 
             # output to automap_instances_pixi
