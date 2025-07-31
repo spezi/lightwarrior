@@ -119,27 +119,28 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
 
     # to avoid input and output differences
-    new_input_list = Enum.map_every(Lightwarrior.State.get(:instances_with_config_output), 1, fn instance ->
-        #IO.puts("#{index}")
-        #dbg(Map.get(value, "name"))
-        output_name = Map.get(instance, "name")
-        current_input = Enum.find(Lightwarrior.State.get(:instances_in_input_file), fn input_instance ->
-          if input_instance["name"] == output_name do
-            input_instance
+    if Lightwarrior.State.get(:instances_with_config_output) != nil do
+      new_input_list = Enum.map_every(Lightwarrior.State.get(:instances_with_config_output), 1, fn instance ->
+          #IO.puts("#{index}")
+          #dbg(Map.get(value, "name"))
+          output_name = Map.get(instance, "name")
+          current_input = Enum.find(Lightwarrior.State.get(:instances_in_input_file), fn input_instance ->
+            if input_instance["name"] == output_name do
+              input_instance
+            else
+              nil
+            end
+          end)
+
+          if current_input != nil do
+            current_input
           else
-            nil
+            instance
           end
-        end)
+      end)
 
-        if current_input != nil do
-          current_input
-        else
-          instance
-        end
-    end)
-
-    Lightwarrior.State.put(:instances_with_config_input, new_input_list)
-
+      Lightwarrior.State.put(:instances_with_config_input, new_input_list)
+    end
 
 
     # check for data and copy from output mapping if none
