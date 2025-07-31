@@ -86,11 +86,24 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
           #dbg(Lightwarrior.State.get(:instances_with_config_output))
           #dbg(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
 
-          if Lightwarrior.State.get(:instances_with_config_output) != nil do
-            Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
-            socket
+          dbg(socket.assigns.side)
+          dbg(length(Lightwarrior.State.get(:instances_with_config_input)))
+          dbg(length(Lightwarrior.State.get(:instances_with_config_output)))
+          dbg(id)
+          cond do
+            socket.assigns.side == "input" ->
+              if Lightwarrior.State.get(:instances_with_config_input) != nil do
+                dbg(id)
+                Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_input), String.to_integer(id)))
+                socket
+              end
+            socket.assigns.side == "output" ->
+              if Lightwarrior.State.get(:instances_with_config_output) != nil do
+                Hyperion.switch_instance(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_output), String.to_integer(id)))
+                socket
+              end
+            true -> socket
           end
-
 
 
           socket
@@ -362,6 +375,15 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
 
 
   def handle_event("phx:stripe-opacity", %{"stripes_opacity" => stripe_opacity} = _params, socket) do
+    #dbg(params)
+    IO.puts("stripe-opacity")
+    {:noreply,
+      socket
+      |> push_event("stripe-opacity", %{ stripes_opacity: stripe_opacity })
+    }
+  end
+
+  def handle_event("phx:stripe-opacity", %{"_target" => ["mapping_tools_form", "stripes_opacity"], "mapping_tools_form" => %{"stripes_opacity" => stripe_opacity}} = _params, socket) do
     #dbg(params)
     IO.puts("stripe-opacity")
     {:noreply,
@@ -776,8 +798,8 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
                   Lightwarrior.OutputMapping.automap_instances_pixi(mapping_container_size)
               "false" -> Lightwarrior.State.get(:instances_with_config_input)
             end
-          else
-            Lightwarrior.State.get(:instances_with_config_output)
+          #else
+          #  Lightwarrior.State.get(:instances_with_config_output)
           end
       "output" ->
         automap = socket.assigns.mapping_output.params

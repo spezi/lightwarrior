@@ -117,7 +117,7 @@ defmodule Lightwarrior.Hyperion do
   """
   def switch_instance(instance) do
 
-    #dbg(instance)
+    dbg(instance)
 
     instance = case Map.has_key?(instance, "id") do
       true ->

@@ -56,8 +56,8 @@ defmodule LightwarriorWeb.Layouts do
           <input :if={ @side != "uniform" } type="radio" name="left_top_menue_tabs" class="tab" aria-label={"stripe instances (#{length(Lightwarrior.State.get(:instances_with_config_output))})"} checked="checked" />
           <div class="tab-content bg-base-100 border-base-300 p-2">
               <div :if={Lightwarrior.State.get(:instances) != nil } class="flex flex-wrap">
-                <div :for={instance <- Lightwarrior.State.get(:instances)}>
-                  <.led_instance title={instance["friendly_name"]} status={instance["running"]} instance={instance} selected={@selected}/>
+                <div :for={{instance, index} <- Enum.with_index(Lightwarrior.State.get(:instances))}>
+                  <.led_instance title={instance["friendly_name"]} status={instance["running"]} instance={instance} index={index} selected={@selected}/>
                 </div>
               </div>
                 <p :if={Lightwarrior.State.get(:instances) == nil }  class="text-red-500">
@@ -129,11 +129,11 @@ defmodule LightwarriorWeb.Layouts do
 
   def led_instance(assigns) do
     ~H"""
-        <.link patch={~p"/hyperion/#{@instance["instance"]}/edit"}>
+        <.link patch={~p"/hyperion/#{@index}/edit"}>
           <button  class={
                   "btn m-1 p-2 rounded-full text-xs font-semibold text-white shadow-xl
                   #{if @status, do: "bg-green-600 ", else: "bg-zinc-600 "}
-                  #{if @selected && @selected == @instance["instance"], do: "ring-2 ring-emerald-400 ", else: "" }
+                  #{if @selected && @selected == @index, do: "ring-2 ring-emerald-400 ", else: "" }
                 "}
           ><%= @title %>
           </button>
