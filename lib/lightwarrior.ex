@@ -96,11 +96,14 @@ defmodule Lightwarrior do
         # update ossia via osc messages
         #Lightwarrior.update_instance_ossia(leds, socket.assigns.selected, socket.assigns.sc_pid)
 
+        new = get_in(Enum.fetch!(Lightwarrior.State.get(:instances_with_config_input), socket.assigns.selected), ["settings", "leds"])
+        dbg(Enum.fetch!(new, 0))
+
         # update ossia via osc messages
         Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
           #dbg(get_in(instance, ["settings", "leds"]))
           if get_in(instance, ["settings", "leds"]) != nil and socket.assigns.selected != nil do
-              dbg(get_in(instance, ["name"]))
+              #dbg(get_in(instance, ["name"]))
               #Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
           end
         end)
@@ -112,8 +115,8 @@ defmodule Lightwarrior do
         #dbg(Lightwarrior.InputConfigsFileStore.reload())
         case Lightwarrior.InputConfigsFileStore.persist() do
           :ok ->
-            dbg(Lightwarrior.InputConfigsFileStore.reload())
-            dbg(Map.keys(Lightwarrior.State.all()))
+            #dbg(Lightwarrior.InputConfigsFileStore.reload())
+            #dbg(Map.keys(Lightwarrior.State.all()))
             %{"success" => true }
           #:error -> %{"success" => false, "error" => "failed to write file" }
         end

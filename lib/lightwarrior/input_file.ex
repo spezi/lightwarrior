@@ -49,10 +49,10 @@ defmodule Lightwarrior.InputConfigsFileStore do
     #dbg(length(Map.get(instances, "instances_with_config_input")))
     #dbg(Map.keys(instances))
     #dbg(Lightwarrior.State.get(:instances_with_config_output))
+
+    # will be loaded later because of sync instances output and input
     Lightwarrior.State.put(:instances_in_input_file, Map.get(instances, "instances_with_config_input"))
     #Lightwarrior.State.put(:instances_with_config_input, Map.get(instances, "instances_with_config_input"))
-
-
 
     {:ok, instances}
   end

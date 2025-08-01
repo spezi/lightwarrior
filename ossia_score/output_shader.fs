@@ -240,7 +240,107 @@
 
   { "NAME": "start47", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
   { "NAME": "end47", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
-  { "NAME": "height47", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }
+  { "NAME": "height47", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start48", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end48", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height48", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start49", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end49", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height49", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start50", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end50", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height50", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start51", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end51", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height51", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start52", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end52", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height52", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start53", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end53", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height53", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start54", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end54", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height54", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start55", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end55", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height55", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start56", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end56", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height56", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start57", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end57", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height57", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start58", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end58", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height58", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start59", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end59", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height59", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start60", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end60", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height60", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start61", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end61", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height61", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start62", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end62", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height62", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start63", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end63", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height63", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start64", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end64", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height64", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start65", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end65", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height65", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start66", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end66", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height66", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start67", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end67", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height67", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }
 
 ]
 }*/
@@ -248,13 +348,13 @@
 void main() {
 vec2 uv = isf_FragNormCoord;
 float bandWidth = 5.0 / float(RENDERSIZE.x);
-float centerSpacing = 0.4 / 48.0;
+float centerSpacing = 0.4 / 68.0;
 float halfWidth = bandWidth / 2.0;
 float max_height = 0.5;
 
 vec4 color = vec4(0.0);
 
-for (int i = 0; i < 49; ++i) {
+for (int i = 0; i < 69; ++i) {
 float cx = (float(i) + 0.5) * centerSpacing;
 
 float left = cx - halfWidth;
@@ -408,6 +508,66 @@ vec2 end = vec2(1.0);
 
     
     else if (i == 47) { start = start47; end = end47; h = height47; }
+
+    
+    else if (i == 48) { start = start48; end = end48; h = height48; }
+
+    
+    else if (i == 49) { start = start49; end = end49; h = height49; }
+
+    
+    else if (i == 50) { start = start50; end = end50; h = height50; }
+
+    
+    else if (i == 51) { start = start51; end = end51; h = height51; }
+
+    
+    else if (i == 52) { start = start52; end = end52; h = height52; }
+
+    
+    else if (i == 53) { start = start53; end = end53; h = height53; }
+
+    
+    else if (i == 54) { start = start54; end = end54; h = height54; }
+
+    
+    else if (i == 55) { start = start55; end = end55; h = height55; }
+
+    
+    else if (i == 56) { start = start56; end = end56; h = height56; }
+
+    
+    else if (i == 57) { start = start57; end = end57; h = height57; }
+
+    
+    else if (i == 58) { start = start58; end = end58; h = height58; }
+
+    
+    else if (i == 59) { start = start59; end = end59; h = height59; }
+
+    
+    else if (i == 60) { start = start60; end = end60; h = height60; }
+
+    
+    else if (i == 61) { start = start61; end = end61; h = height61; }
+
+    
+    else if (i == 62) { start = start62; end = end62; h = height62; }
+
+    
+    else if (i == 63) { start = start63; end = end63; h = height63; }
+
+    
+    else if (i == 64) { start = start64; end = end64; h = height64; }
+
+    
+    else if (i == 65) { start = start65; end = end65; h = height65; }
+
+    
+    else if (i == 66) { start = start66; end = end66; h = height66; }
+
+    
+    else if (i == 67) { start = start67; end = end67; h = height67; }
 
   float top = 0.5 - h * max_height / 2.0;
   float bottom = 0.5 + h * max_height / 2.0;
