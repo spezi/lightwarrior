@@ -100,11 +100,12 @@ defmodule Lightwarrior do
         dbg(Enum.fetch!(new, 0))
 
         # update ossia via osc messages
-        Enum.each(Lightwarrior.State.get(:instances_with_config_input), fn instance ->
+        Enum.with_index(Lightwarrior.State.get(:instances_with_config_input))
+        |> Enum.each(fn {instance, index} ->
           #dbg(get_in(instance, ["settings", "leds"]))
           if get_in(instance, ["settings", "leds"]) != nil and socket.assigns.selected != nil do
               #dbg(get_in(instance, ["name"]))
-              #Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), socket.assigns.selected, socket.assigns.sc_pid)
+              Lightwarrior.update_instance_ossia(get_in(instance, ["settings", "leds"]), index, socket.assigns.sc_pid)
           end
         end)
 
