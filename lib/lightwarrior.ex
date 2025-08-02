@@ -186,9 +186,10 @@ defmodule Lightwarrior do
     #dbg(leds)
     start = calculate_center(Enum.at(leds, 0))
     stop = calculate_center(Enum.at(leds, -1))
+    height = 1.0
     #dbg(start)
     #dbg(stop)
-    update_ossia_via_osc(start, stop, selected, sc_pid)
+    update_ossia_via_osc(start, stop, height, selected, sc_pid)
   end
 
   defp calculate_center(coords) do
@@ -200,7 +201,7 @@ defmodule Lightwarrior do
     }
   end
 
-  defp update_ossia_via_osc(start, stop, selected, sc_pid) do
+  defp update_ossia_via_osc(start, stop, height, selected, sc_pid) do
     # IP or host and port number for the UDP connection
     #ip_address = '127.0.0.1' # This could be changed to named address, like 'localhost'
     #port_num = 9997 # In this example, this is the default port used by Protokol
@@ -210,10 +211,13 @@ defmodule Lightwarrior do
 
     start_address = "/start" <> Integer.to_string(selected)
     end_address = "/end" <> Integer.to_string(selected)
+    #height_address = "/height" <> Integer.to_string(selected)
+    height_address = ":/"
 
     # Encode the message
     osc_message_start = %OSCx.Message{address: start_address, arguments: [start["h"], start["v"]]} |> OSCx.encode()
     osc_message_end = %OSCx.Message{address: end_address, arguments: [stop["h"], stop["v"]]} |> OSCx.encode()
+    osc_message_height = %OSCx.Message{address: height_address, arguments: [height] } |> OSCx.encode()
 
     # Send message
     #dbg(:gen_udp.send(port, ip_address, port_num, osc_message_start))
@@ -222,6 +226,7 @@ defmodule Lightwarrior do
     #Lightwarrior.Hyperion.OSC.send_message(osc_message_end, [])
     dbg(Lightwarrior.Hyperion.SC.send(sc_pid, osc_message_start))
     dbg(Lightwarrior.Hyperion.SC.send(sc_pid, osc_message_end))
+    dbg(Lightwarrior.Hyperion.SC.send(sc_pid, osc_message_height))
 
     # Close the port
     #:gen_udp.close(port)
@@ -236,18 +241,53 @@ defmodule Lightwarrior do
       score_file = load_score_file()
 
       processes = get_in(score_file, ["Document", "BaseScenario", "Constraint", "Processes"])
+
+      last_assigned_channel = 0
+
       updated_processes =
         Enum.map(processes, fn process ->
           updated_inlets =
             Enum.map(process["Inlets"] || [], fn inlet ->
               custom = inlet["Custom"]
 
-              if custom && (String.starts_with?(custom, "start") || String.starts_with?(custom, "end")) do
-                Map.put(inlet, "Address", "lightwarrior:/#{custom}")
-              else
-                inlet
-              end
-            end)
+              cond do
+                custom && (
+                  String.starts_with?(custom, "start") || String.starts_with?(custom, "end") || String.starts_with?(custom, "height")
+                ) ->
+                  Map.put(inlet, "Address", "lightwarrior:/#{custom}")
+                custom && (
+                  Regex.match?(~r/^r\d+$/, custom) || Regex.match?(~r/^g\d+$/, custom) || Regex.match?(~r/^b\d+$/, custom) || String.starts_with?(custom, "h_solid")
+                ) ->
+                  #dbg(custom)
+                  channel = String.to_integer(custom |> String.replace(~r/\D+/, ""))
+
+                  #r = if channel == 0 do channel + 1 else channel + 4 end
+
+                  r = if channel == 0 do channel + 1 else channel * 4 + 1 end
+                  g = if channel == 0 do channel + 2 else channel * 4 + 2 end
+                  b = if channel == 0 do channel + 3 else channel * 4 + 3 end
+                  h_solid = if channel == 0 do channel + 4 else channel * 4 + 4 end
+
+                  #last_assigned_channel = h_solid
+
+                  #if String.starts_with?(custom, "r") do Map.put(inlet, "Address", "boli:/artnet/ch/#{Integer.to_string(r)}") end
+                  #if String.starts_with?(custom, "g") do Map.put(inlet, "Address", "boli:/artnet/ch/#{Integer.to_string(g)}") end
+                  #if String.starts_with?(custom, "b") do Map.put(inlet, "Address", "boli:/artnet/ch/#{Integer.to_string(b)}") end
+                  #if String.starts_with?(custom, "h_solid") do Map.put(inlet, "Address", "boli:/artnet/ch/#{Integer.to_string(h_solid)}") end
+                  #Map.put(inlet, "Address", "boli:/artnet/ch/#{custom |> String.replace(~r/\D+/, "")}")
+
+                  cond do
+                    String.starts_with?(custom, "r") -> Map.put(inlet, "Address", "boli:/artnet/ch/#{Integer.to_string(r)}")
+                    String.starts_with?(custom, "g") -> Map.put(inlet, "Address", "boli:/artnet/ch/#{Integer.to_string(g)}")
+                    String.starts_with?(custom, "b") -> Map.put(inlet, "Address", "boli:/artnet/ch/#{Integer.to_string(b)}")
+                    String.starts_with?(custom, "h_solid") -> Map.put(inlet, "Address", "boli:/artnet/ch/#{Integer.to_string(h_solid)}")
+                    true -> Map.put(inlet, "Address", "boli:/artnet/ch/#{custom |> String.replace(~r/\D+/, "")}")
+                  end
+
+                true ->
+                  inlet
+                end
+      end)
 
           Map.put(process, "Inlets", updated_inlets)
         end)

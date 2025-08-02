@@ -340,7 +340,42 @@
 
   { "NAME": "start67", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
   { "NAME": "end67", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
-  { "NAME": "height67", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }
+  { "NAME": "height67", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start68", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end68", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height68", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start69", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end69", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height69", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start70", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end70", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height70", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start71", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end71", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height71", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start72", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end72", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height72", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start73", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end73", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height73", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 },
+
+
+  { "NAME": "start74", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
+  { "NAME": "end74", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
+  { "NAME": "height74", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }
 
 ]
 }*/
@@ -348,13 +383,13 @@
 void main() {
 vec2 uv = isf_FragNormCoord;
 float bandWidth = 5.0 / float(RENDERSIZE.x);
-float centerSpacing = 0.4 / 68.0;
+float centerSpacing = 0.4 / 75.0;
 float halfWidth = bandWidth / 2.0;
 float max_height = 0.5;
 
 vec4 color = vec4(0.0);
 
-for (int i = 0; i < 69; ++i) {
+for (int i = 0; i < 76; ++i) {
 float cx = (float(i) + 0.5) * centerSpacing;
 
 float left = cx - halfWidth;
@@ -568,6 +603,27 @@ vec2 end = vec2(1.0);
 
     
     else if (i == 67) { start = start67; end = end67; h = height67; }
+
+    
+    else if (i == 68) { start = start68; end = end68; h = height68; }
+
+    
+    else if (i == 69) { start = start69; end = end69; h = height69; }
+
+    
+    else if (i == 70) { start = start70; end = end70; h = height70; }
+
+    
+    else if (i == 71) { start = start71; end = end71; h = height71; }
+
+    
+    else if (i == 72) { start = start72; end = end72; h = height72; }
+
+    
+    else if (i == 73) { start = start73; end = end73; h = height73; }
+
+    
+    else if (i == 74) { start = start74; end = end74; h = height74; }
 
   float top = 0.5 - h * max_height / 2.0;
   float bottom = 0.5 + h * max_height / 2.0;

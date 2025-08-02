@@ -1,10 +1,13 @@
 defmodule Lightwarrior.OutputShader do
 
   @isf_shader_file_path "ossia_score/output_shader.fs"
+  @isf_shader_file_path_solid "ossia_score/output_shader_solid.fs"
 
   @processes "ossia_score/processes.json"
+  @processes_solid "ossia_score/processes_solid.json"
 
   @file_path "ossia_score/lightwarrior.score"
+  @file_path_solid "ossia_score/lightwarrior.score"
 
   vertex_shader = """
 #version 150
@@ -249,11 +252,11 @@ void main() {
     { "NAME": "inputImage", "TYPE": "image" },
 
   """
-      input_list = for i <- 0..(length(Lightwarrior.State.get(:instances_with_config_output)) - 1) do
+      input_list = for i <- 0..(length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do
   """
     { "NAME": "start#{i}", "TYPE": "point2D", "DEFAULT": [0.25, 0.0] },
     { "NAME": "end#{i}", "TYPE": "point2D", "DEFAULT": [0.75, 1.0] },
-    { "NAME": "height#{i}", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }#{if i != (length(Lightwarrior.State.get(:instances_with_config_output)) - 1) do "," else "" end}
+    { "NAME": "height#{i}", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 1.0 }#{if i != (length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do "," else "" end}
 
   """
       end
@@ -265,19 +268,19 @@ void main() {
       IO.inspect((header <> Enum.join(input_list, "\n") <> footer), pretty: true)
   end
 
-  def gen_code() do
+def gen_code() do
     header = """
 
 void main() {
   vec2 uv = isf_FragNormCoord;
   float bandWidth = 5.0 / float(RENDERSIZE.x);
-  float centerSpacing = 0.4 / #{length(Lightwarrior.State.get(:instances_with_config_output)) / 1};
+  float centerSpacing = 0.4 / #{length(Lightwarrior.State.get(:instances_with_config_input)) / 1};
   float halfWidth = bandWidth / 2.0;
   float max_height = 0.5;
 
   vec4 color = vec4(0.0);
 
-  for (int i = 0; i < #{length(Lightwarrior.State.get(:instances_with_config_output)) + 1}; ++i) {
+  for (int i = 0; i < #{length(Lightwarrior.State.get(:instances_with_config_input)) + 1}; ++i) {
   float cx = (float(i) + 0.5) * centerSpacing;
 
   float left = cx - halfWidth;
@@ -290,7 +293,7 @@ void main() {
   vec2 end = vec2(1.0);
   """
 
-      isf_for = for i <- 0..(length(Lightwarrior.State.get(:instances_with_config_output)) - 1) do
+      isf_for = for i <- 0..(length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do
   """
       #{if i == 0 do "if (i == 0) { start = start0; end = end0; h = height0; }" else "" end}
       #{if i > 0 do "else if (i == #{i}) { start = start#{i}; end = end#{i}; h = height#{i}; }" else "" end}
@@ -314,6 +317,87 @@ void main() {
 }
   """
       IO.inspect((header <> Enum.join(isf_for, "\n") <> rest))
+end
+
+  def gen_inputs_solid() do
+
+    header = """
+  /*{
+    "CATEGORIES": ["Video"],
+    "INPUTS": [
+    { "NAME": "inputImage", "TYPE": "image" },
+
+  """
+      input_list = for i <- 0..(length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do
+  """
+
+    { "NAME": "r#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 255.0 },
+    { "NAME": "g#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 255.0 },
+    { "NAME": "b#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 255.0 },
+    { "NAME": "h_solid#{i}", "TYPE": "float", "DEFAULT": 0.5, "MIN": 0.0, "MAX": 0.5 }#{if i != (length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do "," else "" end}
+
+  """
+      end
+
+      footer = """
+  ]
+  }*/
+  """
+      IO.inspect((header <> Enum.join(input_list, "\n") <> footer), pretty: true)
+  end
+
+  def gen_code_solid() do
+    header = """
+
+void main() {
+  vec2 uv = isf_FragNormCoord;
+  float bandWidth = 5.0 / float(RENDERSIZE.x);
+  float centerSpacing = 0.4 / #{length(Lightwarrior.State.get(:instances_with_config_input)) / 1};
+  float halfWidth = bandWidth / 2.0;
+  float max_height = 0.5;
+
+  vec4 color = vec4(0.0);
+
+  for (int i = 0; i < #{length(Lightwarrior.State.get(:instances_with_config_input)) + 1}; ++i) {
+  float cx = (float(i) + 0.5) * centerSpacing;
+
+  float left = cx - halfWidth;
+  float right = cx + halfWidth;
+
+
+  // Per-band top and bottom
+   float baseHeight;
+   vec4 bandColor;
+
+  """
+
+      isf_for = for i <- 0..(length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do
+  """
+      #{if i == 0 do "if (i == 0) { baseHeight = h_solid0; bandColor = vec4(r#{i}/255.0, g#{i}/255.0, b#{i}/255.0, 1.0 ); }" else "" end}
+      #{if i > 0 do "else if (i == #{i}) { baseHeight = h_solid#{i}; bandColor = vec4(r#{i}/255.0, g#{i}/255.0, b#{i}/255.0, 1.0 ); }" else "" end}
+  """
+      end
+
+      rest = """
+
+    //float top = 0.5 - baseHeight * max_height / 2.0;
+    //float bottom = 0.5 + baseHeight * max_height / 2.0;
+
+    float animatedHeight = baseHeight;
+
+    float bandTop = 0.5 - animatedHeight / 2.0;
+    float bandBottom = 0.5 + animatedHeight / 2.0;
+
+     if (uv.x >= cx - halfWidth && uv.x <= cx + halfWidth && uv.y >= bandTop && uv.y <= bandBottom) {
+      color = bandColor;
+      break;
+    }
+  }
+
+  gl_FragColor = color;
+}
+  """
+      IO.inspect((header <> Enum.join(isf_for, "\n") <> rest))
   end
 
   def build() do
@@ -322,10 +406,22 @@ void main() {
     output_isf_shader
   end
 
+  def build_solid() do
+    output_isf_shader_solid = gen_inputs_solid() <> gen_code_solid()
+    File.write!(@isf_shader_file_path_solid, output_isf_shader_solid)
+    output_isf_shader_solid
+  end
+
   def patch_scorefile(output_isf_shader) do
       #dbg(output_isf_shader)
       #dbg(get_in(load_score_file(), ["Document", "BaseScenario", "Constraint", "Processes"]))
       File.write!(@processes, get_in(load_score_file(), ["Document", "BaseScenario", "Constraint", "Processes"]) |> Jason.encode!(pretty: true))
+  end
+
+  def patch_scorefile_solid(output_isf_shader) do
+      #dbg(output_isf_shader)
+      #dbg(get_in(load_score_file(), ["Document", "BaseScenario", "Constraint", "Processes"]))
+      File.write!(@processes_solid, get_in(load_score_file(), ["Document", "BaseScenario", "Constraint", "Processes"]) |> Jason.encode!(pretty: true))
   end
 
   defp load_score_file do
