@@ -331,9 +331,9 @@ end
       input_list = for i <- 0..(length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do
   """
 
-    { "NAME": "r#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 255.0 },
-    { "NAME": "g#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 255.0 },
-    { "NAME": "b#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 255.0 },
+    { "NAME": "r#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 1.0 },
+    { "NAME": "g#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 1.0 },
+    { "NAME": "b#{i}", "TYPE": "float", "DEFAULT": 255.0, "MIN": 0.0, "MAX": 1.0 },
     { "NAME": "h_solid#{i}", "TYPE": "float", "DEFAULT": 0.5, "MIN": 0.0, "MAX": 0.5 }#{if i != (length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do "," else "" end}
 
   """
@@ -373,8 +373,8 @@ void main() {
 
       isf_for = for i <- 0..(length(Lightwarrior.State.get(:instances_with_config_input)) - 1) do
   """
-      #{if i == 0 do "if (i == 0) { baseHeight = h_solid0; bandColor = vec4(r#{i}/255.0, g#{i}/255.0, b#{i}/255.0, 1.0 ); }" else "" end}
-      #{if i > 0 do "else if (i == #{i}) { baseHeight = h_solid#{i}; bandColor = vec4(r#{i}/255.0, g#{i}/255.0, b#{i}/255.0, 1.0 ); }" else "" end}
+      #{if i == 0 do "if (i == 0) { baseHeight = h_solid0; bandColor = vec4(r#{i}, g#{i}, b#{i}, 1.0 ); }" else "" end}
+      #{if i > 0 do "else if (i == #{i}) { baseHeight = h_solid#{i}; bandColor = vec4(r#{i}, g#{i}, b#{i}, 1.0 ); }" else "" end}
   """
       end
 
