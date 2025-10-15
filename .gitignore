@@ -43,3 +43,5 @@ npm-debug.log
 # own ignores
 lib/lightwarrior_web/live/test_live/
 /priv/static/thumbnails/
+poc/footage
+poc/node_modules

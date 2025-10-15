@@ -1,0 +1,9 @@
+# POC`s 
+
+to test some stuff 
+
+1. control ossia score mapping shader via osc
+
+## node osc bridge
+npm install ws osc && node bridge.js
+

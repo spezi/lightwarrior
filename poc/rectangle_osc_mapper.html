@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixiJS Editable Rectangle</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.2.4/pixi.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background: #2c3e50;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        #controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            min-width: 200px;
+        }
+        #controls h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .osc-config {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 4px;
+        }
+        .osc-config h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .osc-config input {
+            width: 100%;
+            padding: 6px 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+        .osc-config input[type="number"] {
+            width: 100%;
+        }
+        .osc-config button {
+            width: 100%;
+            padding: 8px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .osc-config button:hover {
+            background: #2980b9;
+        }
+        .osc-config button.connected {
+            background: #27ae60;
+        }
+        .osc-config button.connected:hover {
+            background: #229954;
+        }
+        .osc-status {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .corner {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .corner h4 {
+            margin: 0 0 8px 0;
+            color: #3498db;
+            font-size: 14px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .input-group label {
+            font-size: 12px;
+            color: #666;
+            min-width: 15px;
+        }
+        .input-group input {
+            width: 70px;
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="controls">
+        <h3>Corner Coordinates</h3>
+        
+        <div class="osc-config">
+            <h4>OSC Settings</h4>
+            <input type="text" id="osc-host" placeholder="OSC Host" value="localhost">
+            <input type="number" id="osc-port" placeholder="OSC Port" value="9998">
+            <input type="text" id="osc-address" placeholder="OSC Address" value="/corner">
+            <button id="osc-connect">Enable OSC</button>
+            <div class="osc-status" id="osc-status">OSC Disabled - Note: Requires WebSocket bridge</div>
+        </div>
+        <div class="corner">
+            <h4>Top-Left</h4>
+            <div class="input-group">
+                <label>X:</label>
+                <input type="number" id="tl-x" value="400">
+                <label>Y:</label>
+                <input type="number" id="tl-y" value="300">
+            </div>
+        </div>
+        <div class="corner">
+            <h4>Top-Right</h4>
+            <div class="input-group">
+                <label>X:</label>
+                <input type="number" id="tr-x" value="800">
+                <label>Y:</label>
+                <input type="number" id="tr-y" value="300">
+            </div>
+        </div>
+        <div class="corner">
+            <h4>Bottom-Right</h4>
+            <div class="input-group">
+                <label>X:</label>
+                <input type="number" id="br-x" value="800">
+                <label>Y:</label>
+                <input type="number" id="br-y" value="600">
+            </div>
+        </div>
+        <div class="corner">
+            <h4>Bottom-Left</h4>
+            <div class="input-group">
+                <label>X:</label>
+                <input type="number" id="bl-x" value="400">
+                <label>Y:</label>
+                <input type="number" id="bl-y" value="600">
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const app = new PIXI.Application({
+            width: 1920,
+            height: 1080,
+            backgroundColor: 0xf0f0f0,
+            antialias: true
+        });
+        
+        document.getElementById('container').appendChild(app.view);
+        
+        // OSC Setup using WebSocket
+        let ws = null;
+        let isConnected = false;
+        
+        function connectOSC() {
+            const host = document.getElementById('osc-host').value;
+            const port = document.getElementById('osc-port').value;
+            const btn = document.getElementById('osc-connect');
+            const status = document.getElementById('osc-status');
+            
+            if (isConnected && ws) {
+                ws.close();
+                ws = null;
+                isConnected = false;
+                btn.textContent = 'Enable OSC';
+                btn.classList.remove('connected');
+                status.textContent = 'OSC Disabled';
+                return;
+            }
+            
+            try {
+                const wsUrl = `ws://${host}:${port}`;
+                status.textContent = `Connecting to ${wsUrl}...`;
+                console.log('Attempting to connect to:', wsUrl);
+                
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = () => {
+                    isConnected = true;
+                    btn.textContent = 'Disable OSC';
+                    btn.classList.add('connected');
+                    status.textContent = `✓ Connected to ${wsUrl}`;
+                    console.log('WebSocket connected successfully');
+                    sendOSC();
+                };
+                
+                ws.onclose = () => {
+                    isConnected = false;
+                    ws = null;
+                    btn.textContent = 'Enable OSC';
+                    btn.classList.remove('connected');
+                    status.textContent = 'Connection closed';
+                    console.log('WebSocket closed');
+                };
+                
+                ws.onerror = (err) => {
+                    status.textContent = 'Error: Cannot connect. Is bridge running?';
+                    isConnected = false;
+                    btn.textContent = 'Enable OSC';
+                    btn.classList.remove('connected');
+                    console.error('WebSocket error event:', err);
+                    console.error('WebSocket readyState:', ws.readyState);
+                    console.error('Trying to connect to:', wsUrl);
+                };
+                
+            } catch (err) {
+                status.textContent = 'Error: ' + err.message;
+                console.error('Connection error:', err);
+            }
+        }
+        
+        function sendOSC() {
+            if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
+                console.log('Cannot send OSC: not connected', {isConnected, ws: !!ws, readyState: ws?.readyState});
+                return;
+            }
+            
+            const baseAddress = document.getElementById('osc-address').value;
+            
+            try {
+                // Send as JSON that can be easily converted to OSC
+                const messages = [
+                    { address: `${baseAddress}/tl`, args: [corners.tl.x / 1920, corners.tl.y / 1080] },
+                    { address: `${baseAddress}/tr`, args: [corners.tr.x / 1920, corners.tr.y / 1080] },
+                    { address: `${baseAddress}/br`, args: [corners.br.x / 1920, corners.br.y / 1080] },
+                    { address: `${baseAddress}/bl`, args: [corners.bl.x / 1920, corners.bl.y / 1080] }
+                ];
+                
+                messages.forEach(msg => {
+                    ws.send(JSON.stringify(msg));
+                    console.log('Sent OSC:', msg);
+                });
+            } catch (err) {
+                console.error('OSC send error:', err);
+            }
+        }
+        
+        document.getElementById('osc-connect').addEventListener('click', connectOSC);
+        
+        // Rectangle properties (now supports trapezoid)
+        let corners = {
+            tl: { x: 400, y: 300 },
+            tr: { x: 800, y: 300 },
+            br: { x: 800, y: 600 },
+            bl: { x: 400, y: 600 }
+        };
+        
+        // Graphics object for the rectangle
+        const graphics = new PIXI.Graphics();
+        app.stage.addChild(graphics);
+        
+        // Handle graphics
+        const handles = [];
+        const handleSize = 12;
+        
+        // Create 8 handles (corners and midpoints)
+        for (let i = 0; i < 4; i++) {
+            const handle = new PIXI.Graphics();
+            handle.eventMode = 'static';
+            handle.cursor = 'pointer';
+            handles.push(handle);
+            app.stage.addChild(handle);
+        }
+        
+        let dragging = null;
+        let dragOffset = { x: 0, y: 0 };
+        
+        // Update inputs based on corners
+        function updateInputs() {
+            document.getElementById('tl-x').value = Math.round(corners.tl.x);
+            document.getElementById('tl-y').value = Math.round(corners.tl.y);
+            document.getElementById('tr-x').value = Math.round(corners.tr.x);
+            document.getElementById('tr-y').value = Math.round(corners.tr.y);
+            document.getElementById('br-x').value = Math.round(corners.br.x);
+            document.getElementById('br-y').value = Math.round(corners.br.y);
+            document.getElementById('bl-x').value = Math.round(corners.bl.x);
+            document.getElementById('bl-y').value = Math.round(corners.bl.y);
+        }
+        
+        // Update corners based on inputs
+        function updateRectFromInputs() {
+            corners.tl.x = parseFloat(document.getElementById('tl-x').value);
+            corners.tl.y = parseFloat(document.getElementById('tl-y').value);
+            corners.tr.x = parseFloat(document.getElementById('tr-x').value);
+            corners.tr.y = parseFloat(document.getElementById('tr-y').value);
+            corners.br.x = parseFloat(document.getElementById('br-x').value);
+            corners.br.y = parseFloat(document.getElementById('br-y').value);
+            corners.bl.x = parseFloat(document.getElementById('bl-x').value);
+            corners.bl.y = parseFloat(document.getElementById('bl-y').value);
+            
+            drawRect();
+            sendOSC();
+        }
+        
+        // Add input listeners
+        ['tl-x', 'tl-y', 'tr-x', 'tr-y', 'br-x', 'br-y', 'bl-x', 'bl-y'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateRectFromInputs);
+        });
+        
+        function drawRect() {
+            graphics.clear();
+            graphics.lineStyle(2, 0x3498db);
+            graphics.beginFill(0x3498db, 0.2);
+            
+            // Draw trapezoid using the four corners
+            graphics.moveTo(corners.tl.x, corners.tl.y);
+            graphics.lineTo(corners.tr.x, corners.tr.y);
+            graphics.lineTo(corners.br.x, corners.br.y);
+            graphics.lineTo(corners.bl.x, corners.bl.y);
+            graphics.closePath();
+            graphics.endFill();
+            
+            // Draw handles at corners
+            const positions = [
+                corners.tl,
+                corners.tr,
+                corners.br,
+                corners.bl
+            ];
+            
+            handles.forEach((handle, i) => {
+                if (i < 4) {
+                    handle.clear();
+                    handle.beginFill(0xffffff);
+                    handle.lineStyle(2, 0x3498db);
+                    handle.drawCircle(0, 0, handleSize);
+                    handle.endFill();
+                    handle.position.set(positions[i].x, positions[i].y);
+                    handle.index = i;
+                    handle.visible = true;
+                } else {
+                    handle.visible = false;
+                }
+            });
+        }
+        
+        // Make shape draggable
+        graphics.eventMode = 'static';
+        graphics.cursor = 'pointer';
+        
+        graphics.on('pointerdown', (e) => {
+            const pos = e.data.global;
+            // Check if point is inside the quadrilateral
+            dragging = 'shape';
+            dragOffset.x = pos.x;
+            dragOffset.y = pos.y;
+        });
+        
+        // Handle dragging
+        handles.forEach(handle => {
+            handle.on('pointerdown', (e) => {
+                dragging = handle.index;
+                e.stopPropagation();
+            });
+        });
+        
+        app.stage.eventMode = 'static';
+        app.stage.on('pointermove', (e) => {
+            if (dragging === null) return;
+            
+            const pos = e.data.global;
+            
+            if (dragging === 'shape') {
+                const dx = pos.x - dragOffset.x;
+                const dy = pos.y - dragOffset.y;
+                
+                corners.tl.x += dx;
+                corners.tl.y += dy;
+                corners.tr.x += dx;
+                corners.tr.y += dy;
+                corners.br.x += dx;
+                corners.br.y += dy;
+                corners.bl.x += dx;
+                corners.bl.y += dy;
+                
+                dragOffset.x = pos.x;
+                dragOffset.y = pos.y;
+            } else if (typeof dragging === 'number') {
+                // Dragging a corner handle
+                if (dragging === 0) {
+                    corners.tl.x = pos.x;
+                    corners.tl.y = pos.y;
+                } else if (dragging === 1) {
+                    corners.tr.x = pos.x;
+                    corners.tr.y = pos.y;
+                } else if (dragging === 2) {
+                    corners.br.x = pos.x;
+                    corners.br.y = pos.y;
+                } else if (dragging === 3) {
+                    corners.bl.x = pos.x;
+                    corners.bl.y = pos.y;
+                }
+            }
+            
+            drawRect();
+            updateInputs();
+            sendOSC();
+        });
+        
+        app.stage.on('pointerup', () => {
+            dragging = null;
+        });
+        
+        app.stage.on('pointerupoutside', () => {
+            dragging = null;
+        });
+        
+        // Initial draw
+        drawRect();
+        updateInputs();
+    </script>
+</body>
+</html>
