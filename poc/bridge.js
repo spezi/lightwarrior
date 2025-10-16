@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const osc = require('osc');
 
-const wss = new WebSocket.Server({ port: 9998 });
+const wss = new WebSocket.Server({ port: 9995 });
 const udpPort = new osc.UDPPort({
     localAddress: "0.0.0.0",
     localPort: 57121,
@@ -28,7 +28,7 @@ wss.on('connection', (ws) => {
     });
 });
 
-console.log('🚀 Bridge running on ws://localhost:9998');
+console.log('🚀 Bridge running on ws://localhost:9995');
 console.log('📡 Forwarding OSC to 127.0.0.1:9997');
 
 //{"address": "/corner/tl", "args": [400, 300]}
