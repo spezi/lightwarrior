@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixiJS Editable Shapes</title>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.2.4/pixi.min.js"></script>-->
+    <script src="pixi.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background: #2c3e50;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            overflow: auto;
+            transition: all 0.3s ease;
+        }
+        #container.fixed-size {
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        #container.responsive {
+            width: 90vw;
+            height: 90vh;
+            max-width: none;
+            max-height: none;
+        }
+        #container.responsive canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
+        }
+        #container.fixed-size canvas {
+            width: auto !important;
+            height: auto !important;
+        }
+        #container canvas {
+            display: block;
+        }
+        #controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            min-width: 250px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        #controls h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .osc-config {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 4px;
+        }
+        .osc-config h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        .osc-config input {
+            width: 100%;
+            padding: 6px 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+        .osc-config input[type="number"] {
+            width: 100%;
+        }
+        .osc-config button {
+            width: 100%;
+            padding: 8px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .osc-config button:hover {
+            background: #2980b9;
+        }
+        .osc-config button.connected {
+            background: #27ae60;
+        }
+        .osc-config button.connected:hover {
+            background: #229954;
+        }
+        .toggle-size-btn {
+            width: 100%;
+            padding: 6px;
+            background: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .toggle-size-btn:hover {
+            background: #8e44ad;
+        }
+        .osc-status {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .shapes-section {
+            margin-top: 20px;
+        }
+        .add-shape-btn {
+            width: 100%;
+            padding: 10px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        .add-shape-btn:hover {
+            background: #229954;
+        }
+        .file-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .file-btn {
+            flex: 1;
+            padding: 8px;
+            background: #34495e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .file-btn:hover {
+            background: #2c3e50;
+        }
+        .undo-btn {
+            width: 100%;
+            padding: 8px;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-bottom: 15px;
+        }
+        .undo-btn:hover {
+            background: #d35400;
+        }
+        .undo-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .shape-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        .shape-item.selected {
+            background: #e3f2fd;
+            border-left-color: #2196f3;
+        }
+        .shape-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 4px;
+        }
+        .shape-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 14px;
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            background: white;
+        }
+        .shape-name:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .hide-btn {
+            padding: 6px 8px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hide-btn:hover {
+            background: #7f8c8d;
+        }
+        .hide-btn.hidden {
+            background: #f39c12;
+        }
+        .hide-btn.hidden:hover {
+            background: #e67e22;
+        }
+        .hide-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        .front-btn {
+            padding: 6px 8px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .front-btn:hover {
+            background: #2980b9;
+        }
+        .front-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        .delete-btn {
+            padding: 6px 8px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        .delete-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        .corner {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 3px;
+        }
+        .fade-control {
+            margin-bottom: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 3px;
+        }
+        .fade-control label {
+            display: block;
+            font-size: 12px;
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .fade-control input[type="range"] {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        .fade-value {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+        }
+        .corner h5 {
+            margin: 0 0 6px 0;
+            color: #3498db;
+            font-size: 12px;
+        }
+        .input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .input-group label {
+            font-size: 11px;
+            color: #666;
+            min-width: 12px;
+        }
+        .input-group input {
+            width: 60px;
+            padding: 3px 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="controls">
+        <h3>Shapes</h3>
+        
+        <div class="osc-config">
+            <h4>Canvas Size</h4>
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; color: #666;">Width:</label>
+                    <input type="number" id="canvas-width" value="1920" style="width: 100%;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; color: #666;">Height:</label>
+                    <input type="number" id="canvas-height" value="1080" style="width: 100%;">
+                </div>
+            </div>
+            <button id="apply-canvas-size" style="width: 100%; padding: 6px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Apply Size</button>
+            <button id="toggle-size-mode" class="toggle-size-btn">Switch to Responsive</button>
+        </div>
+        
+        <div class="osc-config">
+            <h4>OSC Settings</h4>
+            <input type="text" id="osc-host" placeholder="OSC Host" value="localhost">
+            <input type="number" id="osc-port" placeholder="OSC Port" value="9998">
+            <input type="text" id="osc-address" placeholder="OSC Base Address" value="/shape">
+            <button id="osc-connect">Enable OSC</button>
+            <button id="osc-send-all" style="width: 100%; padding: 8px; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 8px;">Send All Values</button>
+            <div class="osc-status" id="osc-status">OSC Disabled - Note: Requires WebSocket bridge</div>
+        </div>
+        
+        <div class="shapes-section">
+            <button class="add-shape-btn" id="add-shape">+ Add Shape</button>
+            <button class="undo-btn" id="undo-btn" disabled>↶ Undo (Ctrl+Z)</button>
+            <div class="file-buttons">
+                <button class="file-btn" id="save-btn">Save</button>
+                <button class="file-btn" id="load-btn">Load</button>
+            </div>
+            <input type="file" id="file-input" accept=".json" style="display: none;">
+            <div id="shapes-list"></div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('=== Script started ===');
+        
+        // Canvas size mode (fixed vs responsive) - declare early
+        let isResponsiveMode = false;
+        
+        const app = new PIXI.Application({
+            width: 1920,
+            height: 1080,
+            backgroundColor: 0xf0f0f0,
+            antialias: true
+        });
+        
+        document.getElementById('container').appendChild(app.view);
+        
+        // OSC Setup using WebSocket
+        let ws = null;
+        let isConnected = false;
+        
+        function connectOSC() {
+            const host = document.getElementById('osc-host').value;
+            const port = document.getElementById('osc-port').value;
+            const btn = document.getElementById('osc-connect');
+            const status = document.getElementById('osc-status');
+            
+            if (isConnected && ws) {
+                ws.close();
+                ws = null;
+                isConnected = false;
+                btn.textContent = 'Enable OSC';
+                btn.classList.remove('connected');
+                status.textContent = 'OSC Disabled';
+                return;
+            }
+            
+            try {
+                const wsUrl = `ws://${host}:${port}`;
+                status.textContent = `Connecting to ${wsUrl}...`;
+                console.log('Attempting to connect to:', wsUrl);
+                
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = () => {
+                    isConnected = true;
+                    btn.textContent = 'Disable OSC';
+                    btn.classList.add('connected');
+                    status.textContent = `✓ Connected to ${wsUrl}`;
+                    console.log('WebSocket connected successfully');
+                    sendAllOSC();
+                };
+                
+                ws.onclose = () => {
+                    isConnected = false;
+                    ws = null;
+                    btn.textContent = 'Enable OSC';
+                    btn.classList.remove('connected');
+                    status.textContent = 'Connection closed';
+                    console.log('WebSocket closed');
+                };
+                
+                ws.onerror = (err) => {
+                    status.textContent = 'Error: Cannot connect. Is bridge running?';
+                    isConnected = false;
+                    btn.textContent = 'Enable OSC';
+                    btn.classList.remove('connected');
+                    console.error('WebSocket error event:', err);
+                    console.error('WebSocket readyState:', ws.readyState);
+                    console.error('Trying to connect to:', wsUrl);
+                };
+                
+            } catch (err) {
+                status.textContent = 'Error: ' + err.message;
+                console.error('Connection error:', err);
+            }
+        }
+        
+        function sendShapeOSC(shape) {
+            if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
+                console.log('Cannot send OSC: not connected');
+                return;
+            }
+            
+            const baseAddress = document.getElementById('osc-address').value;
+            const shapeName = shape.name.replace(/\s+/g, '_');
+            
+            try {
+
+                const messages = [
+                    { address: `${baseAddress}/${shapeName}/tl`, args: [(shape.corners.tl.x / app.view.clientWidth), (shape.corners.tl.y / app.view.clientHeight)] },
+                    { address: `${baseAddress}/${shapeName}/tr`, args: [(shape.corners.tr.x / app.view.clientWidth), (shape.corners.tr.y / app.view.clientHeight)] },
+                    { address: `${baseAddress}/${shapeName}/br`, args: [(shape.corners.br.x / app.view.clientWidth), (shape.corners.br.y / app.view.clientHeight)] },
+                    { address: `${baseAddress}/${shapeName}/bl`, args: [(shape.corners.bl.x / app.view.clientWidth), (shape.corners.bl.y / app.view.clientHeight)] },
+                    { address: `${baseAddress}/${shapeName}/fade`, args: [shape.fade] }
+                ];
+
+                //const messages = [
+                //    { address: `${baseAddress}/${shapeName}/tl`, args: [shape.corners.tl.x, shape.corners.tl.y] },
+                //    { address: `${baseAddress}/${shapeName}/tr`, args: [shape.corners.tr.x, shape.corners.tr.y] },
+                //    { address: `${baseAddress}/${shapeName}/br`, args: [shape.corners.br.x, shape.corners.br.y] },
+                //    { address: `${baseAddress}/${shapeName}/bl`, args: [shape.corners.bl.x, shape.corners.bl.y] },
+                //    { address: `${baseAddress}/${shapeName}/fade`, args: [shape.fade] }
+                //];
+                
+                messages.forEach(msg => {
+                    ws.send(JSON.stringify(msg));
+                    console.log('Sent OSC:', msg);
+                });
+            } catch (err) {
+                console.error('OSC send error:', err);
+            }
+        }
+        
+        function sendAllOSC() {
+            if (!isConnected || !ws || ws.readyState !== WebSocket.OPEN) {
+                console.log('Cannot send OSC: not connected');
+                return;
+            }
+            shapes.forEach(shape => sendShapeOSC(shape));
+            console.log(`Sent all values for ${shapes.length} shape(s)`);
+        }
+        
+        document.getElementById('osc-connect').addEventListener('click', connectOSC);
+        document.getElementById('osc-send-all').addEventListener('click', () => {
+            if (isConnected) {
+                sendAllOSC();
+                // Visual feedback
+                const btn = document.getElementById('osc-send-all');
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Sent!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 1000);
+            } else {
+                alert('Please connect to OSC first');
+            }
+        });
+        
+        // Canvas size change
+        function resizeCanvas() {
+            const width = parseInt(document.getElementById('canvas-width').value);
+            const height = parseInt(document.getElementById('canvas-height').value);
+            
+            if (width > 0 && height > 0 && width <= 10000 && height <= 10000) {
+                app.renderer.resize(width, height);
+                app.stage.hitArea = new PIXI.Rectangle(0, 0, width, height);
+                console.log(`Canvas resized to ${width}x${height}`);
+                
+                // Redraw all shapes
+                shapes.forEach(shape => drawShape(shape));
+                
+                // Save canvas size to localStorage
+                localStorage.setItem('canvasSize', JSON.stringify({ width, height }));
+            } else {
+                alert('Please enter valid dimensions (1-10000)');
+            }
+        }
+        
+        document.getElementById('apply-canvas-size').addEventListener('click', resizeCanvas);
+        
+        // Load saved canvas size
+        function loadCanvasSize() {
+            const saved = localStorage.getItem('canvasSize');
+            if (saved) {
+                try {
+                    const { width, height } = JSON.parse(saved);
+                    document.getElementById('canvas-width').value = width;
+                    document.getElementById('canvas-height').value = height;
+                    app.renderer.resize(width, height);
+                    console.log(`Canvas loaded with size ${width}x${height}`);
+                } catch (err) {
+                    console.error('Failed to load canvas size:', err);
+                }
+            }
+            
+            // Load size mode
+            const savedMode = localStorage.getItem('canvasSizeMode');
+            if (savedMode === 'responsive') {
+                isResponsiveMode = false; // Will be toggled to true
+                toggleSizeMode();
+            } else {
+                document.getElementById('container').classList.add('fixed-size');
+            }
+        }
+        
+        // Apply canvas size on Enter key
+        document.getElementById('canvas-width').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') resizeCanvas();
+        });
+        document.getElementById('canvas-height').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') resizeCanvas();
+        });
+        
+        // Load canvas size on startup
+        loadCanvasSize();
+        
+        // Undo button
+        document.getElementById('undo-btn').addEventListener('click', undo);
+        
+        // Keyboard shortcut for undo (Ctrl+Z or Cmd+Z)
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            }
+        });
+        
+        // Shapes management
+        let shapes = [];
+        let selectedShape = null;
+        let shapeCounter = 1;
+        let dragging = null;
+        let dragOffset = { x: 0, y: 0 };
+        
+        // Undo system
+        let undoStack = [];
+        const maxUndoSteps = 50;
+        
+        function saveUndoState() {
+            const state = {
+                shapes: shapes.map(s => ({
+                    name: s.name,
+                    color: s.color,
+                    visible: s.visible,
+                    fade: s.fade,
+                    corners: JSON.parse(JSON.stringify(s.corners))
+                })),
+                shapeCounter: shapeCounter
+            };
+            
+            undoStack.push(state);
+            if (undoStack.length > maxUndoSteps) {
+                undoStack.shift();
+            }
+            
+            document.getElementById('undo-btn').disabled = false;
+        }
+        
+        function undo() {
+            if (undoStack.length === 0) return;
+            
+            const state = undoStack.pop();
+            loadShapesFromJSON(state, false); // false = don't save undo state
+            
+            document.getElementById('undo-btn').disabled = undoStack.length === 0;
+            console.log('Undo performed, states remaining:', undoStack.length);
+        }
+        
+        const handleSize = 12;
+        const colors = [0x3498db, 0xe74c3c, 0x2ecc71, 0xf39c12, 0x9b59b6, 0x1abc9c];
+        
+        function createShape(name, x, y, w, h) {
+            saveUndoState();
+            
+            const color = colors[(shapes.length) % colors.length];
+            
+            const shape = {
+                id: Date.now(),
+                name: name,
+                color: color,
+                visible: true,
+                fade: 1.0,
+                corners: {
+                    tl: { x: x, y: y },
+                    tr: { x: x + w, y: y },
+                    br: { x: x + w, y: y + h },
+                    bl: { x: x, y: y + h }
+                },
+                graphics: new PIXI.Graphics(),
+                text: new PIXI.Text(name, {
+                    fontSize: 24,
+                    fill: color,
+                    fontWeight: 'bold'
+                }),
+                handles: []
+            };
+            
+            shape.graphics.eventMode = 'static';
+            shape.graphics.cursor = 'pointer';
+            shape.graphics.shapeData = shape;
+            
+            shape.text.alpha = 0.3;
+            
+            app.stage.addChild(shape.graphics);
+            app.stage.addChild(shape.text);
+            
+            for (let i = 0; i < 4; i++) {
+                const handle = new PIXI.Graphics();
+                handle.eventMode = 'static';
+                handle.cursor = 'pointer';
+                handle.shapeData = shape;
+                handle.index = i;
+                
+                handle.on('pointerdown', (e) => {
+                    selectShape(shape);
+                    saveUndoState();
+                    dragging = { type: 'handle', shape: shape, index: i };
+                    handle.eventMode = 'static';
+                    e.stopPropagation();
+                });
+                
+                shape.handles.push(handle);
+                app.stage.addChild(handle);
+            }
+            
+            shape.graphics.on('pointerdown', (e) => {
+                selectShape(shape);
+                saveUndoState();
+                dragging = { type: 'shape', shape: shape };
+                const pos = e.data.global;
+                dragOffset.x = pos.x;
+                dragOffset.y = pos.y;
+            });
+            
+            shapes.push(shape);
+            drawShape(shape);
+            updateShapesList();
+            selectShape(shape);
+            sendShapeOSC(shape);
+            
+            return shape;
+        }
+        
+        function selectShape(shape) {
+            if (selectedShape === shape) return; // Don't update if already selected
+            
+            selectedShape = shape;
+            shapes.forEach(s => {
+                s.handles.forEach(h => h.visible = (s === shape && s.visible));
+            });
+            
+            // Automatically bring selected shape to front
+            bringToFront(shape);
+            
+            updateShapesList();
+            updateInputs();
+        }
+        
+        function toggleShapeVisibility(shape) {
+            saveUndoState();
+            
+            shape.visible = !shape.visible;
+            shape.graphics.visible = shape.visible;
+            shape.text.visible = shape.visible;
+            shape.handles.forEach(h => h.visible = shape.visible && shape === selectedShape);
+            updateShapesList();
+            autoSave();
+        }
+        
+        function bringToFront(shape) {
+            // Move shape graphics and text to top
+            app.stage.removeChild(shape.graphics);
+            app.stage.removeChild(shape.text);
+            app.stage.addChild(shape.graphics);
+            app.stage.addChild(shape.text);
+            
+            // Move handles to top (they should always be above shapes)
+            shape.handles.forEach(h => {
+                app.stage.removeChild(h);
+                app.stage.addChild(h);
+            });
+            
+            console.log(`Brought "${shape.name}" to front`);
+        }
+        
+        function deleteShape(shape) {
+            saveUndoState();
+            
+            const idx = shapes.indexOf(shape);
+            if (idx > -1) {
+                shapes.splice(idx, 1);
+                app.stage.removeChild(shape.graphics);
+                app.stage.removeChild(shape.text);
+                shape.handles.forEach(h => app.stage.removeChild(h));
+                
+                if (selectedShape === shape) {
+                    selectedShape = shapes.length > 0 ? shapes[0] : null;
+                    if (selectedShape) selectShape(selectedShape);
+                }
+                
+                updateShapesList();
+            }
+        }
+        
+        function drawShape(shape) {
+            shape.graphics.clear();
+            shape.graphics.lineStyle(2, shape.color);
+            shape.graphics.beginFill(shape.color, 0.2);
+            
+            shape.graphics.moveTo(shape.corners.tl.x, shape.corners.tl.y);
+            shape.graphics.lineTo(shape.corners.tr.x, shape.corners.tr.y);
+            shape.graphics.lineTo(shape.corners.br.x, shape.corners.br.y);
+            shape.graphics.lineTo(shape.corners.bl.x, shape.corners.bl.y);
+            shape.graphics.closePath();
+            shape.graphics.endFill();
+            
+            // Update text position (center of shape)
+            const centerX = (shape.corners.tl.x + shape.corners.tr.x + shape.corners.br.x + shape.corners.bl.x) / 4;
+            const centerY = (shape.corners.tl.y + shape.corners.tr.y + shape.corners.br.y + shape.corners.bl.y) / 4;
+            shape.text.position.set(centerX - shape.text.width / 2, centerY - shape.text.height / 2);
+            shape.text.visible = shape.visible;
+            
+            const positions = [
+                shape.corners.tl,
+                shape.corners.tr,
+                shape.corners.br,
+                shape.corners.bl
+            ];
+            
+            shape.handles.forEach((handle, i) => {
+                handle.clear();
+                handle.beginFill(0xffffff, 0.5);
+                handle.lineStyle(2, shape.color);
+                handle.drawCircle(0, 0, handleSize);
+                handle.endFill();
+                handle.position.set(positions[i].x, positions[i].y);
+            });
+        }
+        
+        function updateShapesList() {
+            const list = document.getElementById('shapes-list');
+            const focusedElement = document.activeElement;
+            const focusedShapeId = focusedElement?.closest('.shape-item')?.dataset?.shapeId;
+            const wasFocusedOnName = focusedElement?.classList?.contains('shape-name');
+            
+            list.innerHTML = '';
+            
+            shapes.forEach(shape => {
+                const item = document.createElement('div');
+                item.className = 'shape-item' + (shape === selectedShape ? ' selected' : '');
+                item.dataset.shapeId = shape.id;
+                
+                const header = document.createElement('div');
+                header.className = 'shape-header';
+                
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.className = 'shape-name';
+                nameInput.value = shape.name;
+                nameInput.addEventListener('input', (e) => {
+                    shape.name = e.target.value;
+                    shape.text.text = e.target.value;
+                    drawShape(shape);
+                    sendShapeOSC(shape);
+                });
+                nameInput.addEventListener('click', () => selectShape(shape));
+                
+                const hideBtn = document.createElement('button');
+                hideBtn.className = 'hide-btn' + (shape.visible ? '' : ' hidden');
+                hideBtn.title = shape.visible ? 'Hide' : 'Show';
+                if (shape.visible) {
+                    hideBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>';
+                } else {
+                    hideBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>';
+                }
+                hideBtn.addEventListener('click', () => {
+                    toggleShapeVisibility(shape);
+                });
+                
+                const frontBtn = document.createElement('button');
+                frontBtn.className = 'front-btn';
+                frontBtn.title = 'Bring to Front';
+                frontBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>';
+                frontBtn.addEventListener('click', () => bringToFront(shape));
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.title = 'Delete';
+                deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>';
+                deleteBtn.addEventListener('click', () => deleteShape(shape));
+                
+                header.appendChild(nameInput);
+                header.appendChild(frontBtn);
+                header.appendChild(hideBtn);
+                header.appendChild(deleteBtn);
+                item.appendChild(header);
+                
+                if (shape === selectedShape) {
+                    // Fade slider
+                    const fadeDiv = document.createElement('div');
+                    fadeDiv.className = 'fade-control';
+                    
+                    const fadeLabel = document.createElement('label');
+                    fadeLabel.textContent = 'Fade (Mapping ↔ Output)';
+                    fadeDiv.appendChild(fadeLabel);
+                    
+                    const fadeSlider = document.createElement('input');
+                    fadeSlider.type = 'range';
+                    fadeSlider.min = '0';
+                    fadeSlider.max = '1';
+                    fadeSlider.step = '0.01';
+                    fadeSlider.value = shape.fade;
+                    fadeSlider.addEventListener('input', (e) => {
+                        shape.fade = parseFloat(e.target.value);
+                        fadeValueDisplay.textContent = `${(shape.fade * 100).toFixed(0)}% Output`;
+                        sendShapeOSC(shape);
+                        autoSave();
+                    });
+                    fadeDiv.appendChild(fadeSlider);
+                    
+                    const fadeValueDisplay = document.createElement('div');
+                    fadeValueDisplay.className = 'fade-value';
+                    fadeValueDisplay.textContent = `${(shape.fade * 100).toFixed(0)}% Output`;
+                    fadeDiv.appendChild(fadeValueDisplay);
+                    
+                    item.appendChild(fadeDiv);
+                    
+                    const corners = ['tl', 'tr', 'br', 'bl'];
+                    const labels = ['Top-Left', 'Top-Right', 'Bottom-Right', 'Bottom-Left'];
+                    
+                    corners.forEach((corner, i) => {
+                        const cornerDiv = document.createElement('div');
+                        cornerDiv.className = 'corner';
+                        
+                        const title = document.createElement('h5');
+                        title.textContent = labels[i];
+                        cornerDiv.appendChild(title);
+                        
+                        const inputGroup = document.createElement('div');
+                        inputGroup.className = 'input-group';
+                        
+                        const xLabel = document.createElement('label');
+                        xLabel.textContent = 'X:';
+                        const xInput = document.createElement('input');
+                        xInput.type = 'number';
+                        xInput.value = Math.round(shape.corners[corner].x);
+                        xInput.addEventListener('input', (e) => {
+                            shape.corners[corner].x = parseFloat(e.target.value);
+                            drawShape(shape);
+                            sendShapeOSC(shape);
+                        });
+                        
+                        xInput.addEventListener('focus', () => {
+                            saveUndoState();
+                        });
+                        
+                        const yLabel = document.createElement('label');
+                        yLabel.textContent = 'Y:';
+                        const yInput = document.createElement('input');
+                        yInput.type = 'number';
+                        yInput.value = Math.round(shape.corners[corner].y);
+                        yInput.addEventListener('input', (e) => {
+                            shape.corners[corner].y = parseFloat(e.target.value);
+                            drawShape(shape);
+                            sendShapeOSC(shape);
+                        });
+                        
+                        yInput.addEventListener('focus', () => {
+                            saveUndoState();
+                        });
+                        
+                        inputGroup.appendChild(xLabel);
+                        inputGroup.appendChild(xInput);
+                        inputGroup.appendChild(yLabel);
+                        inputGroup.appendChild(yInput);
+                        cornerDiv.appendChild(inputGroup);
+                        item.appendChild(cornerDiv);
+                    });
+                }
+                
+                list.appendChild(item);
+            });
+            
+            // Restore focus if it was on a name input
+            if (wasFocusedOnName && focusedShapeId) {
+                const itemToFocus = list.querySelector(`[data-shape-id="${focusedShapeId}"]`);
+                if (itemToFocus) {
+                    const nameInput = itemToFocus.querySelector('.shape-name');
+                    if (nameInput) {
+                        nameInput.focus();
+                    }
+                }
+            }
+        }
+        
+        function updateInputs() {
+            updateShapesList();
+        }
+        
+        app.stage.eventMode = 'static';
+        app.stage.hitArea = app.screen;
+        
+        app.stage.on('pointermove', (e) => {
+            if (!dragging) return;
+            
+            const pos = e.data.global;
+            const shape = dragging.shape;
+            
+            if (dragging.type === 'shape') {
+                const dx = pos.x - dragOffset.x;
+                const dy = pos.y - dragOffset.y;
+                
+                shape.corners.tl.x += dx;
+                shape.corners.tl.y += dy;
+                shape.corners.tr.x += dx;
+                shape.corners.tr.y += dy;
+                shape.corners.br.x += dx;
+                shape.corners.br.y += dy;
+                shape.corners.bl.x += dx;
+                shape.corners.bl.y += dy;
+                
+                dragOffset.x = pos.x;
+                dragOffset.y = pos.y;
+            } else if (dragging.type === 'handle') {
+                const idx = dragging.index;
+                const corners = ['tl', 'tr', 'br', 'bl'];
+                shape.corners[corners[idx]].x = pos.x;
+                shape.corners[corners[idx]].y = pos.y;
+            }
+            
+            drawShape(shape);
+            updateInputs();
+            sendShapeOSC(shape);
+        });
+        
+        app.stage.on('pointerup', () => {
+            dragging = null;
+        });
+        
+        app.stage.on('pointerupoutside', () => {
+            dragging = null;
+        });
+        
+        // Also handle pointer cancel (for touch devices)
+        app.stage.on('pointercancel', () => {
+            dragging = null;
+        });
+        
+        document.getElementById('add-shape').addEventListener('click', () => {
+            const x = 400 + (shapes.length * 50);
+            const y = 300 + (shapes.length * 50);
+            createShape(`Shape${shapeCounter++}`, x, y, 300, 200);
+        });
+        
+        // Save and Load functionality
+        function saveShapesToJSON() {
+            const data = {
+                shapes: shapes.map(s => ({
+                    name: s.name,
+                    color: s.color,
+                    visible: s.visible,
+                    fade: s.fade,
+                    corners: s.corners
+                })),
+                shapeCounter: shapeCounter
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'shapes.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            console.log('Shapes saved');
+        }
+        
+        function loadShapesFromJSON(jsonData, saveUndo = true) {
+            if (saveUndo) {
+                saveUndoState();
+            }
+            
+            // Clear existing shapes
+            shapes.forEach(shape => {
+                app.stage.removeChild(shape.graphics);
+                app.stage.removeChild(shape.text);
+                shape.handles.forEach(h => app.stage.removeChild(h));
+            });
+            shapes = [];
+            
+            // Load shapes from JSON
+            if (jsonData.shapeCounter) {
+                shapeCounter = jsonData.shapeCounter;
+            }
+            
+            jsonData.shapes.forEach(shapeData => {
+                const color = shapeData.color || colors[(shapes.length) % colors.length];
+                
+                const shape = {
+                    id: Date.now() + shapes.length,
+                    name: shapeData.name,
+                    color: color,
+                    visible: shapeData.visible !== undefined ? shapeData.visible : true,
+                    fade: shapeData.fade !== undefined ? shapeData.fade : 1.0,
+                    corners: shapeData.corners,
+                    graphics: new PIXI.Graphics(),
+                    text: new PIXI.Text(shapeData.name, {
+                        fontSize: 24,
+                        fill: color,
+                        fontWeight: 'bold'
+                    }),
+                    handles: []
+                };
+                
+                shape.graphics.eventMode = 'static';
+                shape.graphics.cursor = 'pointer';
+                shape.graphics.shapeData = shape;
+                shape.graphics.visible = shape.visible;
+                
+                shape.text.alpha = 0.3;
+                shape.text.visible = shape.visible;
+                
+                app.stage.addChild(shape.graphics);
+                app.stage.addChild(shape.text);
+                
+                for (let i = 0; i < 4; i++) {
+                    const handle = new PIXI.Graphics();
+                    handle.eventMode = 'static';
+                    handle.cursor = 'pointer';
+                    handle.shapeData = shape;
+                    handle.index = i;
+                    handle.visible = shape.visible && (shapes.length === 0);
+                    
+                    handle.on('pointerdown', (e) => {
+                        selectShape(shape);
+                        saveUndoState();
+                        dragging = { type: 'handle', shape: shape, index: i };
+                        handle.eventMode = 'static';
+                        e.stopPropagation();
+                    });
+                    
+                    shape.handles.push(handle);
+                    app.stage.addChild(handle);
+                }
+                
+                shape.graphics.on('pointerdown', (e) => {
+                    selectShape(shape);
+                    saveUndoState();
+                    dragging = { type: 'shape', shape: shape };
+                    const pos = e.data.global;
+                    dragOffset.x = pos.x;
+                    dragOffset.y = pos.y;
+                });
+                
+                shapes.push(shape);
+                drawShape(shape);
+            });
+            
+            if (shapes.length > 0) {
+                selectShape(shapes[0]);
+            }
+            
+            updateShapesList();
+            sendAllOSC();
+            console.log('Shapes loaded:', shapes.length);
+        }
+        
+        // Auto-save to localStorage
+        function autoSave() {
+            const data = {
+                shapes: shapes.map(s => ({
+                    name: s.name,
+                    color: s.color,
+                    visible: s.visible,
+                    fade: s.fade,
+                    corners: s.corners
+                })),
+                shapeCounter: shapeCounter
+            };
+            localStorage.setItem('pixiShapes', JSON.stringify(data));
+        }
+        
+        // Auto-load from localStorage on startup
+        function autoLoad() {
+            const saved = localStorage.getItem('pixiShapes');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    loadShapesFromJSON(data);
+                    console.log('Auto-loaded shapes from localStorage');
+                } catch (err) {
+                    console.error('Failed to load saved shapes:', err);
+                    // Create initial shape if loading fails
+                    createShape('Shape1', 400, 300, 400, 300);
+                }
+            } else {
+                // Create initial shape
+                createShape('Shape1', 400, 300, 400, 300);
+            }
+        }
+        
+        // Modified createShape to trigger auto-save
+        const originalCreateShape = createShape;
+        createShape = function(...args) {
+            const result = originalCreateShape(...args);
+            autoSave();
+            return result;
+        };
+        
+        // Save button
+        document.getElementById('save-btn').addEventListener('click', saveShapesToJSON);
+        
+        // Load button
+        document.getElementById('load-btn').addEventListener('click', () => {
+            document.getElementById('file-input').click();
+        });
+        
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        loadShapesFromJSON(data);
+                        autoSave(); // Save to localStorage after loading
+                    } catch (err) {
+                        console.error('Failed to parse JSON:', err);
+                        alert('Invalid JSON file');
+                    }
+                };
+                reader.readAsText(file);
+            }
+            e.target.value = ''; // Reset input
+        });
+        
+        // Auto-save on shape modifications
+        const originalDrawShape = drawShape;
+        drawShape = function(shape) {
+            originalDrawShape(shape);
+            autoSave();
+        };
+        
+        const originalDeleteShape = deleteShape;
+        deleteShape = function(shape) {
+            originalDeleteShape(shape);
+            autoSave();
+        };
+        
+        // Initialize
+        autoLoad();
+        
+        console.log('After autoLoad, setting up toggle button');
+        
+        function toggleSizeMode() {
+            isResponsiveMode = !isResponsiveMode;
+            const container = document.getElementById('container');
+            const btn = document.getElementById('toggle-size-mode');
+            
+            console.log('Toggling size mode. isResponsive:', isResponsiveMode);
+            
+            if (isResponsiveMode) {
+                container.classList.remove('fixed-size');
+                container.classList.add('responsive');
+                btn.textContent = 'Switch to Fixed Size';
+                
+                // Disable PixiJS interaction events in responsive mode (CSS scaled)
+                app.renderer.events.destroy();
+                app.renderer.events = null;
+                
+                console.log('Applied responsive class - interactions disabled');
+            } else {
+                container.classList.remove('responsive');
+                container.classList.add('fixed-size');
+                btn.textContent = 'Switch to Responsive';
+                
+                // Re-enable PixiJS interaction events in fixed mode
+                if (!app.renderer.events) {
+                    const { EventSystem } = PIXI;
+                    app.renderer.events = new EventSystem(app.renderer);
+                    app.renderer.events.setTargetElement(app.renderer.view);
+                }
+                
+                console.log('Applied fixed-size class - interactions enabled');
+            }
+            
+            localStorage.setItem('canvasSizeMode', isResponsiveMode ? 'responsive' : 'fixed');
+        }
+        
+        // Canvas size mode toggle - moved here to ensure it runs
+        const toggleSizeModeBtn = document.getElementById('toggle-size-mode');
+        console.log('Toggle button element:', toggleSizeModeBtn);
+        if (toggleSizeModeBtn) {
+            toggleSizeModeBtn.addEventListener('click', () => {
+                console.log('Toggle button clicked!');
+                toggleSizeMode();
+            });
+            console.log('Toggle button listener added successfully');
+        } else {
+            console.error('Could not find toggle-size-mode button!');
+        }
+    </script>
+</body>
+</html>
