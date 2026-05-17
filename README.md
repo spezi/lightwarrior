@@ -1,5 +1,8 @@
 # Lightwarrior
 
+## todo 
+* hyperion configs auf neue version heben 
+
 ## Prerequisites
 
 ```
@@ -73,3 +76,17 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 
 "global config" -> "Build Ossia Score File" (build processes json and outputshader.fs) -> manual copy shader code to score ->
 "Patch score Addresses" -> set osc addresses and generate lightwarrior_patched.score 
+
+### troubleshooting
+
+#### Launch Control XL
+
+check if connected:
+```bash
+cat /proc/asound/seq/clients | grep -A3 "Launch"
+```
+
+check input values:
+```bash
+aseqdump -p 28:0
+```

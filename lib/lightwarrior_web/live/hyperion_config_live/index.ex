@@ -910,6 +910,7 @@ defmodule LightwarriorWeb.HyperionConfigLive.Index do
     output_isf_shader_solid = Lightwarrior.OutputShader.build_solid()
     # TODO: Not working at the moment, ossia have to compile the isf shader
     dbg(Lightwarrior.OutputShader.patch_scorefile(output_isf_shader))
+    # for stripe animations with solid color
     dbg(Lightwarrior.OutputShader.patch_scorefile_solid(output_isf_shader_solid))
     {:noreply, socket}
   end
