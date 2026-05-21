@@ -33,6 +33,12 @@ gst-launch-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc socket
 decodebin ! videoconvert ! jpegenc ! multipartmux ! \
 tcpserversink host=127.0.0.1 port=8081
 
+#### test connection
+
+sudo nmap -Pn -p <port> <target-IP>
+sudo nmap -Pn -p 65506 10.0.0.1
+
+
 
 #### ablage 
 - hyperion 
