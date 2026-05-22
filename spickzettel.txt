@@ -37,8 +37,10 @@ tcpserversink host=127.0.0.1 port=8081
 
 sudo nmap -Pn -p <port> <target-IP>
 sudo nmap -Pn -p 65506 10.0.0.1
+sudo nmap -sU -p 65506 10.0.0.1/8
 
-
+#### start dhcp server for arubas
+sudo dnsmasq -k -z -i enp2s0 -I lo --no-resolv --no-hosts --dhcp-range=10.0.0.210,10.0.0.250,24h
 
 #### ablage 
 - hyperion 

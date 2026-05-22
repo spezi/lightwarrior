@@ -287,76 +287,6 @@
   ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:6px;}
   ::-webkit-scrollbar-track{ background:transparent;}
   input[type=file]{ display:none; }
-
-  /* ---- gallery ---- */
-  .gallery {
-    position:absolute; inset:0; top:0; z-index:20;
-    background: var(--bg); display:none; flex-direction:column;
-  }
-  .gallery.show { display:flex; }
-  .gbar {
-    height:46px; flex:none; display:flex; align-items:center; gap:14px;
-    padding:0 18px; border-bottom:1px solid var(--line); background:var(--panel);
-  }
-  .gtitle { font-weight:600; font-size:13px; }
-  .gtitle span { color:var(--ink-faint); margin-left:6px; font-size:11px; }
-  .gprog {
-    font-family:'Space Mono',monospace; font-size:11px; color:var(--acc);
-  }
-  .gsource { font-size:11px; color:var(--ink-faint); display:flex; align-items:center; gap:7px; }
-  .gsource span { color:var(--ink-dim); }
-  .grid {
-    flex:1; overflow-y:auto; padding:18px;
-    display:grid; gap:14px;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    align-content:start;
-  }
-  .card {
-    border:1px solid var(--line); border-radius:10px; overflow:hidden;
-    background:var(--panel); cursor:pointer; transition:.14s; position:relative;
-    display:flex; flex-direction:column;
-  }
-  .card:hover { border-color:var(--acc); transform:translateY(-2px); box-shadow:var(--shadow); }
-  .card .thumbbox {
-    position:relative; aspect-ratio:16/9; background:#000; overflow:hidden;
-  }
-  .card .thumbbox canvas, .card .thumbbox img {
-    width:100%; height:100%; object-fit:cover; display:block;
-  }
-  .card .spin {
-    position:absolute; inset:0; display:grid; place-items:center;
-    color:var(--ink-faint); font-family:'Space Mono',monospace; font-size:11px;
-  }
-  .card .spin::after {
-    content:""; width:22px; height:22px; margin-top:30px;
-    border:2px solid var(--line); border-top-color:var(--acc); border-radius:50%;
-    animation:spin .7s linear infinite; position:absolute;
-  }
-  @keyframes spin{ to{ transform:rotate(360deg);} }
-  .card.err .thumbbox { background:#1a1014; }
-  .card.err .badge-err {
-    position:absolute; inset:0; display:grid; place-items:center;
-    color:var(--err); font-family:'Space Mono',monospace; font-size:11px; text-align:center; padding:10px;
-  }
-  .card .meta { padding:9px 11px; }
-  .card .cname {
-    font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .card .ctype {
-    font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.1em;
-    text-transform:uppercase; color:var(--ink-faint); margin-top:3px;
-  }
-  .card .ctype.filter{ color:var(--acc);} .card .ctype.generator{ color:var(--warn);}
-  .card .ctype.transition{ color:var(--acc-2);}
-  .card .play-tag {
-    position:absolute; top:7px; right:7px; background:rgba(10,12,16,.8);
-    border:1px solid var(--line); border-radius:5px; font-size:9px;
-    padding:2px 6px; color:var(--ink-dim); font-family:'Space Mono',monospace;
-    opacity:0; transition:.14s;
-  }
-  .card:hover .play-tag{ opacity:1; }
-  .gempty{ color:var(--ink-faint); padding:40px; text-align:center; grid-column:1/-1; }
 </style>
 </head>
 <body>
@@ -381,16 +311,14 @@
     <div class="section">
       <h3>Shader source</h3>
       <div class="drop" id="dropFs">
-        <div class="big">Drop an .fs shader — or a whole folder</div>
-        <div class="small">a folder builds a thumbnail gallery · <span class="fname" id="fsName"></span></div>
+        <div class="big">Drop an .fs / ISF shader</div>
+        <div class="small">or click to browse · <span class="fname" id="fsName"></span></div>
       </div>
       <div class="row">
-        <button class="btn ghost" id="loadExample">⚡ Example</button>
-        <button class="btn ghost" id="pickFs">📂 File</button>
-        <button class="btn ghost" id="pickDir">🗂 Folder</button>
+        <button class="btn ghost" id="loadExample">⚡ Load example</button>
+        <button class="btn ghost" id="pickFs">📂 Browse</button>
       </div>
       <input type="file" id="fsInput" accept=".fs,.txt,.glsl,.frag,*/*">
-      <input type="file" id="dirInput" webkitdirectory directory multiple>
     </div>
 
     <div class="section">
@@ -427,7 +355,6 @@
       <div class="grp">
         <button class="iconbtn" id="pixelBtn" title="Toggle pixelated scaling">▦</button>
         <button class="iconbtn" id="snapBtn" title="Save PNG snapshot">⤓</button>
-        <button class="iconbtn" id="galleryBtn" title="Toggle gallery" style="display:none">▤</button>
       </div>
       <div class="spacer"></div>
       <div class="stat mono" id="passLabel" style="font-size:11px"></div>
@@ -447,20 +374,6 @@
         </div>
       </div>
       <div class="errbox" id="errbox"><b>SHADER ERROR</b><div id="errtext"></div></div>
-    </div>
-
-    <div class="gallery" id="gallery">
-      <div class="gbar">
-        <div class="gtitle">Gallery <span id="gcount" class="mono"></span></div>
-        <div id="gprog" class="gprog"></div>
-        <div class="spacer"></div>
-        <label class="gsource mono" title="Image fed to filter shaders">
-          src: <span id="gsrcName">test card</span>
-          <button class="mini" id="gsrcPick" style="display:inline-block;flex:none">change</button>
-        </label>
-        <button class="iconbtn" id="galleryClose" title="Close gallery">✕</button>
-      </div>
-      <div class="grid" id="ggrid"></div>
     </div>
   </main>
 </div>
@@ -764,36 +677,10 @@
       const f = e.dataTransfer.files[0]; if(f) onFile(f);
     });
   }
-  // shader dropzone: a folder → gallery, a single file → load it
-  (function(){
-    const el=$('dropFs');
-    el.addEventListener('dragover', e=>{e.preventDefault(); el.classList.add('over');});
-    el.addEventListener('dragleave', ()=>el.classList.remove('over'));
-    el.addEventListener('drop', async e=>{
-      e.preventDefault(); el.classList.remove('over');
-      const cap = captureDrop(e);                    // SYNC capture first
-      if (cap.hasDir){ await routeFolder(cap); return; }
-      const f = cap.file; if(!f) return;
-      const r=new FileReader(); r.onload=()=>{ $('fsName').textContent=f.name; loadShaderSource(r.result, f.name);}; r.readAsText(f);
-    });
-  })();
+  wireDrop($('dropFs'), f=>{ const r=new FileReader(); r.onload=()=>{ $('fsName').textContent=f.name; loadShaderSource(r.result, f.name);}; r.readAsText(f); });
   wireDrop($('dropImg'), handleImageFile);
-  // the stage accepts folder drops (→gallery), image drops (→inputImage), or a single shader
-  (function(){
-    const el=$('cwrap');
-    el.addEventListener('dragover', e=>{e.preventDefault(); el.classList.add('over');});
-    el.addEventListener('dragleave', ()=>el.classList.remove('over'));
-    el.addEventListener('drop', async e=>{
-      e.preventDefault(); el.classList.remove('over');
-      const cap = captureDrop(e);                    // SYNC capture first
-      if (cap.hasDir){ await routeFolder(cap); return; }
-      const f = cap.file; if(!f) return;
-      if (/^image\//.test(f.type)) { handleImageFile(f); return; }
-      if (/\.(fs|frag|glsl|txt)$/i.test(f.name)){
-        const r=new FileReader(); r.onload=()=>{ $('fsName').textContent=f.name; loadShaderSource(r.result, f.name);}; r.readAsText(f);
-      }
-    });
-  })();
+  // whole window also accepts image drops onto the stage
+  wireDrop($('cwrap'), handleImageFile);
 
   $('dropFs').onclick = ()=> $('fsInput').click();
   $('pickFs').onclick = ()=> $('fsInput').click();
@@ -831,267 +718,6 @@
   });
 
   window.addEventListener('resize', ()=>{ if(resMode==='fit') sizeCanvas(); });
-
-  // ---------- gallery: folder → thumbnails ----------
-  // Offscreen GL context dedicated to thumbnail rendering, so it never
-  // disturbs the main preview renderer or its uniform state.
-  const thumbCanvas = document.createElement('canvas');
-  thumbCanvas.width = 320; thumbCanvas.height = 180;
-  const thumbGLOpts = { preserveDrawingBuffer:true, antialias:true, premultipliedAlpha:false };
-  const thumbGL = thumbCanvas.getContext('webgl', thumbGLOpts)
-               || thumbCanvas.getContext('experimental-webgl', thumbGLOpts);
-
-  let galleryItems = [];          // [{name, path, src, parser, type, hasImage}]
-  let gallerySrcImage = null;     // image fed to filter thumbnails
-  let galleryBusy = false;
-  const hoverState = { card:null, renderer:null, raf:null };
-
-  function makeTestCard(cb){
-    // reuse the same generator the example uses
-    makeDefaultImage(cb);
-  }
-
-  // Recursively collect .fs files from a dropped folder (webkitGetAsEntry tree)
-  function readEntries(dirReader){
-    return new Promise(res=>{
-      const all=[];
-      const pump=()=> dirReader.readEntries(batch=>{
-        if(!batch.length) return res(all);
-        all.push(...batch); pump();
-      }, ()=>res(all));
-      pump();
-    });
-  }
-  async function walkEntry(entry, path, out){
-    if (entry.isFile){
-      if (/\.(fs|frag|glsl|txt)$/i.test(entry.name)){
-        out.push(new Promise(res=>entry.file(f=>res({file:f, path:path+entry.name}), ()=>res(null))));
-      }
-    } else if (entry.isDirectory){
-      const reader = entry.createReader();
-      const kids = await readEntries(reader);
-      for (const k of kids) await walkEntry(k, path+entry.name+'/', out);
-    }
-  }
-
-  // entries must be captured SYNCHRONOUSLY from the drop event (dataTransfer
-  // is invalidated after the first await), then walked here asynchronously.
-  async function collectFromEntries(entries){
-    const filePromises = [];
-    for (const e of entries) await walkEntry(e, '', filePromises);
-    const files = (await Promise.all(filePromises)).filter(Boolean);
-    return files;  // [{file, path}]
-  }
-
-  // From <input webkitdirectory> — files carry webkitRelativePath
-  function collectFromInput(fileList){
-    return [...fileList]
-      .filter(f=>/\.(fs|frag|glsl|txt)$/i.test(f.name))
-      .map(f=>({file:f, path:f.webkitRelativePath||f.name}));
-  }
-
-  async function buildGallery(fileEntries){
-    if (!fileEntries.length){
-      // not a shader folder — ignore quietly
-      return;
-    }
-    // read all sources
-    const sources = await Promise.all(fileEntries.map(fe=>new Promise(res=>{
-      const r=new FileReader();
-      r.onload=()=>res({name:fe.file.name, path:fe.path, src:r.result});
-      r.onerror=()=>res(null);
-      r.readAsText(fe.file);
-    })));
-
-    galleryItems = sources.filter(Boolean).map(s=>{
-      const p=new Parser();
-      try { p.parse(s.src); } catch(e){ /* invalid */ }
-      const hasImage = p.valid && (p.inputs||[]).some(i=>i.TYPE==='image');
-      return { ...s, parser:p, valid:p.valid, type:p.valid?p.type:'invalid', hasImage };
-    });
-
-    $('galleryBtn').style.display='';
-    openGallery();
-    renderGalleryGrid();
-    if (!gallerySrcImage) makeTestCard(img=>{ gallerySrcImage=img; });
-    queueThumbnails();
-  }
-
-  function renderGalleryGrid(){
-    const grid=$('ggrid'); grid.innerHTML='';
-    $('gcount').textContent = '· '+galleryItems.length+' shaders';
-    if (!galleryItems.length){ grid.innerHTML='<div class="gempty">No .fs shaders found in that folder.</div>'; return; }
-    galleryItems.forEach((it,idx)=>{
-      const card=document.createElement('div'); card.className='card'; card.dataset.idx=idx;
-      if (!it.valid) card.classList.add('err');
-      card.innerHTML = `
-        <div class="thumbbox">
-          ${it.valid ? '<div class="spin">rendering</div>' : '<div class="badge-err">parse error</div>'}
-          <span class="play-tag">click to open</span>
-        </div>
-        <div class="meta">
-          <div class="cname" title="${it.path}">${it.name.replace(/\.(fs|frag|glsl|txt)$/i,'')}</div>
-          <div class="ctype ${it.type}">${it.type}${it.parser&&it.parser.passes&&it.parser.passes.length>1?' · '+it.parser.passes.length+'p':''}</div>
-        </div>`;
-      if (it.valid){
-        card.onclick = ()=>{ closeGallery(); loadShaderSource(it.src, it.name); };
-        card.onmouseenter = ()=> startHoverPreview(card, it);
-        card.onmouseleave = ()=> stopHoverPreview();
-      } else {
-        card.querySelector('.badge-err').textContent =
-          (it.parser && it.parser.error && (it.parser.error.message||it.parser.error)) || 'invalid ISF';
-      }
-      grid.appendChild(card);
-    });
-  }
-
-  // Sequentially render a static thumbnail for each valid shader
-  async function queueThumbnails(){
-    if (galleryBusy) return; galleryBusy=true;
-    const items = galleryItems.map((it,idx)=>({it,idx})).filter(x=>x.it.valid);
-    for (let n=0; n<items.length; n++){
-      const {it,idx}=items[n];
-      $('gprog').textContent = `thumbnailing ${n+1}/${items.length}`;
-      await renderThumbnail(it, idx);
-      await new Promise(r=>setTimeout(r,0)); // yield to UI
-    }
-    $('gprog').textContent='';
-    galleryBusy=false;
-  }
-
-  function renderThumbnail(it, idx){
-    return new Promise(resolve=>{
-      const card=$('ggrid').querySelector(`.card[data-idx="${idx}"]`);
-      if(!card){ resolve(); return; }
-      const box=card.querySelector('.thumbbox');
-      let r;
-      try {
-        r=new Renderer(thumbGL);
-        r.loadSource(it.src);
-        if (r.valid===false) throw r.error||new Error('compile');
-        applyDefaults(r, it.parser);
-        if (it.hasImage && gallerySrcImage){
-          feedImages(r, it.parser, gallerySrcImage);
-        }
-        // advance a little so time-based shaders aren't a blank first frame
-        r.startTime = Date.now()-1200;
-        r.draw(thumbCanvas);
-        r.draw(thumbCanvas);
-        const url = thumbCanvas.toDataURL('image/png');
-        const img=new Image();
-        img.onload=()=>{ box.querySelector('.spin')?.remove(); box.insertBefore(img, box.firstChild); resolve(); };
-        img.src=url;
-      } catch(e){
-        card.classList.add('err');
-        box.innerHTML = `<div class="badge-err">compile error</div><span class="play-tag">click to open</span>`;
-        // still allow opening so the user sees the error detail in the main view
-        card.onclick = ()=>{ closeGallery(); loadShaderSource(it.src, it.name); };
-        resolve();
-      } finally {
-        try { r && r.cleanup && r.cleanup(); } catch(e){}
-      }
-    });
-  }
-
-  function applyDefaults(r, p){
-    (p.inputs||[]).forEach(inp=>{
-      if (inp.DEFAULT!=null){
-        try { r.setValue(inp.NAME, inp.TYPE==='bool'? (inp.DEFAULT?1:0) : inp.DEFAULT); } catch(e){}
-      }
-    });
-  }
-  function feedImages(r, p, img){
-    (p.inputs||[]).filter(i=>i.TYPE==='image').forEach(i=>{
-      try { r.setValue(i.NAME, img); } catch(e){}
-    });
-    try { r.pushTextures(); } catch(e){}
-  }
-
-  // hover → live animated preview on its own renderer
-  function startHoverPreview(card, it){
-    stopHoverPreview();
-    if (!it.valid) return;
-    const box=card.querySelector('.thumbbox');
-    let live=box.querySelector('canvas');
-    if(!live){
-      live=document.createElement('canvas'); live.width=320; live.height=180;
-      box.insertBefore(live, box.firstChild);
-    }
-    const lgl = live.getContext('webgl')||live.getContext('experimental-webgl');
-    let r;
-    try {
-      r=new Renderer(lgl); r.loadSource(it.src);
-      if(r.valid===false) return;
-      applyDefaults(r, it.parser);
-      if (it.hasImage && gallerySrcImage) feedImages(r, it.parser, gallerySrcImage);
-    } catch(e){ return; }
-    hoverState.card=card; hoverState.renderer=r; hoverState.live=live;
-    const tick=()=>{ hoverState.raf=requestAnimationFrame(tick);
-      try{ r.draw(live); }catch(e){} };
-    tick();
-  }
-  function stopHoverPreview(){
-    if (hoverState.raf) cancelAnimationFrame(hoverState.raf);
-    if (hoverState.renderer){ try{hoverState.renderer.cleanup&&hoverState.renderer.cleanup();}catch(e){} }
-    hoverState.raf=null; hoverState.renderer=null; hoverState.card=null;
-  }
-
-  function openGallery(){ $('gallery').classList.add('show'); $('galleryBtn').classList.add('active'); }
-  function closeGallery(){ stopHoverPreview(); $('gallery').classList.remove('show'); $('galleryBtn').classList.remove('active'); }
-
-  // ---------- gallery wiring ----------
-  $('galleryClose').onclick = closeGallery;
-  $('galleryBtn').onclick = ()=> $('gallery').classList.contains('show')?closeGallery():openGallery();
-  $('pickDir').onclick = ()=> $('dirInput').click();
-  $('dirInput').onchange = e=>{ const fe=collectFromInput(e.target.files); buildGallery(fe); };
-  $('gsrcPick').onclick = (e)=>{ e.preventDefault(); galleryImgPick(); };
-
-  // dropping a folder onto the shader dropzone OR the stage
-  // Captures dataTransfer contents SYNCHRONOUSLY (must run during the event).
-  // Returns {entries, file} where entries is the webkitEntry list for folders.
-  function captureDrop(e){
-    const dt=e.dataTransfer;
-    let entries=[], hasDir=false;
-    if (dt.items && dt.items.length){
-      for (const it of dt.items){
-        const en = it.webkitGetAsEntry && it.webkitGetAsEntry();
-        if (en){ entries.push(en); if (en.isDirectory) hasDir=true; }
-      }
-    }
-    const file = dt.files && dt.files[0] ? dt.files[0] : null;
-    return { entries, hasDir, file };
-  }
-
-  // Given a synchronous capture, route folder→gallery. Returns true if handled.
-  async function routeFolder(cap){
-    if (!cap.hasDir) return false;
-    const fe = await collectFromEntries(cap.entries);
-    buildGallery(fe);
-    return true;
-  }
-
-  // image picker dedicated to gallery source
-  let galleryImgInput=null;
-  function galleryImgPick(){
-    if(!galleryImgInput){
-      galleryImgInput=document.createElement('input');
-      galleryImgInput.type='file'; galleryImgInput.accept='image/*';
-      galleryImgInput.onchange=()=>{ const f=galleryImgInput.files[0]; if(!f)return;
-        const img=new Image(); img.onload=()=>{ gallerySrcImage=img; $('gsrcName').textContent=f.name;
-          // re-thumbnail with the new source
-          $('ggrid').querySelectorAll('.card').forEach(c=>{
-            const box=c.querySelector('.thumbbox'); const idx=+c.dataset.idx;
-            if(galleryItems[idx] && galleryItems[idx].valid){
-              box.innerHTML='<div class="spin">rendering</div><span class="play-tag">click to open</span>';
-            }
-          });
-          queueThumbnails();
-        };
-        img.src=URL.createObjectURL(f);
-      };
-    }
-    galleryImgInput.click();
-  }
 
   // ---------- example shader ----------
   const EXAMPLE = `/*{
