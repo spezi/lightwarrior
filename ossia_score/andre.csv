@@ -1,0 +1,41 @@
+parameter,node,address,domain
+red,RGB EQ,grandma:/artnet/ch/1,0..2
+green,RGB EQ,grandma:/artnet/ch/2,0..2
+blue,RGB EQ,grandma:/artnet/ch/3,0..2
+alpha1,Video Mixer,grandma:/artnet/ch/4,0..1
+alpha2,Video Mixer,grandma:/artnet/ch/5,0..1
+alpha3,Video Mixer,grandma:/artnet/ch/6,0..1
+alpha4,Video Mixer,grandma:/artnet/ch/7,0..1
+alpha5,Video Mixer,grandma:/artnet/ch/8,0..1
+alpha6,Video Mixer,grandma:/artnet/ch/9,0..1
+alpha7,Video Mixer,grandma:/artnet/ch/10,0..1
+alpha8,Video Mixer,grandma:/artnet/ch/11,0..1
+red,RGB EQ.1,grandma:/artnet/ch/12,0..2
+green,RGB EQ.1,grandma:/artnet/ch/13,0..2
+blue,RGB EQ.1,grandma:/artnet/ch/14,0..2
+alpha1,Video Mixer.1,grandma:/artnet/ch/15,0..1
+alpha2,Video Mixer.1,grandma:/artnet/ch/16,0..1
+alpha3,Video Mixer.1,grandma:/artnet/ch/17,0..1
+alpha4,Video Mixer.1,grandma:/artnet/ch/18,0..1
+alpha5,Video Mixer.1,grandma:/artnet/ch/19,0..1
+alpha6,Video Mixer.1,grandma:/artnet/ch/20,0..1
+alpha7,Video Mixer.1,grandma:/artnet/ch/21,0..1
+alpha8,Video Mixer.1,grandma:/artnet/ch/22,0..1
+progress,Fade,grandma:/artnet/ch/23,0..1
+progress,Fade.1,grandma:/artnet/ch/24,0..1
+progress,Fade.3,grandma:/artnet/ch/25,0..1
+progress,Fade.4,grandma:/artnet/ch/26,0..1
+progress,Fade.2,grandma:/artnet/ch/50,0..1
+speed,line 10-3,grandma:/artnet/ch/51,0..5
+Speed,Gird Cycle 2,grandma:/artnet/ch/51,0..2
+speed,blur line G1,grandma:/artnet/ch/51,0..1
+speed,__ __ 2,grandma:/artnet/ch/51,0..2
+speed,___,grandma:/artnet/ch/51,0..3
+speed,Code 2,grandma:/artnet/ch/51,0..2
+speed,Kaleidic Line,grandma:/artnet/ch/52,0.10000000149011612..2
+anim_speed,quart up,grandma:/artnet/ch/52,-10..10
+rhythmSpeed,Quard z,grandma:/artnet/ch/52,0..4
+speed,Pink Lines,grandma:/artnet/ch/52,-5..5
+Speed,Net,grandma:/artnet/ch/52,0..1
+speed,morse code 2,grandma:/artnet/ch/52,-5..5
+alpha7,Video Mixer.3,grandma:/artnet/ch/53,0..1
