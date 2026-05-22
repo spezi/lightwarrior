@@ -1,0 +1,217 @@
+parameter,node,address,domain
+rotateCanvas,Kaleidolines,boli:/artnet/ch,0..1
+rotateLines,Kaleidolines,boli:/artnet/ch,0..1
+rotation,52.40,boli:/artnet/ch,-3.5999999046325684..3.5999999046325684
+rate,TwistyColoredBars,boli:/artnet/ch,-2..2
+rot,TwistyColoredBars,boli:/artnet/ch,
+barColor,bars,boli:/artnet/ch,
+gFactor,52.37,boli:/artnet/ch,-50..50
+rotation,52.37,boli:/artnet/ch,-6.28000020980835..6.28000020980835
+rotationSpeed,triangles-dongo,boli:/artnet/ch,1..180
+rotationDirection,triangles-dongo,boli:/artnet/ch,-1..1
+bgRotationSpeed,triangles-dongo,boli:/artnet/ch,0..1
+r0,output_shader_solid,boli:/artnet/ch/1,0..1
+g0,output_shader_solid,boli:/artnet/ch/2,0..1
+b0,output_shader_solid,boli:/artnet/ch/3,0..1
+h_solid0,output_shader_solid,boli:/artnet/ch/4,0..0.5
+r1,output_shader_solid,boli:/artnet/ch/5,0..1
+g1,output_shader_solid,boli:/artnet/ch/6,0..1
+b1,output_shader_solid,boli:/artnet/ch/7,0..1
+h_solid1,output_shader_solid,boli:/artnet/ch/8,0..0.5
+r2,output_shader_solid,boli:/artnet/ch/9,0..1
+g2,output_shader_solid,boli:/artnet/ch/10,0..1
+b2,output_shader_solid,boli:/artnet/ch/11,0..1
+h_solid2,output_shader_solid,boli:/artnet/ch/12,0..0.5
+r3,output_shader_solid,boli:/artnet/ch/13,0..1
+g3,output_shader_solid,boli:/artnet/ch/14,0..1
+b3,output_shader_solid,boli:/artnet/ch/15,0..1
+h_solid3,output_shader_solid,boli:/artnet/ch/16,0..0.5
+r4,output_shader_solid,boli:/artnet/ch/17,0..1
+g4,output_shader_solid,boli:/artnet/ch/18,0..1
+b4,output_shader_solid,boli:/artnet/ch/19,0..1
+h_solid4,output_shader_solid,boli:/artnet/ch/20,0..0.5
+r5,output_shader_solid,boli:/artnet/ch/21,0..1
+g5,output_shader_solid,boli:/artnet/ch/22,0..1
+b5,output_shader_solid,boli:/artnet/ch/23,0..1
+h_solid5,output_shader_solid,boli:/artnet/ch/24,0..0.5
+r6,output_shader_solid,boli:/artnet/ch/25,0..1
+g6,output_shader_solid,boli:/artnet/ch/26,0..1
+b6,output_shader_solid,boli:/artnet/ch/27,0..1
+h_solid6,output_shader_solid,boli:/artnet/ch/28,0..0.5
+r7,output_shader_solid,boli:/artnet/ch/29,0..1
+g7,output_shader_solid,boli:/artnet/ch/30,0..1
+b7,output_shader_solid,boli:/artnet/ch/31,0..1
+h_solid7,output_shader_solid,boli:/artnet/ch/32,0..0.5
+r8,output_shader_solid,boli:/artnet/ch/33,0..1
+g8,output_shader_solid,boli:/artnet/ch/34,0..1
+b8,output_shader_solid,boli:/artnet/ch/35,0..1
+h_solid8,output_shader_solid,boli:/artnet/ch/36,0..0.5
+r9,output_shader_solid,boli:/artnet/ch/37,0..1
+g9,output_shader_solid,boli:/artnet/ch/38,0..1
+b9,output_shader_solid,boli:/artnet/ch/39,0..1
+h_solid9,output_shader_solid,boli:/artnet/ch/40,0..0.5
+r10,output_shader_solid,boli:/artnet/ch/41,0..1
+g10,output_shader_solid,boli:/artnet/ch/42,0..1
+b10,output_shader_solid,boli:/artnet/ch/43,0..1
+h_solid10,output_shader_solid,boli:/artnet/ch/44,0..0.5
+r11,output_shader_solid,boli:/artnet/ch/45,0..1
+g11,output_shader_solid,boli:/artnet/ch/46,0..1
+b11,output_shader_solid,boli:/artnet/ch/47,0..1
+h_solid11,output_shader_solid,boli:/artnet/ch/48,0..0.5
+r12,output_shader_solid,boli:/artnet/ch/49,0..1
+g12,output_shader_solid,boli:/artnet/ch/50,0..1
+b12,output_shader_solid,boli:/artnet/ch/51,0..1
+h_solid12,output_shader_solid,boli:/artnet/ch/52,0..0.5
+r13,output_shader_solid,boli:/artnet/ch/53,0..1
+g13,output_shader_solid,boli:/artnet/ch/54,0..1
+b13,output_shader_solid,boli:/artnet/ch/55,0..1
+h_solid13,output_shader_solid,boli:/artnet/ch/56,0..0.5
+r14,output_shader_solid,boli:/artnet/ch/57,0..1
+g14,output_shader_solid,boli:/artnet/ch/58,0..1
+b14,output_shader_solid,boli:/artnet/ch/59,0..1
+h_solid14,output_shader_solid,boli:/artnet/ch/60,0..0.5
+r15,output_shader_solid,boli:/artnet/ch/61,0..1
+g15,output_shader_solid,boli:/artnet/ch/62,0..1
+b15,output_shader_solid,boli:/artnet/ch/63,0..1
+h_solid15,output_shader_solid,boli:/artnet/ch/64,0..0.5
+r16,output_shader_solid,boli:/artnet/ch/65,0..1
+g16,output_shader_solid,boli:/artnet/ch/66,0..1
+b16,output_shader_solid,boli:/artnet/ch/67,0..1
+h_solid16,output_shader_solid,boli:/artnet/ch/68,0..0.5
+r17,output_shader_solid,boli:/artnet/ch/69,0..1
+g17,output_shader_solid,boli:/artnet/ch/70,0..1
+b17,output_shader_solid,boli:/artnet/ch/71,0..1
+h_solid17,output_shader_solid,boli:/artnet/ch/72,0..0.5
+r18,output_shader_solid,boli:/artnet/ch/73,0..1
+g18,output_shader_solid,boli:/artnet/ch/74,0..1
+b18,output_shader_solid,boli:/artnet/ch/75,0..1
+h_solid18,output_shader_solid,boli:/artnet/ch/76,0..0.5
+r19,output_shader_solid,boli:/artnet/ch/77,0..1
+g19,output_shader_solid,boli:/artnet/ch/78,0..1
+b19,output_shader_solid,boli:/artnet/ch/79,0..1
+h_solid19,output_shader_solid,boli:/artnet/ch/80,0..0.5
+r20,output_shader_solid,boli:/artnet/ch/81,0..1
+g20,output_shader_solid,boli:/artnet/ch/82,0..1
+b20,output_shader_solid,boli:/artnet/ch/83,0..1
+h_solid20,output_shader_solid,boli:/artnet/ch/84,0..0.5
+r21,output_shader_solid,boli:/artnet/ch/85,0..1
+g21,output_shader_solid,boli:/artnet/ch/86,0..1
+b21,output_shader_solid,boli:/artnet/ch/87,0..1
+h_solid21,output_shader_solid,boli:/artnet/ch/88,0..0.5
+r22,output_shader_solid,boli:/artnet/ch/89,0..1
+g22,output_shader_solid,boli:/artnet/ch/90,0..1
+b22,output_shader_solid,boli:/artnet/ch/91,0..1
+h_solid22,output_shader_solid,boli:/artnet/ch/92,0..0.5
+r23,output_shader_solid,boli:/artnet/ch/93,0..1
+g23,output_shader_solid,boli:/artnet/ch/94,0..1
+b23,output_shader_solid,boli:/artnet/ch/95,0..1
+h_solid23,output_shader_solid,boli:/artnet/ch/96,0..0.5
+r24,output_shader_solid,boli:/artnet/ch/97,0..1
+g24,output_shader_solid,boli:/artnet/ch/98,0..1
+b24,output_shader_solid,boli:/artnet/ch/99,0..1
+h_solid24,output_shader_solid,boli:/artnet/ch/100,0..0.5
+r25,output_shader_solid,boli:/artnet/ch/101,0..1
+g25,output_shader_solid,boli:/artnet/ch/102,0..1
+b25,output_shader_solid,boli:/artnet/ch/103,0..1
+h_solid25,output_shader_solid,boli:/artnet/ch/104,0..0.5
+r26,output_shader_solid,boli:/artnet/ch/105,0..1
+g26,output_shader_solid,boli:/artnet/ch/106,0..1
+b26,output_shader_solid,boli:/artnet/ch/107,0..1
+h_solid26,output_shader_solid,boli:/artnet/ch/108,0..0.5
+r27,output_shader_solid,boli:/artnet/ch/109,0..1
+g27,output_shader_solid,boli:/artnet/ch/110,0..1
+b27,output_shader_solid,boli:/artnet/ch/111,0..1
+h_solid27,output_shader_solid,boli:/artnet/ch/112,0..0.5
+r28,output_shader_solid,boli:/artnet/ch/113,0..1
+g28,output_shader_solid,boli:/artnet/ch/114,0..1
+b28,output_shader_solid,boli:/artnet/ch/115,0..1
+h_solid28,output_shader_solid,boli:/artnet/ch/116,0..0.5
+r29,output_shader_solid,boli:/artnet/ch/117,0..1
+g29,output_shader_solid,boli:/artnet/ch/118,0..1
+b29,output_shader_solid,boli:/artnet/ch/119,0..1
+h_solid29,output_shader_solid,boli:/artnet/ch/120,0..0.5
+r30,output_shader_solid,boli:/artnet/ch/121,0..1
+g30,output_shader_solid,boli:/artnet/ch/122,0..1
+b30,output_shader_solid,boli:/artnet/ch/123,0..1
+h_solid30,output_shader_solid,boli:/artnet/ch/124,0..0.5
+r31,output_shader_solid,boli:/artnet/ch/125,0..1
+g31,output_shader_solid,boli:/artnet/ch/126,0..1
+b31,output_shader_solid,boli:/artnet/ch/127,0..1
+h_solid31,output_shader_solid,boli:/artnet/ch/128,0..0.5
+r32,output_shader_solid,boli:/artnet/ch/129,0..1
+g32,output_shader_solid,boli:/artnet/ch/130,0..1
+b32,output_shader_solid,boli:/artnet/ch/131,0..1
+h_solid32,output_shader_solid,boli:/artnet/ch/132,0..0.5
+r33,output_shader_solid,boli:/artnet/ch/133,0..1
+g33,output_shader_solid,boli:/artnet/ch/134,0..1
+b33,output_shader_solid,boli:/artnet/ch/135,0..1
+h_solid33,output_shader_solid,boli:/artnet/ch/136,0..0.5
+r34,output_shader_solid,boli:/artnet/ch/137,0..1
+g34,output_shader_solid,boli:/artnet/ch/138,0..1
+b34,output_shader_solid,boli:/artnet/ch/139,0..1
+h_solid34,output_shader_solid,boli:/artnet/ch/140,0..0.5
+r35,output_shader_solid,boli:/artnet/ch/141,0..1
+g35,output_shader_solid,boli:/artnet/ch/142,0..1
+b35,output_shader_solid,boli:/artnet/ch/143,0..1
+h_solid35,output_shader_solid,boli:/artnet/ch/144,0..0.5
+r36,output_shader_solid,boli:/artnet/ch/145,0..1
+g36,output_shader_solid,boli:/artnet/ch/146,0..1
+b36,output_shader_solid,boli:/artnet/ch/147,0..1
+h_solid36,output_shader_solid,boli:/artnet/ch/148,0..0.5
+r37,output_shader_solid,boli:/artnet/ch/149,0..1
+g37,output_shader_solid,boli:/artnet/ch/150,0..1
+b37,output_shader_solid,boli:/artnet/ch/151,0..1
+h_solid37,output_shader_solid,boli:/artnet/ch/152,0..0.5
+r38,output_shader_solid,boli:/artnet/ch/153,0..1
+g38,output_shader_solid,boli:/artnet/ch/154,0..1
+b38,output_shader_solid,boli:/artnet/ch/155,0..1
+h_solid38,output_shader_solid,boli:/artnet/ch/156,0..0.5
+r39,output_shader_solid,boli:/artnet/ch/157,0..1
+g39,output_shader_solid,boli:/artnet/ch/158,0..1
+b39,output_shader_solid,boli:/artnet/ch/159,0..1
+h_solid39,output_shader_solid,boli:/artnet/ch/160,0..0.5
+r40,output_shader_solid,boli:/artnet/ch/161,0..1
+g40,output_shader_solid,boli:/artnet/ch/162,0..1
+b40,output_shader_solid,boli:/artnet/ch/163,0..1
+h_solid40,output_shader_solid,boli:/artnet/ch/164,0..0.5
+hPos,bars,boli:/artnet/ch/300,0..1
+hLength,bars,boli:/artnet/ch/301,0..1
+vPos,bars,boli:/artnet/ch/302,0..1
+vLength,bars,boli:/artnet/ch/303,0..1
+red,RGB EQ,boli:/artnet/ch/310,0..2
+green,RGB EQ,boli:/artnet/ch/311,0..2
+blue,RGB EQ,boli:/artnet/ch/312,0..2
+red,RGB EQ.1,boli:/artnet/ch/313,0..2
+green,RGB EQ.1,boli:/artnet/ch/314,0..2
+blue,RGB EQ.1,boli:/artnet/ch/315,0..2
+alpha1,Video Mixer,boli:/artnet/ch/320,0..1
+alpha2,Video Mixer,boli:/artnet/ch/321,0..1
+alpha3,Video Mixer,boli:/artnet/ch/322,0..1
+alpha4,Video Mixer,boli:/artnet/ch/323,0..1
+alpha5,Video Mixer,boli:/artnet/ch/324,0..1
+alpha6,Video Mixer,boli:/artnet/ch/325,0..1
+alpha7,Video Mixer,boli:/artnet/ch/326,0..1
+alpha8,Video Mixer,boli:/artnet/ch/327,0..1
+alpha1,Video Mixer.1,boli:/artnet/ch/328,0..1
+alpha2,Video Mixer.1,boli:/artnet/ch/329,0..1
+alpha3,Video Mixer.1,boli:/artnet/ch/330,0..1
+alpha4,Video Mixer.1,boli:/artnet/ch/331,0..1
+alpha5,Video Mixer.1,boli:/artnet/ch/332,0..1
+alpha6,Video Mixer.1,boli:/artnet/ch/333,0..1
+alpha7,Video Mixer.1,boli:/artnet/ch/334,0..1
+alpha8,Video Mixer.1,boli:/artnet/ch/335,0..1
+R,Javascript,boli:/artnet/ch/400,0..1
+G,Javascript,boli:/artnet/ch/401,0..1
+B,Javascript,boli:/artnet/ch/402,0..1
+speed,lightwarrior_output_mapping_blocks.1,boli:/artnet/ch/403,-3..3
+R,Javascript.2,boli:/artnet/ch/404,0..1
+G,Javascript.2,boli:/artnet/ch/405,0..1
+B,Javascript.2,boli:/artnet/ch/406,0..1
+speed,lightwarrior_output_mapping_blocks,boli:/artnet/ch/407,-3..3
+R,Javascript.3,boli:/artnet/ch/408,0..1
+G,Javascript.3,boli:/artnet/ch/409,0..1
+B,Javascript.3,boli:/artnet/ch/410,0..1
+speed,lightwarrior_output_mapping_blocks.2,boli:/artnet/ch/411,-3..3
+R,Javascript.1,boli:/artnet/ch/412,0..1
+G,Javascript.1,boli:/artnet/ch/413,0..1
+B,Javascript.1,boli:/artnet/ch/414,0..1
